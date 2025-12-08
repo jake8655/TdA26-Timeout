@@ -1,0 +1,6 @@
+{
+	"name": "@repo/server",
+	"scripts": {
+		"build": "INSERT_YOUR_BUILD_COMMAND_HERE"
+	}
+}

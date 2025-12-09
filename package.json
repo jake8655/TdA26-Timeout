@@ -8,8 +8,7 @@
 		"check": "biome check .",
 		"check:write": "biome check --write .",
 		"check:unsafe": "biome check --write --unsafe .",
-		"types": "turbo run types",
-		"postinstall": "sherif"
+		"types": "turbo run types"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.8",

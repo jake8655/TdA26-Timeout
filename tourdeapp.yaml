@@ -4,6 +4,8 @@ containers:
   - name: web
     image: registry.tourde.cloud/<slug>/web
     port: 3001
+    env:
+      TURBO_TOKEN: ROdLPEIgbu8uFRmKMxlRL1Wd
   - name: server
     image: registry.tourde.cloud/<slug>/server
     port: 3000

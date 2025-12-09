@@ -4,11 +4,11 @@ containers:
   - name: web
     image: registry.tourde.cloud/<slug>/web
     port: 3001
-  - name: server
-    image: registry.tourde.cloud/<slug>/server
-    port: 3000
-    env:
-      DATABASE_URL: mysql://root:password@localhost:3306/tda_app
+  # - name: server
+  #   image: registry.tourde.cloud/<slug>/server
+  #   port: 3000
+  #   env:
+  #     DATABASE_URL: mysql://root:password@localhost:3306/tda_app
   - name: mysql
     image: mysql
     tag: "8.0"
@@ -23,9 +23,9 @@ build:
   - name: web
     context: ./apps/web
     dockerfile: ./apps/web/Dockerfile
-  - name: server
-    context: ./apps/server
-    dockerfile: ./apps/server/Dockerfile
+  # - name: server
+  #   context: ./apps/server
+  #   dockerfile: ./apps/server/Dockerfile
   - name: caddy
     context: ./apps/caddy
     dockerfile: ./apps/caddy/Dockerfile

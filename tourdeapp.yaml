@@ -13,8 +13,8 @@ containers:
     image: mysql
     tag: "8.0"
     env:
-      DATABASE_NAME: tda_app
-      DATABASE_PASSWORD: password
+      MYSQL_DATABASE: tda_app
+      MYSQL_ROOT_PASSWORD: password
     port: 3306
   - name: caddy
     image: registry.tourde.cloud/timeout/caddy

@@ -23,7 +23,7 @@ containers:
     port: 80
 build:
   - name: web
-    context: ./apps/web
+    context: ./
     dockerfile: ./apps/web/Dockerfile
   - name: server
     context: ./apps/server

@@ -12,8 +12,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Timeout TdA",
-	description: "A course platform for educators and learners alike.",
+	title: "Think different Academy",
+	description:
+		"An educational platform that aims to show that learning doesn’t have to mean endless reading of academic texts. Instead, it can be engaging, interactive, and fully online.",
 };
 
 export default function RootLayout({

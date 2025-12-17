@@ -20,7 +20,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     PORT=3001 \
-    HOSTNAME="127.0.0.1"
+    HOSTNAME="0.0.0.0"
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs

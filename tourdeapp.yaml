@@ -4,18 +4,9 @@ containers:
   - name: web
     image: registry.tourde.cloud/timeout/web
     port: 3001
-  # - name: server
-  #   image: registry.tourde.cloud/timeout/server
-  #   port: 3000
-  #   env:
-  #     DATABASE_URL: mysql://root:password@localhost:3306/tda_app
-  - name: mysql
-    image: mysql
-    tag: "8.0"
-    env:
-      MYSQL_DATABASE: tda_app
-      MYSQL_ROOT_PASSWORD: password
-    port: 3306
+  - name: server
+    image: registry.tourde.cloud/timeout/server
+    port: 3000
   - name: caddy
     image: registry.tourde.cloud/timeout/caddy
     port: 80
@@ -23,9 +14,9 @@ build:
   - name: web
     context: ./apps/web
     dockerfile: ./apps/web/Dockerfile
-  # - name: server
-  #   context: ./apps/server
-  #   dockerfile: ./apps/server/Dockerfile
+  - name: server
+    context: ./apps/server
+    dockerfile: ./apps/server/Dockerfile
   - name: caddy
     context: ./apps/caddy
     dockerfile: ./apps/caddy/Dockerfile

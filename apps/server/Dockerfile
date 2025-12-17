@@ -8,6 +8,7 @@ WORKDIR /app
 FROM base AS builder
 WORKDIR /app
 COPY . .
+RUN chmod +x ./gradlew
 RUN ./gradlew build
 
 FROM base AS runner

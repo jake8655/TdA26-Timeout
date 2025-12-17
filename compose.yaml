@@ -9,6 +9,9 @@ services:
       - "3000:3000"
   caddy:
     build: apps/caddy
+    environment:
+      - SERVER_UPSTREAM=server:3000
+      - WEB_UPSTREAM=web:3001
     ports:
       - "80:80"
     depends_on:

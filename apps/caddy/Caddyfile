@@ -1,6 +1,6 @@
 http://:80 {
   handle_path /api* {
-    reverse_proxy server:3000
+    reverse_proxy {$SERVER_UPSTREAM}
   }
-  reverse_proxy web:3001
+  reverse_proxy {$WEB_UPSTREAM}
 }

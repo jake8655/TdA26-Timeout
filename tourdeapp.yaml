@@ -10,6 +10,9 @@ containers:
   - name: caddy
     image: registry.tourde.cloud/timeout/caddy
     port: 80
+    env:
+      SERVER_UPSTREAM: 127.0.0.1:3000
+      WEB_UPSTREAM: 127.0.0.1:3001
 build:
   - name: web
     context: ./apps/web

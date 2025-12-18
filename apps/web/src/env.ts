@@ -8,7 +8,7 @@ export const env = createEnv({
 			.default("development"),
 	},
 	client: {
-		NEXT_PUBLIC_API_BASE: z.url(),
+		NEXT_PUBLIC_API_BASE: z.string().min(1),
 	},
 
 	// Only client-side variables need to be destructured manually

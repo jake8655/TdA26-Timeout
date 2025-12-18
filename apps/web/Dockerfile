@@ -14,7 +14,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV SKIP_ENV_VALIDATION=true
+ARG NEXT_PUBLIC_API_BASE="/api"
+ENV NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
 
 RUN bun run build
 
@@ -23,8 +24,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     PORT=3001 \
-    HOSTNAME="0.0.0.0" \
-    NEXT_PUBLIC_API_BASE="/api"
+    HOSTNAME="0.0.0.0"
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs

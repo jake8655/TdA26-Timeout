@@ -1,8 +1,20 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { env } from "@/env";
 
 export default function Hero() {
+	const { data, isLoading } = useQuery({
+		queryKey: ["hero-data"],
+		queryFn: async () => {
+			const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}`);
+			return res.json();
+		},
+	});
+
 	return (
 		<section className="relative min-h-[80vh] pt-40 pb-24">
 			{/* Background gradient effects */}
@@ -10,6 +22,8 @@ export default function Hero() {
 				<div className="absolute top-1/4 left-1/4 size-96 rounded-full bg-primary/10 blur-3xl" />
 				<div className="absolute right-1/4 bottom-1/4 size-96 rounded-full bg-accent/10 blur-3xl" />
 			</div>
+
+			<pre>{isLoading ? "Loading..." : JSON.stringify(data, null, 2)}</pre>
 
 			<div className="relative z-10 mx-auto max-w-7xl px-6 text-center">
 				<div className="mb-18 flex justify-center">

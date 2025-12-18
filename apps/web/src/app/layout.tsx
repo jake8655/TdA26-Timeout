@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import localFont from "next/font/local";
 import Header from "@/components/home/header";
+import { Providers } from "@/components/providers";
 
 const fontSans = localFont({
 	src: "./dosis.ttf",
@@ -22,8 +23,10 @@ export default function RootLayout({
 	return (
 		<html lang="en" className={fontSans.variable}>
 			<body className="dark antialiased">
-				<Header />
-				{children}
+				<Providers>
+					<Header />
+					{children}
+				</Providers>
 			</body>
 		</html>
 	);

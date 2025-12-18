@@ -1,0 +1,19 @@
+services:
+  web:
+    build: apps/web
+    ports:
+      - "3001:3001"
+  server:
+    build: apps/server
+    ports:
+      - "3000:3000"
+  caddy:
+    build: apps/caddy
+    environment:
+      - SERVER_UPSTREAM=server:3000
+      - WEB_UPSTREAM=web:3001
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+      - server

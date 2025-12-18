@@ -7,10 +7,14 @@ export const env = createEnv({
 			.enum(["development", "test", "production"])
 			.default("development"),
 	},
-	client: {},
+	client: {
+		NEXT_PUBLIC_API_BASE: z.url(),
+	},
 
 	// Only client-side variables need to be destructured manually
-	experimental__runtimeEnv: {},
+	experimental__runtimeEnv: {
+		NEXT_PUBLIC_API_BASE: process.env.NEXT_PUBLIC_API_BASE,
+	},
 
 	emptyStringAsUndefined: true,
 	skipValidation: !!process.env.SKIP_ENV_VALIDATION,

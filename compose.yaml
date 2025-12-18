@@ -3,6 +3,8 @@ services:
     build: apps/web
     ports:
       - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_BASE=/api
   server:
     build: apps/server
     ports:

@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import Header from "@/components/home/header";
+import { Providers } from "@/components/providers";
 
-const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
-});
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
+const fontSans = localFont({
+	src: "./dosis.ttf",
+	variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
-	title: "Timeout TdA",
-	description: "A course platform for educators and learners alike.",
+	title: "Think different Academy",
+	description:
+		"An educational platform that aims to show that learning doesn’t have to mean endless reading of academic texts. Instead, it can be engaging, interactive, and fully online.",
 };
 
 export default function RootLayout({
@@ -22,9 +21,12 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
-			<body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
-				{children}
+		<html lang="en" className={fontSans.variable}>
+			<body className="dark antialiased">
+				<Providers>
+					<Header />
+					{children}
+				</Providers>
 			</body>
 		</html>
 	);

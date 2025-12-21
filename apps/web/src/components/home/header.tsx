@@ -23,14 +23,20 @@ export default function Header() {
 	return (
 		<header className="fixed top-0 right-0 left-0 z-50 border-white/5 border-b bg-background/80 backdrop-blur-md transition-all duration-300">
 			<div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-				<Link href="/" className="group relative z-50">
+				<Link
+					href="/"
+					className="group relative z-50 flex items-center gap-4 transition-opacity duration-300 hover:opacity-90"
+				>
 					<Image
-						src="/logo/logo-official-dark-2.svg"
+						src="/logo/logo.svg"
 						alt="Think different Academy"
-						width={144}
-						height={44}
-						className="h-10 w-auto transition-opacity duration-300 hover:opacity-90"
+						width={40}
+						height={40}
+						className="size-10"
 					/>
+					<span className="font-semibold text-lg text-white">
+						Think different Academy
+					</span>
 				</Link>
 
 				<div className="hidden items-center gap-8 md:flex">

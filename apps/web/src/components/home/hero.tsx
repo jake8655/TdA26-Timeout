@@ -3,19 +3,8 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-
-function BackgroundGrid() {
-	return (
-		<div className="absolute inset-0 z-0 overflow-hidden">
-			<div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]" />
-			<div className="absolute top-0 right-0 left-0 h-[500px] bg-linear-to-b from-background via-background/95 to-transparent" />
-			<div className="absolute right-0 bottom-0 left-0 h-[500px] bg-linear-to-t from-background via-background/95 to-transparent" />
-			<div className="-top-[40%] -left-[20%] absolute size-[800px] rounded-full bg-primary/10 opacity-40 blur-[100px]" />
-			<div className="-right-[20%] -bottom-[40%] absolute size-[800px] rounded-full bg-accent/10 opacity-40 blur-[100px]" />
-		</div>
-	);
-}
+import { Button } from "../animate-ui/components/buttons/button";
+import BackgroundGrid from "../background-grid";
 
 export default function Hero() {
 	return (
@@ -79,26 +68,22 @@ export default function Hero() {
 
 				<div className="flex flex-col items-center justify-center gap-6 sm:flex-row">
 					<Link href="/courses">
-						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-							<Button
-								variant="accent"
-								size="lg"
-								className="h-14 min-w-[200px] border-none bg-accent text-accent-foreground text-lg shadow-[0_0_20px_-5px_var(--color-accent)] hover:bg-accent/90 hover:shadow-[0_0_30px_-5px_var(--color-accent)]"
-							>
-								Explore Courses
-							</Button>
-						</motion.div>
+						<Button
+							variant="accent"
+							size="lg"
+							className="h-14 min-w-[200px] border-none bg-accent text-accent-foreground text-lg hover:bg-accent/90"
+						>
+							Explore Courses
+						</Button>
 					</Link>
 					<Link href="#about">
-						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-							<Button
-								variant="outline"
-								size="lg"
-								className="h-14 min-w-[200px] border-muted-foreground/20 text-lg hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
-							>
-								Learn More
-							</Button>
-						</motion.div>
+						<Button
+							variant="outline"
+							size="lg"
+							className="h-14 min-w-[200px] border-muted-foreground/20 text-lg hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+						>
+							Learn More
+						</Button>
 					</Link>
 				</div>
 			</div>

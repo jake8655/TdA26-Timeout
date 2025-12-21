@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "../animate-ui/components/buttons/button";
 
 export default function Header() {
 	return (
@@ -42,11 +42,7 @@ export default function Header() {
 						</Button>
 					</Link>
 					<Link href="/courses">
-						<Button
-							variant="accent"
-							size="sm"
-							className="shadow-[0_0_20px_-5px_var(--color-accent)] transition-all hover:scale-105 hover:shadow-[0_0_25px_-5px_var(--color-accent)]"
-						>
+						<Button variant="accent" size="sm">
 							Explore Courses
 						</Button>
 					</Link>

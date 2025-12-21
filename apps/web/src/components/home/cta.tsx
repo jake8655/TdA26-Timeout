@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "../animate-ui/components/buttons/button";
 
 export default function CallToAction() {
 	return (
@@ -62,15 +62,9 @@ export default function CallToAction() {
 					transition={{ delay: 0.4 }}
 				>
 					<Link href="/courses">
-						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-							<Button
-								variant="accent"
-								size="lg"
-								className="h-14 px-12 text-lg shadow-[0_0_30px_-5px_var(--color-accent)] hover:shadow-[0_0_50px_-10px_var(--color-accent)]"
-							>
-								Start Learning Today
-							</Button>
-						</motion.div>
+						<Button variant="accent" size="lg" className="h-14 px-12 text-lg">
+							Start Learning Today
+						</Button>
 					</Link>
 				</motion.div>
 

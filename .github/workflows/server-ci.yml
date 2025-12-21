@@ -39,5 +39,5 @@ jobs:
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: apps/server
-        run: just build
+        run: chmod +x ./gradlew && just build
 

@@ -1,4 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const createQueryClient = () => {
 	const queryClient = new QueryClient({
@@ -6,7 +7,7 @@ export const createQueryClient = () => {
 			onError: (error) => {
 				if (typeof window === "undefined") return;
 
-				console.error("Something went wrong", {
+				toast.error("Something went wrong", {
 					description: error.message,
 				});
 			},
@@ -15,7 +16,7 @@ export const createQueryClient = () => {
 			onError: (error) => {
 				if (typeof window === "undefined") return;
 
-				console.error("Something went wrong", {
+				toast.error("Something went wrong", {
 					description: error.message,
 				});
 			},

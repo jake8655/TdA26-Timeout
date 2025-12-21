@@ -1,0 +1,8 @@
+alias b := build
+alias r := run
+
+build:
+  ./gradlew build
+
+run:
+  java -jar build/libs/*.jar --spring.profiles.active=dev

@@ -7,7 +7,7 @@ An online course platform for educators and learners alike.
 - [Jakub Cagáň](https://github.com/koobisko)
 
 ## Tech Stack
-- Frontend: TypeScript, React, Next.js, TailwindCSS
-- Backend: Kotlin
-- Database: MySQL
+- Frontend: TypeScript, React
+- Backend: Java, Spring Boot
+- Database: MySQL (externally hosted)
 - Infra: Docker, TdA Cloud

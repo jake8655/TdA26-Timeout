@@ -3,7 +3,7 @@ name: Frontend CI
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - "apps/web/**"
   pull_request:

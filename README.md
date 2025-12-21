@@ -6,6 +6,17 @@ An online course platform for educators and learners alike.
 - [Filip Konc (hypnomacka)](https://github.com/hypnomacka)
 - [Jakub Cagáň](https://github.com/koobisko)
 
+## Getting Started
+
+1. Install [Docker](https://www.docker.com/get-started/).
+1. Install [Docker Compose](https://docs.docker.com/compose/install/).
+1. Create the necessary `.env` files in the apps/* directories and set the necessary environment variables.
+1. Run the application using Docker Compose:
+   ```bash
+   docker compose up --build
+   ```
+1. Open [http://localhost](http://localhost) to see the result.
+
 ## Tech Stack
 - Frontend: TypeScript, React
 - Backend: Java, Spring Boot

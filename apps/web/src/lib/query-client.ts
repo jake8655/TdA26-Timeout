@@ -1,7 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 
 export const createQueryClient = () => {
-	const queryclient = new QueryClient({
+	const queryClient = new QueryClient({
 		queryCache: new QueryCache({
 			onError: (error) => {
 				if (typeof window === "undefined") return;
@@ -21,7 +21,7 @@ export const createQueryClient = () => {
 			},
 
 			onSuccess: async () => {
-				await queryclient.invalidateQueries();
+				await queryClient.invalidateQueries();
 			},
 		}),
 		defaultOptions: {
@@ -33,5 +33,5 @@ export const createQueryClient = () => {
 		},
 	});
 
-	return queryclient;
+	return queryClient;
 };

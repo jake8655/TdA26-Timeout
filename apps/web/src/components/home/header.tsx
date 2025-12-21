@@ -1,8 +1,25 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../animate-ui/components/buttons/button";
 
 export default function Header() {
+	const pathname = usePathname();
+	const router = useRouter();
+
+	const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+		e.preventDefault();
+
+		if (pathname === "/") {
+			const aboutSection = document.getElementById("about");
+			aboutSection?.scrollIntoView({ behavior: "smooth" });
+		} else {
+			router.push("/#about");
+		}
+	};
+
 	return (
 		<header className="fixed top-0 right-0 left-0 z-50 border-white/5 border-b bg-background/80 backdrop-blur-md transition-all duration-300">
 			<div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
@@ -25,6 +42,7 @@ export default function Header() {
 					</Link>
 					<Link
 						href="#about"
+						onClick={handleAboutClick}
 						className="font-medium text-muted-foreground text-sm transition-colors hover:text-primary"
 					>
 						About

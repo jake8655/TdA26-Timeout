@@ -35,7 +35,6 @@ export default function Hero() {
 						<motion.div
 							animate={{
 								scale: [1, 1.1, 1],
-								rotate: [0, 5, -5, 0],
 							}}
 							transition={{
 								duration: 10,

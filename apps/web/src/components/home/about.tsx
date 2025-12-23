@@ -37,7 +37,7 @@ function FloatingIcon({
 
 export default function About() {
 	return (
-		<section id="about" className="relative overflow-hidden bg-muted/20 py-24">
+		<section id="about" className="relative py-24">
 			<div className="mx-auto max-w-7xl px-6">
 				<div className="grid items-center gap-16 lg:grid-cols-2">
 					<motion.div
@@ -119,33 +119,33 @@ export default function About() {
 							<motion.div
 								whileHover={{ scale: 1.02 }}
 								transition={{ type: "spring", stiffness: 300 }}
-								className="relative z-10 rounded-3xl border border-white/10 bg-card/30 p-16 backdrop-blur-sm"
+								className="relative z-10 rounded-3xl border border-white/10 bg-card/30 p-8 backdrop-blur-sm md:p-16"
 							>
 								<Image
 									src="/logo/logo-official-dark.svg"
 									alt="Think different Academy"
 									width={240}
 									height={176}
-									className="h-auto w-64 drop-shadow-2xl"
+									className="h-auto w-48 drop-shadow-2xl md:w-64"
 								/>
 							</motion.div>
 
 							<FloatingIcon
 								src="/icons/Beginner/zarivka_beginner_blue.svg"
 								alt="Beginner"
-								className="-left-8 -top-8 absolute z-20"
+								className="-left-2 -top-6 md:-left-8 md:-top-8 absolute z-20"
 								delay={0}
 							/>
 							<FloatingIcon
 								src="/icons/Medium/zarivka_medium_blue.svg"
 								alt="Medium"
-								className="-right-12 -bottom-4 absolute z-20"
+								className="-bottom-2 -right-4 md:-bottom-4 md:-right-12 absolute z-20"
 								delay={1}
 							/>
 							<FloatingIcon
 								src="/icons/Hard/zarivka_hard_blue.svg"
 								alt="Hard"
-								className="-right-6 absolute top-1/3 z-20"
+								className="-right-2 md:-right-6 absolute top-1/3 z-20"
 								delay={2}
 							/>
 						</div>

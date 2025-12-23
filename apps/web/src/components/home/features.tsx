@@ -111,7 +111,7 @@ function FeatureCard({
 export default function Features() {
 	return (
 		<section className="relative py-24">
-			<div className="pointer-events-none absolute inset-0 overflow-hidden">
+			<div className="pointer-events-none absolute inset-0">
 				<div className="absolute top-0 right-0 h-[500px] w-1/2 bg-linear-to-b from-primary/5 to-transparent blur-3xl" />
 				<div className="absolute bottom-0 left-0 h-[500px] w-1/2 bg-linear-to-t from-accent/5 to-transparent blur-3xl" />
 			</div>

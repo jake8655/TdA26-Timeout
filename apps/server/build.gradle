@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.12'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.ebean' version '17.2.0'
 }
 
 group = 'eu.hypnomacka.timeout'
@@ -40,6 +41,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    compileOnly 'io.ebean:ebean:17.2.0'
+    annotationProcessor 'io.ebean:querybean-generator:17.2.0'
 }
 
 dependencyManagement {

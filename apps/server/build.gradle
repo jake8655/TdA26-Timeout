@@ -31,7 +31,6 @@ ext {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter'
@@ -42,8 +41,15 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    compileOnly 'io.ebean:ebean:17.2.0'
+    // Ebean ORM
+    implementation 'io.ebean:ebean:17.2.0'
+    implementation 'io.ebean:ebean-ddl-generator:17.2.0'
+    implementation 'io.ebean:ebean-migration:14.3.0'
     annotationProcessor 'io.ebean:querybean-generator:17.2.0'
+}
+
+ebean {
+    debugLevel = 1
 }
 
 dependencyManagement {
@@ -54,4 +60,11 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('generateMigration', JavaExec) {
+    group = 'ebean'
+    description = 'Generate Ebean database migration'
+    mainClass = 'GenerateDbMigration'
+    classpath = sourceSets.test.runtimeClasspath
 }

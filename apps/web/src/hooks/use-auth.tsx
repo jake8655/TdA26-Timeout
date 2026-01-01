@@ -61,9 +61,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	);
 }
 
-export const useAuthContext = () => {
+export function useAuthContext() {
 	const ctx = use(AuthContext);
 	if (!ctx) throw new Error("useAuthContext must be within AuthProvider");
 
 	return ctx;
-};
+}
+
+export async function logout() {
+	await fetch(`${env.NEXT_PUBLIC_API_BASE}/auth/logout`, {
+		method: "POST",
+		credentials: "include",
+	});
+}

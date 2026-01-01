@@ -4,13 +4,7 @@ import { LayoutDashboard, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSyncExternalStore } from "react";
-import {
-	getCurrentUser,
-	getIsLoggedIn,
-	logout,
-	subscribe,
-} from "@/lib/auth-store";
+import { logout, useAuthContext } from "@/hooks/use-auth";
 import AboutLink from "../about-link";
 import { Button } from "../animate-ui/components/buttons/button";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -24,30 +18,9 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
-function useAuthStore():
-	| { isLoggedIn: true; currentUser: { username: string } }
-	| { isLoggedIn: false; currentUser: null } {
-	const isLoggedIn = useSyncExternalStore(
-		subscribe,
-		getIsLoggedIn,
-		getIsLoggedIn,
-	);
-	const currentUser = useSyncExternalStore(
-		subscribe,
-		getCurrentUser,
-		getCurrentUser,
-	);
-
-	if (!isLoggedIn) {
-		return { isLoggedIn: false, currentUser: null };
-	}
-
-	return { isLoggedIn: true, currentUser: currentUser as { username: string } };
-}
-
 export default function Header() {
 	const router = useRouter();
-	const { isLoggedIn, currentUser } = useAuthStore();
+	const { data } = useAuthContext();
 
 	const handleLogout = () => {
 		logout();
@@ -86,12 +59,12 @@ export default function Header() {
 				</div>
 
 				<div className="flex items-center gap-4">
-					{isLoggedIn ? (
+					{data ? (
 						<DropdownMenu>
 							<DropdownMenuTrigger>
 								<Avatar size="lg" aria-label="User menu">
 									<AvatarFallback className="bg-primary/10 text-primary">
-										{currentUser.username.slice(0, 2).toUpperCase()}
+										{data.username.slice(0, 2).toUpperCase()}
 									</AvatarFallback>
 								</Avatar>
 							</DropdownMenuTrigger>
@@ -101,7 +74,7 @@ export default function Header() {
 										<User className="size-4 shrink-0 text-muted-foreground" />
 										<div className="flex flex-col">
 											<span className="font-medium text-foreground text-sm">
-												{currentUser.username}
+												{data.username}
 											</span>
 											<span className="text-muted-foreground text-xs">
 												Lecturer

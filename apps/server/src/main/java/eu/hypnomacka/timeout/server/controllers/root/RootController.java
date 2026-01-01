@@ -1,4 +1,4 @@
-package eu.hypnomacka.timeout.server.controllers;
+package eu.hypnomacka.timeout.server.controllers.root;
 
 
 import org.springframework.http.MediaType;

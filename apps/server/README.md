@@ -21,3 +21,17 @@ Probably [IntelliJ IDEA](https://www.jetbrains.com/idea/download/).
 ## Deployment
 
 The application is deployed using [Docker](https://docker.com) to [TdA Cloud](https://tourde.cloud). Pushes to the `main` branch trigger (semi-)automatic deployments.
+
+### Phase 0
+- [x] root endpoint
+### Phase 1
+- [ ] login (for now hardcoded user)
+- [ ] list of courses
+- [ ] course details
+- [ ] admin dashboard
+  - [ ] add course (max 30mb)
+  - [ ] remove course
+  - [ ] update course
+  - [ ] log out
+###
+- [ ] register

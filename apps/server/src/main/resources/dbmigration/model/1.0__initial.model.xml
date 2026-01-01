@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="courses" identityType="external" pkName="pk_courses">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="lecturer_id" type="uuid" notnull="true" references="lecturers.id" foreignKeyName="fk_courses_lecturer_id" foreignKeyIndex="ix_courses_lecturer_id"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="description" type="varchar"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="file_attachments" identityType="external" pkName="pk_file_attachments">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_id" type="uuid" notnull="true" references="courses.id" foreignKeyName="fk_file_attachments_course_id" foreignKeyIndex="ix_file_attachments_course_id"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="description" type="varchar"/>
+            <column name="type" type="varchar(4)" notnull="true" checkConstraint="check ( type in ('file'))" checkConstraintName="ck_file_attachments_type"/>
+            <column name="size_bytes" type="bigint"/>
+            <column name="mime_type" type="varchar"/>
+            <column name="file_url" type="varchar" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="lecturers" identityType="external" pkName="pk_lecturers">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="username" type="varchar" notnull="true"/>
+            <column name="hashed_pass" type="varchar" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="url_attachments" identityType="external" pkName="pk_url_attachments">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_id" type="uuid" notnull="true" references="courses.id" foreignKeyName="fk_url_attachments_course_id" foreignKeyIndex="ix_url_attachments_course_id"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="url" type="varchar" notnull="true"/>
+            <column name="description" type="varchar"/>
+            <column name="favicon_url" type="varchar" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>

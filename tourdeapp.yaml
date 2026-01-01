@@ -9,6 +9,10 @@ containers:
   - name: server
     image: registry.tourde.cloud/timeout/server
     port: 3000
+    env:
+      DBUSERNAME: "timeoutuser"
+      DBPASSWORD: "AVNS_DdTz7KCbueSBHps1OJ6"
+      DBURL: "jdbc:mysql://timeout-timeout.e.aivencloud.com:20733/timeoutdb?ssl-mode=REQUIRED"
   - name: caddy
     image: registry.tourde.cloud/timeout/caddy
     port: 80

@@ -89,7 +89,7 @@ export default function Header() {
 					{isLoggedIn ? (
 						<DropdownMenu>
 							<DropdownMenuTrigger>
-								<Avatar size="lg">
+								<Avatar size="lg" aria-label="User menu">
 									<AvatarFallback className="bg-primary/10 text-primary">
 										{currentUser.username.slice(0, 2).toUpperCase()}
 									</AvatarFallback>

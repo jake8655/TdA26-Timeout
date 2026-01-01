@@ -8,33 +8,31 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Getter @Setter
 @Entity
-@Table(name = "courses")
-public class Course extends Model {
+@Table(name = "url_attachments")
+public class UrlAttachment extends Model {
 
     @Id
     private UUID id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "lecturer_id", nullable = false)
-    private Lecturer lecturer;
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String url;
+
     @Column
     private String description;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    private List<FileAttachment> fileAttachments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    private List<UrlAttachment> urlAttachments = new ArrayList<>();
+    @Column(nullable = false)
+    private String faviconUrl;
 
     @WhenCreated
     private Instant createdAt;
@@ -42,12 +40,15 @@ public class Course extends Model {
     @WhenModified
     private Instant updatedAt;
 
-    public Course() {
+    public UrlAttachment() {
     }
 
-    public Course(Lecturer lecturer, String name, String description) {
-        this.lecturer = lecturer;
+    public UrlAttachment(Course course, String name, String url, String description, String faviconUrl) {
+        this.course = course;
         this.name = name;
+        this.url = url;
         this.description = description;
+        this.faviconUrl = faviconUrl;
     }
+
 }

@@ -1,31 +1,44 @@
 package eu.hypnomacka.timeout.server.core;
 
+import io.ebean.Model;
+import io.ebean.annotation.WhenCreated;
+import io.ebean.annotation.WhenModified;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
-public class Lecturer {
+@Getter @Setter
+@Entity
+@Table(name = "lecturers")
+public class Lecturer extends Model {
 
-    @Getter @Setter
-    int id;
-    @Getter
-    String name, hashedPassword;
-    LocalDateTime createdAt, updatedAt;
+    @Id
+    private UUID id;
 
-    public Lecturer(int id, String name, String hashedPassword, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.name = name;
-        this.hashedPassword = hashedPassword;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    @Column(nullable = false)
+    private String username;
+
+    @Column(name = "hashed_pass", nullable = false)
+    private String hashedPass;
+
+    @OneToMany(mappedBy = "lecturer", cascade = CascadeType.ALL)
+    private List<Course> courses;
+
+    @WhenCreated
+    private Instant createdAt;
+
+    @WhenModified
+    private Instant updatedAt;
+
+    public Lecturer() {
     }
 
-    public  Lecturer(String name, String hashedPassword) {
-        this.name = name;
-        this.hashedPassword = hashedPassword;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    public Lecturer(String username, String hashedPass) {
+        this.username = username;
+        this.hashedPass = hashedPass;
     }
-
 }

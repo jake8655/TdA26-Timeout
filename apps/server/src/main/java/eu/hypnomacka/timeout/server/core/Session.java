@@ -1,6 +1,7 @@
 package eu.hypnomacka.timeout.server.core;
 
 import io.ebean.Model;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import jakarta.persistence.*;
@@ -18,6 +19,10 @@ public class Session extends Model {
     @Id
     private UUID id;
 
+    @DbDefault("")
+    @Column(nullable = false)
+    private String token;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "lecturer_id", nullable = false)
     private Lecturer lecturer;
@@ -34,8 +39,9 @@ public class Session extends Model {
     public Session() {
     }
 
-    public Session(Lecturer lecturer, Instant expiresAt) {
+    public Session(Lecturer lecturer, String token, Instant expiresAt) {
         this.lecturer = lecturer;
+        this.token = token;
         this.expiresAt = expiresAt;
     }
 }

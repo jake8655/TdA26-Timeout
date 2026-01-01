@@ -1,6 +1,7 @@
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import AboutLink from "@/components/about-link";
 import { Separator } from "@/components/ui/separator";
 
 export default function Footer() {
@@ -40,12 +41,9 @@ export default function Footer() {
 								</Link>
 							</li>
 							<li>
-								<Link
-									href="#about"
-									className="transition-colors hover:text-primary"
-								>
+								<AboutLink className="transition-colors hover:text-primary">
 									About Us
-								</Link>
+								</AboutLink>
 							</li>
 							<li>
 								<Link

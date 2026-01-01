@@ -1,23 +1,57 @@
 "use client";
 
+import { LayoutDashboard, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSyncExternalStore } from "react";
+import {
+	getCurrentUser,
+	getIsLoggedIn,
+	logout,
+	subscribe,
+} from "@/lib/auth-store";
+import AboutLink from "../about-link";
 import { Button } from "../animate-ui/components/buttons/button";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+
+function useAuthStore():
+	| { isLoggedIn: true; currentUser: { username: string } }
+	| { isLoggedIn: false; currentUser: null } {
+	const isLoggedIn = useSyncExternalStore(
+		subscribe,
+		getIsLoggedIn,
+		getIsLoggedIn,
+	);
+	const currentUser = useSyncExternalStore(
+		subscribe,
+		getCurrentUser,
+		getCurrentUser,
+	);
+
+	if (!isLoggedIn) {
+		return { isLoggedIn: false, currentUser: null };
+	}
+
+	return { isLoggedIn: true, currentUser: currentUser as { username: string } };
+}
 
 export default function Header() {
-	const pathname = usePathname();
 	const router = useRouter();
+	const { isLoggedIn, currentUser } = useAuthStore();
 
-	const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-		e.preventDefault();
-
-		if (pathname === "/") {
-			const aboutSection = document.getElementById("about");
-			aboutSection?.scrollIntoView({ behavior: "smooth" });
-		} else {
-			router.push("/#about");
-		}
+	const handleLogout = () => {
+		logout();
+		router.push("/");
 	};
 
 	return (
@@ -46,30 +80,73 @@ export default function Header() {
 					>
 						Courses
 					</Link>
-					<Link
-						href="#about"
-						onClick={handleAboutClick}
-						className="font-medium text-muted-foreground text-sm transition-colors hover:text-primary"
-					>
+					<AboutLink className="font-medium text-muted-foreground text-sm transition-colors hover:text-primary">
 						About
-					</Link>
+					</AboutLink>
 				</div>
 
 				<div className="flex items-center gap-4">
-					<Link href="/login" className="hidden sm:block">
-						<Button
-							variant="outline"
-							size="sm"
-							className="border-primary/20 text-primary hover:border-primary hover:bg-primary/10 hover:text-primary"
-						>
-							Lecturer Login
-						</Button>
-					</Link>
-					<Link href="/courses">
-						<Button variant="accent" size="sm">
-							Explore Courses
-						</Button>
-					</Link>
+					{isLoggedIn ? (
+						<DropdownMenu>
+							<DropdownMenuTrigger>
+								<Avatar size="lg" aria-label="User menu">
+									<AvatarFallback className="bg-primary/10 text-primary">
+										{currentUser.username.slice(0, 2).toUpperCase()}
+									</AvatarFallback>
+								</Avatar>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" className="w-32">
+								<DropdownMenuGroup>
+									<DropdownMenuLabel className="flex items-center gap-2">
+										<User className="size-4 shrink-0 text-muted-foreground" />
+										<div className="flex flex-col">
+											<span className="font-medium text-foreground text-sm">
+												{currentUser.username}
+											</span>
+											<span className="text-muted-foreground text-xs">
+												Lecturer
+											</span>
+										</div>
+									</DropdownMenuLabel>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem className="p-0">
+										<Link
+											href="/dashboard"
+											className="flex w-full cursor-auto items-center gap-2 p-2"
+										>
+											<LayoutDashboard />
+											Dashboard
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										onClick={handleLogout}
+										variant="destructive"
+									>
+										<LogOut />
+										Log out
+									</DropdownMenuItem>
+								</DropdownMenuGroup>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					) : (
+						<>
+							<Link href="/login" className="hidden sm:block">
+								<Button
+									variant="outline"
+									size="sm"
+									className="border-primary/20 text-primary hover:border-primary hover:bg-primary/10 hover:text-primary"
+								>
+									Lecturer Login
+								</Button>
+							</Link>
+							<Link href="/courses">
+								<Button variant="accent" size="sm">
+									Explore Courses
+								</Button>
+							</Link>
+						</>
+					)}
 				</div>
 			</div>
 		</header>

@@ -32,6 +32,7 @@ export default function TextField({
 				placeholder={placeholder}
 				className={className}
 				type={type}
+				aria-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
 			/>
 			{field.state.meta.isTouched && !field.state.meta.isValid && (
 				<FieldError>

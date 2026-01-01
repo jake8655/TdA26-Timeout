@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="sessions" identityType="external" pkName="pk_sessions">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="lecturer_id" type="uuid" notnull="true" references="lecturers.id" foreignKeyName="fk_sessions_lecturer_id" foreignKeyIndex="ix_sessions_lecturer_id"/>
+            <column name="expires_at" type="timestamp" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>

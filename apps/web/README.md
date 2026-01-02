@@ -5,6 +5,7 @@
 1. Install [Node.js v22](https://nodejs.org/en/download).
 1. Install [bun](https://bun.com).
 1. Run `bun install` to install the dependencies.
+1. Run `bun openapi:generate` to generate the OpenAPI client.
 1. Run `bun dev` to start the development server.
 1. Open [http://localhost:3001](http://localhost:3001) to see the result.
 

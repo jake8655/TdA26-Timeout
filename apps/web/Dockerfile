@@ -17,6 +17,7 @@ COPY . .
 ARG NEXT_PUBLIC_API_BASE="/api"
 ENV NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
 
+RUN bun run openapi:generate
 RUN bun run build
 
 FROM base AS runner

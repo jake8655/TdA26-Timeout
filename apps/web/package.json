@@ -7,6 +7,7 @@
 	"scripts": {
 		"dev": "next dev --port 3001",
 		"build": "next build",
+		"openapi:generate": "openapi-ts",
 		"start": "next start",
 		"check": "biome check .",
 		"check:write": "biome check --write .",
@@ -31,6 +32,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.8",
+		"@hey-api/openapi-ts": "0.89.2",
 		"@tailwindcss/postcss": "^4.1.17",
 		"@types/node": "^22.15.3",
 		"@types/react": "^19.2.7",

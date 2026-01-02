@@ -174,13 +174,13 @@ function DeleteCourseDialog({
 export default function Dashboard() {
 	const router = useRouter();
 	const { courses } = useCoursesStore();
-	const { data } = useAuth();
+	const { data, isPending } = useAuth();
 
 	useEffect(() => {
-		if (!data) {
+		if (!data && !isPending) {
 			router.push("/login");
 		}
-	}, [data, router]);
+	}, [data, router, isPending]);
 
 	if (!data) {
 		return <LoadingPlaceholder />;

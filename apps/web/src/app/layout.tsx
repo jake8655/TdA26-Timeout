@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import localFont from "next/font/local";
 import Footer from "@/components/footer";
-import Header from "@/components/home/header";
+import Header from "@/components/header";
 import { Providers } from "@/components/providers";
 
 const fontSans = localFont({

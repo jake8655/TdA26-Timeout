@@ -6,9 +6,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { logout, useAuth } from "@/hooks/use-auth";
-import AboutLink from "../about-link";
-import { Button } from "../animate-ui/components/buttons/button";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import AboutLink from "./about-link";
+import { Button } from "./animate-ui/components/buttons/button";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -17,7 +17,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "./ui/dropdown-menu";
 
 export default function Header() {
 	const router = useRouter();

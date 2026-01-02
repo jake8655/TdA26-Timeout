@@ -61,7 +61,9 @@ public class CoursePutController extends Controller {
 
         Course course = new QCourse().uuid.eq(uuid).findOne();
         if(course == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("course not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("status", "bad", "message", "course not found")
+            );
         }
 
         /*if (!lecturer.getId().equals(course.getLecturer().getId())) {

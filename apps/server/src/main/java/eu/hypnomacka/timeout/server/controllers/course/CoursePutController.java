@@ -36,12 +36,6 @@ public class CoursePutController extends Controller {
             );
         }*/
 
-        if (name == null || description == null || name.isBlank() || description.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("status", "bad", "message", "invalid values")
-            );
-        }
-
         /*Session session = new QSession().token.eq(sessionId).findOne();
         if (session == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
@@ -65,9 +59,17 @@ public class CoursePutController extends Controller {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("not allowed to change course");
         }*/
 
-        course.setName(name);
-        course.setDescription(description);
-        course.save();
+        if(name != null && !name.isBlank()) {
+            course.setName(name);
+        }
+
+        if(description != null && !description.isBlank()) {
+            course.setDescription(description);
+        }
+
+        if (name != null && description != null && !name.isBlank() && !description.isBlank()) {
+            course.save();
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(course);
     }

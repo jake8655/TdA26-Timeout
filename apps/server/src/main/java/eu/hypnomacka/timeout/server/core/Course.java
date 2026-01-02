@@ -19,10 +19,10 @@ import java.util.UUID;
 public class Course extends Model {
 
     @Id
-    private UUID id;
+    private UUID uuid;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "lecturer_id", nullable = false)
+    @JoinColumn(name = "lecturer_uuid", nullable = false)
     @JsonBackReference
     private Lecturer lecturer;
 

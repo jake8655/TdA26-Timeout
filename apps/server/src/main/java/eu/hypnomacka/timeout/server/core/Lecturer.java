@@ -19,7 +19,7 @@ import java.util.UUID;
 public class Lecturer extends Model {
 
     @Id
-    private UUID id;
+    private UUID uuid;
 
     @Column(nullable = false)
     private String username;

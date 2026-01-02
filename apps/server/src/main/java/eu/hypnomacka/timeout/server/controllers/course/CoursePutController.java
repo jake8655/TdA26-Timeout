@@ -50,7 +50,7 @@ public class CoursePutController extends Controller {
             );
         }*/
 
-        Course course = new QCourse().id.eq(UUID.fromString(uuidStr)).findOne();
+        Course course = new QCourse().uuid.eq(UUID.fromString(uuidStr)).findOne();
         if(course == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("course not found");
         }

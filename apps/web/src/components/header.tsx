@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { LayoutDashboard, LogOut, User } from "lucide-react";
+import { LayoutDashboard, Loader2, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -99,9 +99,19 @@ export default function Header() {
 									<DropdownMenuItem
 										onClick={() => logoutMutation.mutate()}
 										variant="destructive"
+										disabled={logoutMutation.isPending}
 									>
-										<LogOut />
-										Log out
+										{logoutMutation.isPending ? (
+											<>
+												<Loader2 className="animate-spin text-muted-foreground" />
+												Logging out...
+											</>
+										) : (
+											<>
+												<LogOut />
+												Log out
+											</>
+										)}
 									</DropdownMenuItem>
 								</DropdownMenuGroup>
 							</DropdownMenuContent>

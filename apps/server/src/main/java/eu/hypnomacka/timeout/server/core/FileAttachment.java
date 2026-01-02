@@ -73,11 +73,4 @@ public class FileAttachment extends Model {
         this.mimeType = mimeType;
         this.fileUrl = fileUrl;
     }
-
-    @Override
-    public void save() {
-        super.save();
-        setCreatedAt(Instant.now());
-    }
-
 }

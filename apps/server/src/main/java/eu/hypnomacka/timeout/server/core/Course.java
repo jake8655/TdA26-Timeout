@@ -51,11 +51,4 @@ public class Course extends Model {
         this.name = name;
         this.description = description;
     }
-
-    @Override
-    public void save() {
-        super.save();
-        setCreatedAt(Instant.now());
-    }
-
 }

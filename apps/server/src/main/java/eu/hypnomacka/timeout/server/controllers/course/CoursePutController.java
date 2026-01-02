@@ -50,9 +50,20 @@ public class CoursePutController extends Controller {
             );
         }*/
 
-        Course course = new QCourse().uuid.eq(UUID.fromString(uuidStr)).findOne();
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(uuidStr);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("status", "bad", "message", "invalid UUID format")
+            );
+        }
+
+        Course course = new QCourse().uuid.eq(uuid).findOne();
         if(course == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("course not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("status", "bad", "message", "course not found")
+            );
         }
 
         /*if (!lecturer.getId().equals(course.getLecturer().getId())) {
@@ -67,11 +78,10 @@ public class CoursePutController extends Controller {
             course.setDescription(description);
         }
 
-        if (name != null && description != null && !name.isBlank() && !description.isBlank()) {
+        if ((name != null && !name.isBlank()) || (description != null && !description.isBlank())) {
             course.save();
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(course);
     }
-
 }

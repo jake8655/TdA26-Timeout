@@ -44,11 +44,4 @@ public class Session extends Model {
         this.token = token;
         this.expiresAt = expiresAt;
     }
-
-    @Override
-    public void save() {
-        super.save();
-        setCreatedAt(Instant.now());
-    }
-
 }

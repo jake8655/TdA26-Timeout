@@ -19,7 +19,7 @@ public class CourseGetController extends Controller {
         return new QCourse().orderBy().updatedAt.desc().findList();
     }
 
-    @GetMapping(value = "/{UUID}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> byUUID(@PathVariable("UUID") String uuidStr, @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
         /*if (sessionId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
@@ -41,7 +41,16 @@ public class CourseGetController extends Controller {
             );
         }*/
 
-        Course course = new QCourse().uuid.eq(UUID.fromString(uuidStr)).findOne();
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(uuidStr);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("status", "bad", "message", "invalid UUID format")
+            );
+        }
+
+        Course course = new QCourse().uuid.eq(uuid).findOne();
         if(course == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The requested resource was not found.");
         }
@@ -52,5 +61,4 @@ public class CourseGetController extends Controller {
 
         return ResponseEntity.status(HttpStatus.OK).body(course);
     }
-
 }

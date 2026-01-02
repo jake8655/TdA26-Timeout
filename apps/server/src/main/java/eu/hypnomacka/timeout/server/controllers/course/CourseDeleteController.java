@@ -51,10 +51,12 @@ public class CourseDeleteController extends Controller {
         }*/
 
         if(course.delete()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(course);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(course);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of("status", "error", "message", "Failed to delete course")
+        );
     }
 
 }

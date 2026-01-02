@@ -32,10 +32,10 @@ public class FileAttachment extends Model {
     }
 
     @Id
-    private UUID id;
+    private UUID uuid;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "course_id", nullable = false)
+    @JoinColumn(name = "course_uuid", nullable = false)
     private Course course;
 
     @Column(nullable = false)
@@ -73,4 +73,5 @@ public class FileAttachment extends Model {
         this.mimeType = mimeType;
         this.fileUrl = fileUrl;
     }
+
 }

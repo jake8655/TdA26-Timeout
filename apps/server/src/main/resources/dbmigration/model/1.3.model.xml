@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <renameColumn oldName="id" newName="uuid" tableName="courses" />
+        <renameColumn oldName="lecturer_id" newName="lecturer_uuid" tableName="courses" />
+        <renameColumn oldName="id" newName="uuid" tableName="file_attachments" />
+        <renameColumn oldName="course_id" newName="course_uuid" tableName="file_attachments" />
+        <renameColumn oldName="id" newName="uuid" tableName="lecturers" />
+        <renameColumn oldName="id" newName="uuid" tableName="sessions" />
+        <renameColumn oldName="lecturer_id" newName="lecturer_uuid" tableName="sessions" />
+        <renameColumn oldName="id" newName="uuid" tableName="url_attachments" />
+        <renameColumn oldName="course_id" newName="course_uuid" tableName="url_attachments" />
+    </changeSet>
+</migration>

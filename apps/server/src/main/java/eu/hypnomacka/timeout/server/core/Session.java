@@ -17,14 +17,14 @@ import java.util.UUID;
 public class Session extends Model {
 
     @Id
-    private UUID id;
+    private UUID uuid;
 
     @DbDefault("")
     @Column(nullable = false)
     private String token;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "lecturer_id", nullable = false)
+    @JoinColumn(name = "lecturer_uuid", nullable = false)
     private Lecturer lecturer;
 
     @WhenCreated
@@ -44,4 +44,5 @@ public class Session extends Model {
         this.token = token;
         this.expiresAt = expiresAt;
     }
+
 }

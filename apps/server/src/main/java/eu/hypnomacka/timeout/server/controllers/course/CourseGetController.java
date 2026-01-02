@@ -19,7 +19,7 @@ public class CourseGetController extends Controller {
         return new QCourse().orderBy().updatedAt.desc().findList();
     }
 
-    @GetMapping(value = "/{UUID}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> byUUID(@PathVariable("UUID") String uuidStr, @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
         /*if (sessionId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(

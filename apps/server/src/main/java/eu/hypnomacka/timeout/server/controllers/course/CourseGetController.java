@@ -41,7 +41,16 @@ public class CourseGetController extends Controller {
             );
         }*/
 
-        Course course = new QCourse().uuid.eq(UUID.fromString(uuidStr)).findOne();
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(uuidStr);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("status", "bad", "message", "invalid UUID format")
+            );
+        }
+
+        Course course = new QCourse().uuid.eq(uuid).findOne();
         if(course == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The requested resource was not found.");
         }

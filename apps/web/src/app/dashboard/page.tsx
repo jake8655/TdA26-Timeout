@@ -26,7 +26,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/hooks/form";
-import { useAuthContext } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import {
 	addCourse,
 	deleteCourse,
@@ -174,7 +174,7 @@ function DeleteCourseDialog({
 export default function Dashboard() {
 	const router = useRouter();
 	const { courses } = useCoursesStore();
-	const { data } = useAuthContext();
+	const { data } = useAuth();
 
 	useEffect(() => {
 		if (!data) {

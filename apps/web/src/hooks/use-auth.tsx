@@ -8,7 +8,7 @@ export const authSchema = z.object({
 });
 export type AuthData = z.infer<typeof authSchema>;
 
-export function useAuth(): AuthContextType {
+export function useAuthQuery(): AuthContextType {
 	const { data, isPending } = useQuery({
 		queryKey: ["auth"],
 		queryFn: async () => {
@@ -54,16 +54,16 @@ type AuthContextType =
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-	const authData = useAuth();
+	const authData = useAuthQuery();
 
 	return (
 		<AuthContext.Provider value={authData}>{children}</AuthContext.Provider>
 	);
 }
 
-export function useAuthContext() {
+export function useAuth() {
 	const ctx = use(AuthContext);
-	if (!ctx) throw new Error("useAuthContext must be within AuthProvider");
+	if (!ctx) throw new Error("useAuth must be within AuthProvider");
 
 	return ctx;
 }

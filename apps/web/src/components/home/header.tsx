@@ -5,7 +5,7 @@ import { LayoutDashboard, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { logout, useAuthContext } from "@/hooks/use-auth";
+import { logout, useAuth } from "@/hooks/use-auth";
 import AboutLink from "../about-link";
 import { Button } from "../animate-ui/components/buttons/button";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -21,7 +21,7 @@ import {
 
 export default function Header() {
 	const router = useRouter();
-	const { data } = useAuthContext();
+	const { data } = useAuth();
 	const logoutMutation = useMutation({
 		mutationFn: async () => {
 			await logout();

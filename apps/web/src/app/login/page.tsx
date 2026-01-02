@@ -9,7 +9,7 @@ import { z } from "zod";
 import BackgroundGrid from "@/components/background-grid";
 import { env } from "@/env";
 import { useAppForm } from "@/hooks/form";
-import { useAuthContext } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 
 const loginSchema = z.object({
 	username: z.string().min(3, "Username must be at least 3 characters"),
@@ -19,7 +19,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
 	const router = useRouter();
-	const { data, isPending } = useAuthContext();
+	const { data, isPending } = useAuth();
 
 	const loginMutation = useMutation({
 		mutationFn: async (data: LoginFormData) => {

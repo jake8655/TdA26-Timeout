@@ -1,5 +1,7 @@
 package eu.hypnomacka.timeout.server.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
@@ -22,10 +24,12 @@ public class Lecturer extends Model {
     @Column(nullable = false)
     private String username;
 
+    @JsonIgnore
     @Column(name = "hashed_pass", nullable = false)
     private String hashedPass;
 
     @OneToMany(mappedBy = "lecturer", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Course> courses;
 
     @WhenCreated
@@ -34,11 +38,17 @@ public class Lecturer extends Model {
     @WhenModified
     private Instant updatedAt;
 
-    public Lecturer() {
-    }
+    public Lecturer() {}
 
     public Lecturer(String username, String hashedPass) {
         this.username = username;
         this.hashedPass = hashedPass;
     }
+
+    @Override
+    public void save() {
+        super.save();
+        setCreatedAt(Instant.now());
+    }
+
 }

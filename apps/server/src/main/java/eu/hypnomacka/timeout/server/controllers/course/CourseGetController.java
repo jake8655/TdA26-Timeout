@@ -1,5 +1,6 @@
 package eu.hypnomacka.timeout.server.controllers.course;
 
+import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import org.springframework.http.MediaType;
@@ -11,7 +12,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/courses")
-public class CourseGetController {
+public class CourseGetController extends Controller {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Course> root() {

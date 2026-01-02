@@ -1,5 +1,6 @@
 package eu.hypnomacka.timeout.server.core;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
@@ -22,6 +23,7 @@ public class Course extends Model {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "lecturer_id", nullable = false)
+    @JsonBackReference
     private Lecturer lecturer;
 
     @Column(nullable = false)
@@ -42,12 +44,18 @@ public class Course extends Model {
     @WhenModified
     private Instant updatedAt;
 
-    public Course() {
-    }
+    public Course() {}
 
     public Course(Lecturer lecturer, String name, String description) {
         this.lecturer = lecturer;
         this.name = name;
         this.description = description;
     }
+
+    @Override
+    public void save() {
+        super.save();
+        setCreatedAt(Instant.now());
+    }
+
 }

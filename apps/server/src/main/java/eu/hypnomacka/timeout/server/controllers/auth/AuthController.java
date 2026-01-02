@@ -1,5 +1,6 @@
 package eu.hypnomacka.timeout.server.controllers.auth;
 
+import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Lecturer;
 import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.query.QLecturer;
@@ -21,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/auth")
-public class AuthController {
+public class AuthController extends Controller {
 
     private static final String USERNAME = "lecturer";
     private static final String PASSWORD = "TdA26!";
@@ -131,16 +132,6 @@ public class AuthController {
         byte[] randomBytes = new byte[24];
         secureRandom.nextBytes(randomBytes);
         return base64Encoder.encodeToString(randomBytes);
-    }
-
-    public boolean isCookieValid(String sessionId, String username) {
-        Lecturer l = new QLecturer().username.eq(username).findOne();
-        Cookie cookie = new Cookie("SESSION_ID", sessionId);
-        if(cookie.getMaxAge() > 0 && l != null) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
 }

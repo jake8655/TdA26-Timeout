@@ -50,11 +50,4 @@ public class UrlAttachment extends Model {
         this.description = description;
         this.faviconUrl = faviconUrl;
     }
-
-    @Override
-    public void save() {
-        super.save();
-        setCreatedAt(Instant.now());
-    }
-
 }

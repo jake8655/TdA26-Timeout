@@ -16,7 +16,7 @@ public class CourseGetController extends Controller {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Course> root() {
-        return new QCourse().findList();
+        return new QCourse().orderBy().updatedAt.desc().findList();
     }
 
     @GetMapping(value = "/{UUID}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

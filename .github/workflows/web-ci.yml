@@ -43,6 +43,7 @@ jobs:
       - name: Format & Lint & Typecheck
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
+          bun openapi:generate
           bun check
           bun types
         working-directory: apps/web
@@ -74,4 +75,4 @@ jobs:
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: apps/web
-        run: bun run build
+        run: bun openapi:generate && bun run build

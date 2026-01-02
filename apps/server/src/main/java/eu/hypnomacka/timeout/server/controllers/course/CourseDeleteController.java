@@ -21,7 +21,7 @@ public class CourseDeleteController extends Controller {
 
     @DeleteMapping(value = "/{UUID}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> update(@PathVariable("UUID") String uuidStr, @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
-        if (sessionId == null) {
+        /*if (sessionId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "no session found")
             );
@@ -39,16 +39,16 @@ public class CourseDeleteController extends Controller {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "session not linked to an account")
             );
-        }
+        }*/
 
         Course course = new QCourse().id.eq(UUID.fromString(uuidStr)).findOne();
         if(course == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The requested resource was not found.");
         }
 
-        if (!lecturer.getId().equals(course.getLecturer().getId())) {
+        /*if (!lecturer.getId().equals(course.getLecturer().getId())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("not allowed to change course");
-        }
+        }*/
 
         if(course.delete()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(course);

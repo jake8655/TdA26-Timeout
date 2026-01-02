@@ -21,11 +21,11 @@ public class CoursePostController extends Controller {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@CookieValue(value = "SESSION_ID", required = false) String sessionId, @RequestBody Map<String, String> body) {
-        if (sessionId == null) {
+        /*if (sessionId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "no session found")
             );
-        }
+        }*/
 
         String name = body.get("name");
         String description = body.get("description");
@@ -42,14 +42,14 @@ public class CoursePostController extends Controller {
             );
         }
 
-        Session session = new QSession().token.eq(sessionId).findOne();
+        /*Session session = new QSession().token.eq(sessionId).findOne();
         if (session == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "session not found in database")
             );
         }
 
-        Lecturer lecturer = new QLecturer().id.eq(session.getLecturer().getId()).findOne();
+        Lecturer lecturer = new QLecturer().username.eq(session.getLecturer().getUsername()).findOne();*/
         if (lecturer == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "session not linked to an account")

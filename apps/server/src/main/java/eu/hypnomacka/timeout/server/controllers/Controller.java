@@ -6,6 +6,8 @@ import jakarta.servlet.http.Cookie;
 
 public class Controller {
 
+    public static Lecturer lecturer = new QLecturer().username.eq("lecturer").findOne();
+
     public boolean isCookieValid(String sessionId, String username) {
         Lecturer l = new QLecturer().username.eq(username).findOne();
         Cookie cookie = new Cookie("SESSION_ID", sessionId);

@@ -21,11 +21,11 @@ public class CoursePutController extends Controller {
 
     @PutMapping(value = "/{UUID}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> update(@PathVariable("UUID") String uuidStr, @CookieValue(value = "SESSION_ID", required = false) String sessionId, @RequestBody Map<String, String> body) {
-        if (sessionId == null) {
+        /*if (sessionId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "no session found")
             );
-        }
+        }*/
 
         String name = body.get("name");
         String description = body.get("description");
@@ -36,13 +36,7 @@ public class CoursePutController extends Controller {
             );
         }*/
 
-        if (name == null || description == null || name.isBlank() || description.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("status", "bad", "message", "invalid values")
-            );
-        }
-
-        Session session = new QSession().token.eq(sessionId).findOne();
+        /*Session session = new QSession().token.eq(sessionId).findOne();
         if (session == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "session not found in database")
@@ -54,20 +48,28 @@ public class CoursePutController extends Controller {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "session not linked to an account")
             );
-        }
+        }*/
 
         Course course = new QCourse().id.eq(UUID.fromString(uuidStr)).findOne();
         if(course == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("course not found");
         }
 
-        if (!lecturer.getId().equals(course.getLecturer().getId())) {
+        /*if (!lecturer.getId().equals(course.getLecturer().getId())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("not allowed to change course");
+        }*/
+
+        if(name != null && !name.isBlank()) {
+            course.setName(name);
         }
 
-        course.setName(name);
-        course.setDescription(description);
-        course.save();
+        if(description != null && !description.isBlank()) {
+            course.setDescription(description);
+        }
+
+        if (name != null && description != null && !name.isBlank() && !description.isBlank()) {
+            course.save();
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(course);
     }

@@ -20,7 +20,7 @@ import java.util.UUID;
 public class CourseDeleteController extends Controller {
 
     @DeleteMapping(value = "/{UUID}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> update(@PathVariable("UUID") String uuidStr, @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+    public ResponseEntity<?> delete(@PathVariable("UUID") String uuidStr, @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
         /*if (sessionId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "no session found")

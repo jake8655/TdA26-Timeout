@@ -4,39 +4,41 @@ import { useMutation } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import { z } from "zod";
 import BackgroundGrid from "@/components/background-grid";
+import { env } from "@/env";
 import { useAppForm } from "@/hooks/form";
-import { getIsLoggedIn, login, subscribe } from "@/lib/auth-store";
+import { useAuth } from "@/hooks/use-auth";
 
 const loginSchema = z.object({
 	username: z.string().min(3, "Username must be at least 3 characters"),
 	password: z.string().min(6, "Password must be at least 6 characters"),
 });
-
-function useAuthStore() {
-	const isLoggedIn = useSyncExternalStore(
-		subscribe,
-		getIsLoggedIn,
-		getIsLoggedIn,
-	);
-
-	return { isLoggedIn };
-}
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
 	const router = useRouter();
-	const { isLoggedIn } = useAuthStore();
+	const { data, isPending } = useAuth();
 
 	const loginMutation = useMutation({
-		mutationFn: async (data: { username: string; password: string }) => {
-			console.log("Login attempt:", data);
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			return data;
+		mutationFn: async (data: LoginFormData) => {
+			const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/auth/login`, {
+				headers: {
+					"Content-Type": "application/json",
+				},
+				credentials: "include",
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+
+			if (!res.ok) {
+				throw new Error("Login failed");
+			}
+
+			return { success: true };
 		},
-		onSuccess: (data) => {
-			login(data.username);
+		onSuccess: () => {
 			router.push("/dashboard");
 		},
 	});
@@ -55,14 +57,10 @@ export default function Login() {
 	});
 
 	useEffect(() => {
-		if (isLoggedIn) {
+		if (!isPending && data) {
 			router.push("/dashboard");
 		}
-	}, [isLoggedIn, router]);
-
-	if (isLoggedIn) {
-		return <div className="min-h-screen" />;
-	}
+	}, [data, isPending, router]);
 
 	return (
 		<section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-20">

@@ -7,6 +7,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { z } from "zod";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
+import LoadingPlaceholder from "@/components/loading-placeholder";
 import {
 	Card,
 	CardContent,
@@ -25,12 +26,11 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/hooks/form";
+import { useAuth } from "@/hooks/use-auth";
 import {
 	addCourse,
 	deleteCourse,
 	getCourses,
-	getCurrentUser,
-	getIsLoggedIn,
 	subscribe,
 	updateCourse,
 } from "@/lib/auth-store";
@@ -40,35 +40,10 @@ const courseSchema = z.object({
 	description: z.string().min(10, "Description must be at least 10 characters"),
 });
 
-function useAuthStore(): (
-	| { isLoggedIn: true; currentUser: { username: string } }
-	| { isLoggedIn: false; currentUser: null }
-) & {
-	courses: {
-		id: string;
-		name: string;
-		description: string;
-	}[];
-} {
-	const isLoggedIn = useSyncExternalStore(
-		subscribe,
-		getIsLoggedIn,
-		getIsLoggedIn,
-	);
-	const currentUser = useSyncExternalStore(
-		subscribe,
-		getCurrentUser,
-		getCurrentUser,
-	);
+function useCoursesStore() {
 	const courses = useSyncExternalStore(subscribe, getCourses, getCourses);
 
-	if (!isLoggedIn) {
-		return { isLoggedIn: false, currentUser: null, courses };
-	}
-
 	return {
-		isLoggedIn: true,
-		currentUser: currentUser as { username: string },
 		courses,
 	};
 }
@@ -198,16 +173,17 @@ function DeleteCourseDialog({
 
 export default function Dashboard() {
 	const router = useRouter();
-	const { isLoggedIn, currentUser, courses } = useAuthStore();
+	const { courses } = useCoursesStore();
+	const { data, isPending } = useAuth();
 
 	useEffect(() => {
-		if (!isLoggedIn) {
+		if (!data && !isPending) {
 			router.push("/login");
 		}
-	}, [isLoggedIn, router]);
+	}, [data, router, isPending]);
 
-	if (!isLoggedIn) {
-		return <div className="min-h-screen" />;
+	if (!data) {
+		return <LoadingPlaceholder />;
 	}
 
 	return (
@@ -224,7 +200,7 @@ export default function Dashboard() {
 					<h1 className="mb-2 font-bold text-3xl text-foreground sm:text-4xl">
 						Welcome back,{" "}
 						<span className="bg-linear-to-r from-primary to-accent-4 bg-clip-text text-transparent">
-							{currentUser.username}
+							{data.username}
 						</span>
 					</h1>
 					<p className="text-lg text-muted-foreground">

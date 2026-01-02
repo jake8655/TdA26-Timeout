@@ -1,32 +1,14 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { env } from "@/env";
 import { Button } from "../animate-ui/components/buttons/button";
 import BackgroundGrid from "../background-grid";
 
 export default function Hero() {
-	const { data, isLoading, error } = useQuery({
-		queryKey: ["heroData"],
-		queryFn: async () => {
-			const response = await fetch(env.NEXT_PUBLIC_API_BASE);
-			return response.json();
-		},
-	});
-
 	return (
 		<section className="relative flex min-h-screen items-center justify-center pt-20">
-			<pre className="absolute top-30 z-10">
-				{error
-					? JSON.stringify(error)
-					: isLoading
-						? "Loading..."
-						: JSON.stringify(data, null, 2)}
-			</pre>
-
 			<BackgroundGrid />
 
 			<div className="relative z-10 mx-auto max-w-7xl px-6 text-center">

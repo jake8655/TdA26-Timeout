@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation } from "@tanstack/react-query";
 import { LayoutDashboard, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,11 +22,14 @@ import {
 export default function Header() {
 	const router = useRouter();
 	const { data } = useAuthContext();
-
-	const handleLogout = () => {
-		logout();
-		router.push("/");
-	};
+	const logoutMutation = useMutation({
+		mutationFn: async () => {
+			await logout();
+		},
+		onSuccess: () => {
+			router.push("/");
+		},
+	});
 
 	return (
 		<header className="fixed top-0 right-0 left-0 z-50 border-white/5 border-b bg-background/80 backdrop-blur-md transition-all duration-300">
@@ -93,7 +97,7 @@ export default function Header() {
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem
-										onClick={handleLogout}
+										onClick={() => logoutMutation.mutate()}
 										variant="destructive"
 									>
 										<LogOut />

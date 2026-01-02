@@ -24,6 +24,10 @@ export default function Login() {
 	const loginMutation = useMutation({
 		mutationFn: async (data: LoginFormData) => {
 			const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/auth/login`, {
+				headers: {
+					"Content-Type": "application/json",
+				},
+				credentials: "include",
 				method: "POST",
 				body: JSON.stringify(data),
 			});

@@ -45,10 +45,4 @@ public class Lecturer extends Model {
         this.hashedPass = hashedPass;
     }
 
-    @Override
-    public void save() {
-        super.save();
-        setCreatedAt(Instant.now());
-    }
-
 }

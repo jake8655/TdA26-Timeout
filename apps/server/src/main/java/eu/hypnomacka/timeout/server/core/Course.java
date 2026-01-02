@@ -51,5 +51,4 @@ public class Course extends Model {
         this.name = name;
         this.description = description;
     }
-
 }

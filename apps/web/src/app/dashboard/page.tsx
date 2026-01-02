@@ -1,10 +1,18 @@
 "use client";
 
-import { Edit2, Plus, Trash2 } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Edit2, Loader2, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useSyncExternalStore } from "react";
-import { z } from "zod";
+import { useEffect, useState } from "react";
+import z from "zod";
+import {
+	deleteCoursesByCourseIdMutation,
+	getCoursesOptions,
+	postCoursesMutation,
+	putCoursesByCourseIdMutation,
+} from "@/api-client/@tanstack/react-query.gen";
+import type { CourseSummary } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import LoadingPlaceholder from "@/components/loading-placeholder";
@@ -27,26 +35,11 @@ import {
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/hooks/form";
 import { useAuth } from "@/hooks/use-auth";
-import {
-	addCourse,
-	deleteCourse,
-	getCourses,
-	subscribe,
-	updateCourse,
-} from "@/lib/auth-store";
 
-const courseSchema = z.object({
+const formSchema = z.object({
 	name: z.string().min(3, "Course name must be at least 3 characters"),
 	description: z.string().min(10, "Description must be at least 10 characters"),
 });
-
-function useCoursesStore() {
-	const courses = useSyncExternalStore(subscribe, getCourses, getCourses);
-
-	return {
-		courses,
-	};
-}
 
 function CourseFormDialog({
 	mode,
@@ -54,10 +47,16 @@ function CourseFormDialog({
 	trigger,
 }: {
 	mode: "add" | "edit";
-	course?: { id: string; name: string; description: string };
+	course?: CourseSummary;
 	trigger: React.ReactElement;
 }) {
 	const [open, setOpen] = useState(false);
+	const addCourseMutation = useMutation({
+		...postCoursesMutation(),
+	});
+	const updateCourseMutation = useMutation({
+		...putCoursesByCourseIdMutation(),
+	});
 
 	const form = useAppForm({
 		defaultValues: {
@@ -65,13 +64,24 @@ function CourseFormDialog({
 			description: course?.description ?? "",
 		},
 		validators: {
-			onChange: courseSchema,
+			onChange: formSchema,
 		},
 		onSubmit: async ({ value }) => {
 			if (mode === "add") {
-				addCourse(value.name, value.description);
+				await addCourseMutation.mutateAsync({
+					body: {
+						name: value.name,
+						description: value.description,
+					},
+				});
 			} else if (course) {
-				updateCourse(course.id, value.name, value.description);
+				await updateCourseMutation.mutateAsync({
+					path: { courseId: course.uuid },
+					body: {
+						name: value.name,
+						description: value.description,
+					},
+				});
 			}
 			form.reset();
 			setOpen(false);
@@ -138,9 +148,13 @@ function DeleteCourseDialog({
 	course,
 	trigger,
 }: {
-	course: { id: string; name: string };
+	course: CourseSummary;
 	trigger: React.ReactElement;
 }) {
+	const deleteCourseMutation = useMutation({
+		...deleteCoursesByCourseIdMutation(),
+	});
+
 	return (
 		<Dialog>
 			<DialogTrigger render={trigger} />
@@ -159,9 +173,20 @@ function DeleteCourseDialog({
 						render={
 							<Button
 								variant="destructive"
-								onClick={() => deleteCourse(course.id)}
+								disabled={deleteCourseMutation.isPending}
+								onClick={() =>
+									deleteCourseMutation.mutate({
+										// @ts-expect-error TdA is incompetent and I need to send all requests as json
+										body: {},
+										path: { courseId: course.uuid },
+									})
+								}
 							>
-								Delete
+								{deleteCourseMutation.isPending ? (
+									<Loader2 className="animate-spin text-muted-foreground" />
+								) : (
+									"Delete"
+								)}
 							</Button>
 						}
 					/>
@@ -173,14 +198,20 @@ function DeleteCourseDialog({
 
 export default function Dashboard() {
 	const router = useRouter();
-	const { courses } = useCoursesStore();
-	const { data, isPending } = useAuth();
+	const {
+		data: courses,
+		isPending,
+		isError,
+	} = useQuery({
+		...getCoursesOptions(),
+	});
+	const { data, isPending: authLoading } = useAuth();
 
 	useEffect(() => {
-		if (!data && !isPending) {
+		if (!data && !authLoading) {
 			router.push("/login");
 		}
-	}, [data, router, isPending]);
+	}, [data, router, authLoading]);
 
 	if (!data) {
 		return <LoadingPlaceholder />;
@@ -228,45 +259,59 @@ export default function Dashboard() {
 					/>
 				</motion.div>
 
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.5, delay: 0.2 }}
-					className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-				>
-					<AnimatePresence mode="popLayout">
-						{courses.map((course, index) => (
-							<CourseCard key={course.id} course={course} index={index} />
-						))}
-					</AnimatePresence>
-				</motion.div>
+				{isPending ? (
+					<Loader2 className="mx-auto size-16 animate-spin text-primary" />
+				) : isError ? (
+					<div className="text-destructive">Error loading courses.</div>
+				) : (
+					<>
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ duration: 0.5, delay: 0.2 }}
+							className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+						>
+							<AnimatePresence mode="popLayout">
+								{courses.map((course, index) => {
+									return (
+										<CourseCard
+											key={course.uuid}
+											course={course}
+											index={index}
+										/>
+									);
+								})}
+							</AnimatePresence>
+						</motion.div>
 
-				{courses.length === 0 && (
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, delay: 0.3 }}
-						className="mt-12 text-center"
-					>
-						<div className="mx-auto mb-4 flex size-20 items-center justify-center rounded-full bg-primary/10">
-							<Plus className="size-10 text-primary" />
-						</div>
-						<h3 className="mb-2 font-semibold text-foreground text-lg">
-							No courses yet
-						</h3>
-						<p className="mb-6 text-muted-foreground">
-							Create your first course to get started.
-						</p>
-						<CourseFormDialog
-							mode="add"
-							trigger={
-								<Button variant="accent" className="gap-2">
-									<Plus className="size-4" />
-									Create Your First Course
-								</Button>
-							}
-						/>
-					</motion.div>
+						{courses.length === 0 && (
+							<motion.div
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ duration: 0.5, delay: 0.3 }}
+								className="mt-12 text-center"
+							>
+								<div className="mx-auto mb-4 flex size-20 items-center justify-center rounded-full bg-primary/10">
+									<Plus className="size-10 text-primary" />
+								</div>
+								<h3 className="mb-2 font-semibold text-foreground text-lg">
+									No courses yet
+								</h3>
+								<p className="mb-6 text-muted-foreground">
+									Create your first course to get started.
+								</p>
+								<CourseFormDialog
+									mode="add"
+									trigger={
+										<Button variant="accent" className="gap-2">
+											<Plus className="size-4" />
+											Create Your First Course
+										</Button>
+									}
+								/>
+							</motion.div>
+						)}
+					</>
 				)}
 			</div>
 		</section>
@@ -277,12 +322,11 @@ function CourseCard({
 	course,
 	index,
 }: {
-	course: { id: string; name: string; description: string };
+	course: CourseSummary;
 	index: number;
 }) {
 	return (
 		<motion.div
-			key={course.id}
 			layout
 			initial={{ opacity: 0, scale: 0.9 }}
 			animate={{ opacity: 1, scale: 1 }}

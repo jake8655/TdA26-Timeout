@@ -2,11 +2,7 @@ package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
-import eu.hypnomacka.timeout.server.core.Lecturer;
-import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
-import eu.hypnomacka.timeout.server.core.query.QLecturer;
-import eu.hypnomacka.timeout.server.core.query.QSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -67,5 +63,4 @@ public class CourseDeleteController extends Controller {
                 Map.of("status", "error", "message", "Failed to delete course")
         );
     }
-
 }

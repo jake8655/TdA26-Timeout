@@ -44,5 +44,4 @@ public class Session extends Model {
         this.token = token;
         this.expiresAt = expiresAt;
     }
-
 }

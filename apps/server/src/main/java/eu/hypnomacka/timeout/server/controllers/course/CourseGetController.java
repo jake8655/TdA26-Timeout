@@ -61,5 +61,4 @@ public class CourseGetController extends Controller {
 
         return ResponseEntity.status(HttpStatus.OK).body(course);
     }
-
 }

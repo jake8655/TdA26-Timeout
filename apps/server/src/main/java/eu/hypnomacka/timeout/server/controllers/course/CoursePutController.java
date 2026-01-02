@@ -78,7 +78,7 @@ public class CoursePutController extends Controller {
             course.setDescription(description);
         }
 
-        if (name != null && description != null && !name.isBlank() && !description.isBlank()) {
+        if ((name != null && !name.isBlank()) || (description != null && !description.isBlank())) {
             course.save();
         }
 

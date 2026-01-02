@@ -54,7 +54,7 @@ public class CourseDeleteController extends Controller {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(course);
         }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(course);
+        return ResponseEntity.status(HttpStatus.OK).body(course);
     }
 
 }

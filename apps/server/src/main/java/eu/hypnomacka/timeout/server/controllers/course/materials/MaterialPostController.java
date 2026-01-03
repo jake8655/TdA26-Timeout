@@ -80,4 +80,3 @@ public class MaterialPostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
     }
 }
-

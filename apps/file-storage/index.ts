@@ -1,22 +1,25 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, unlink, realpath } from "node:fs/promises";
+import { mkdir, realpath, unlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 const UPLOADS_DIR = "./uploads";
 const API_KEY = process.env.API_KEY;
 const MAX_FILE_SIZE = 30 * 1024 * 1024;
 
-const ALLOWED_EXTENSIONS = new Set([
-	".pdf",
-	".docx",
-	".txt",
-	".png",
-	".jpg",
-	".jpeg",
-	".gif",
-	".mp4",
-	".mp3",
-]);
+const MIME_TYPES: Record<string, string> = {
+	".pdf": "application/pdf",
+	".docx":
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+	".txt": "text/plain",
+	".png": "image/png",
+	".jpg": "image/jpeg",
+	".jpeg": "image/jpeg",
+	".gif": "image/gif",
+	".mp4": "video/mp4",
+	".mp3": "audio/mpeg",
+};
+
+const ALLOWED_EXTENSIONS = new Set(Object.keys(MIME_TYPES));
 
 if (!API_KEY) {
 	console.error("API_KEY environment variable is required");
@@ -54,7 +57,12 @@ async function serveFile(filename: string): Promise<Response> {
 		return new Response("File not found", { status: 404 });
 	}
 
-	return new Response(file);
+	const ext = getExtension(filename);
+	const contentType = MIME_TYPES[ext] || "application/octet-stream";
+
+	return new Response(file, {
+		headers: { "Content-Type": contentType },
+	});
 }
 
 const server = Bun.serve({

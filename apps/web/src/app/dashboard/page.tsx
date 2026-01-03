@@ -272,15 +272,9 @@ export default function Dashboard() {
 							className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
 						>
 							<AnimatePresence mode="popLayout">
-								{courses.map((course, index) => {
-									return (
-										<CourseCard
-											key={course.uuid}
-											course={course}
-											index={index}
-										/>
-									);
-								})}
+								{courses.map((course, index) => (
+									<CourseCard key={course.uuid} course={course} index={index} />
+								))}
 							</AnimatePresence>
 						</motion.div>
 

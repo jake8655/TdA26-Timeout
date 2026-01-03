@@ -13,6 +13,7 @@ containers:
       DBUSERNAME: "timeoutuser"
       DBPASSWORD: "AVNS_DdTz7KCbueSBHps1OJ6"
       DBURL: "jdbc:mysql://timeout-timeout.e.aivencloud.com:20733/timeoutdb?ssl-mode=REQUIRED"
+      CDN_API_KEY: "gOS1ncPt09q++cSyyOAdGIuR5qeKEqvWkcj9uX4ygNM="
   - name: caddy
     image: registry.tourde.cloud/timeout/caddy
     port: 80

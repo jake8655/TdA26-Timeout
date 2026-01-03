@@ -3,7 +3,6 @@ package eu.hypnomacka.timeout.server.controllers.course.materials;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
@@ -24,8 +23,15 @@ import java.util.UUID;
 public class MaterialPostController {
 
     private static final String URL = "http://100.99.1.121:8888/upload";
-    private static final String API_KEY = Dotenv.load().get("API_KEY");
     private final WebClient webClient = WebClient.builder().build();
+
+    private String getApiKey() {
+        String key = System.getenv("API_KEY");
+        if (key == null || key.isEmpty()) {
+            key = System.getProperty("API_KEY");
+        }
+        return key;
+    }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadMaterial(@PathVariable String courseId, @RequestPart("file") MultipartFile file, @RequestPart("type") String type, @RequestPart("name") String name, @RequestPart("description") String description) throws Exception {
@@ -42,7 +48,7 @@ public class MaterialPostController {
         try {
              response = webClient.post()
                 .uri(URL)
-                .header("Authorization", "Bearer " + API_KEY)
+                .header("Authorization", "Bearer " + getApiKey())
                 .header("Xfilename", file.getOriginalFilename())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(builder.build()))
@@ -74,4 +80,3 @@ public class MaterialPostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
     }
 }
-

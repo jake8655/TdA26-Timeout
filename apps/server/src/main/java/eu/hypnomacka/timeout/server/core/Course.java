@@ -1,6 +1,7 @@
 package eu.hypnomacka.timeout.server.core;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
@@ -33,9 +34,11 @@ public class Course extends Model {
     private String description;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<FileAttachment> fileAttachments = new ArrayList<>();
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<UrlAttachment> urlAttachments = new ArrayList<>();
 
     @WhenCreated

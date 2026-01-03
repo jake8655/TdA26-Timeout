@@ -36,9 +36,9 @@ public class CoursePostController extends Controller {
             );
         }*/
 
-        if (name == null || description == null || name.isBlank() || description.isBlank()) {
+        if (name == null || name.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("status", "bad", "message", "invalid values")
+                Map.of("status", "bad", "message", "invalid name")
             );
         }
 

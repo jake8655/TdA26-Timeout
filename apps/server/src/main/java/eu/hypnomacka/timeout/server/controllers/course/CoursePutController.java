@@ -74,13 +74,8 @@ public class CoursePutController extends Controller {
             course.setName(name);
         }
 
-        if(description != null && !description.isBlank()) {
-            course.setDescription(description);
-        }
-
-        if ((name != null && !name.isBlank()) || (description != null && !description.isBlank())) {
-            course.save();
-        }
+        course.setDescription(description);
+        course.save();
 
         return ResponseEntity.status(HttpStatus.OK).body(course);
     }

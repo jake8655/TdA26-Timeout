@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 
 const UPLOADS_DIR = "./uploads";
 const API_KEY = process.env.API_KEY;
+const MAX_FILE_SIZE = 30 * 1024 * 1024;
 
 const ALLOWED_EXTENSIONS = new Set([
   ".pdf", ".docx", ".txt",
@@ -103,6 +104,10 @@ const server = Bun.serve({
         
         if (!isAllowedFile(originalFilename)) {
           return new Response(`File type not allowed. Allowed: ${[...ALLOWED_EXTENSIONS].join(", ")}`, { status: 400 });
+        }
+        
+        if (data.byteLength > MAX_FILE_SIZE) {
+          return new Response(`File too large. Maximum size is 30MB`, { status: 413 });
         }
         
         const uniqueFilename = generateUniqueFilename(originalFilename);

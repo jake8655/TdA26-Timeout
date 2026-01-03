@@ -17,13 +17,13 @@ export default function CourseDetailPage({
 	params: Promise<{ uuid: string }>;
 }) {
 	const { uuid } = use(params);
-	const { data, isPending } = useQuery({
+	const { data, isPending, isError } = useQuery({
 		...getCoursesByCourseIdOptions({
 			path: { courseId: uuid },
 		}),
 	});
 
-	if (!data && !isPending) {
+	if (!isPending && !isError && !data) {
 		notFound();
 	}
 
@@ -58,6 +58,15 @@ export default function CourseDetailPage({
 						className="flex justify-center"
 					>
 						<Loader2 className="size-16 animate-spin text-primary" />
+					</motion.div>
+				) : isError ? (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.5 }}
+						className="text-center text-muted-foreground"
+					>
+						<p>Failed to load course details. Please try again later.</p>
 					</motion.div>
 				) : (
 					<motion.div

@@ -12,7 +12,7 @@ import { SearchInput } from "@/components/courses/search-input";
 
 export default function CoursesPage() {
 	const [searchQuery, setSearchQuery] = useState("");
-	const { data, isPending } = useQuery({
+	const { data, isPending, isError } = useQuery({
 		...getCoursesOptions(),
 	});
 
@@ -60,6 +60,17 @@ export default function CoursesPage() {
 						className="text-center text-muted-foreground"
 					>
 						<Loader2 className="mx-auto size-16 animate-spin text-primary" />
+					</motion.div>
+				) : isError ? (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.5 }}
+						className="text-center text-muted-foreground"
+					>
+						<p className="text-lg">
+							Failed to load courses. Please try again later.
+						</p>
 					</motion.div>
 				) : filteredCourses.length > 0 ? (
 					<motion.div

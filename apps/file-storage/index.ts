@@ -62,7 +62,7 @@ function isAllowedFile(filename: string): boolean {
 let fileRoutes = await buildFileRoutes();
 
 const server = Bun.serve({
-  port: process.env.PORT || 3000,
+  port: process.env.PORT ?? 3000,
   
   async fetch(req) {
     const url = new URL(req.url);

@@ -1,5 +1,6 @@
 package eu.hypnomacka.timeout.server.core;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
@@ -20,6 +21,7 @@ public class UrlAttachment extends Model {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "course_uuid", nullable = false)
+    @JsonBackReference
     private Course course;
 
     @Column(nullable = false)

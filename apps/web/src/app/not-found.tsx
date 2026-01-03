@@ -3,10 +3,13 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 
 export default function NotFound() {
+	const router = useRouter();
+
 	return (
 		<div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background font-sans">
 			<BackgroundGrid />
@@ -53,11 +56,14 @@ export default function NotFound() {
 							Go Home
 						</Button>
 					</Link>
-					<Link href="/courses">
-						<Button variant="outline" size="lg" className="min-w-40">
-							Browse Courses
-						</Button>
-					</Link>
+					<Button
+						variant="outline"
+						size="lg"
+						className="min-w-40"
+						onClick={() => router.back()}
+					>
+						Go back
+					</Button>
 				</div>
 			</div>
 

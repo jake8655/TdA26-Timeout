@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, unlink } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, unlink, realpath } from "node:fs/promises";
+import { join, resolve } from "node:path";
 
 const UPLOADS_DIR = "./uploads";
 const API_KEY = process.env.API_KEY;
@@ -150,14 +150,16 @@ const server = Bun.serve({
 			}
 
 			const filePath = join(UPLOADS_DIR, filename);
-			const file = Bun.file(filePath);
-
-			if (!(await file.exists())) {
-				return new Response("File not found", { status: 404 });
-			}
+			const uploadsRealPath = await realpath(resolve(UPLOADS_DIR));
 
 			try {
-				await unlink(filePath);
+				const fileRealPath = await realpath(filePath);
+
+				if (!fileRealPath.startsWith(uploadsRealPath + "/")) {
+					return new Response("Invalid path", { status: 400 });
+				}
+
+				await unlink(fileRealPath);
 
 				return new Response(
 					JSON.stringify({

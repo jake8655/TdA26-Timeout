@@ -25,7 +25,11 @@ export function SearchInput({
 			transition={{ duration: 0.4, delay: 0.2 }}
 			className={cn("relative", className)}
 		>
-			<Search className="-translate-y-1/2 absolute top-1/2 left-3 size-4 text-muted-foreground" />
+			<Search
+				className="-translate-y-1/2 absolute top-1/2 left-3 size-4 text-muted-foreground"
+				aria-hidden="true"
+				focusable={false}
+			/>
 			<Input
 				type="text"
 				value={value}

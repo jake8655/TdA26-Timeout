@@ -1,0 +1,140 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { use } from "react";
+import { getCoursesByCourseIdOptions } from "@/api-client/@tanstack/react-query.gen";
+import { Button } from "@/components/animate-ui/components/buttons/button";
+import BackgroundGrid from "@/components/background-grid";
+
+export default function CourseDetailPage({
+	params,
+}: {
+	params: Promise<{ uuid: string }>;
+}) {
+	const { uuid } = use(params);
+	const { data, isPending } = useQuery({
+		...getCoursesByCourseIdOptions({
+			path: { courseId: uuid },
+		}),
+	});
+
+	if (!data && !isPending) {
+		notFound();
+	}
+
+	return (
+		<div className="relative min-h-screen overflow-hidden">
+			<BackgroundGrid />
+
+			<main className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-24">
+				<motion.div
+					initial={{ opacity: 0, x: -20 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ duration: 0.4 }}
+					className="mb-8"
+				>
+					<Link href="/courses">
+						<Button
+							variant="ghost"
+							size="sm"
+							className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
+						>
+							<ArrowLeft />
+							Back to Courses
+						</Button>
+					</Link>
+				</motion.div>
+
+				{isPending ? (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.5 }}
+						className="flex justify-center"
+					>
+						<Loader2 className="size-16 animate-spin text-primary" />
+					</motion.div>
+				) : (
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.5, delay: 0.1 }}
+						className="border border-white/5 bg-card/40 p-8 backdrop-blur-sm md:p-12"
+					>
+						<div className="mb-8 flex items-center gap-6">
+							<motion.div
+								initial={{ opacity: 0, scale: 0.8 }}
+								animate={{ opacity: 1, scale: 1 }}
+								transition={{ duration: 0.4, delay: 0.2 }}
+								className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10 md:size-20"
+							>
+								<Image
+									src="/icons/Idea/zarivka_idea_blue.svg"
+									alt="Course icon"
+									width={40}
+									height={40}
+									className="size-10 md:size-12"
+								/>
+							</motion.div>
+
+							<motion.h1
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ duration: 0.4, delay: 0.3 }}
+								className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl"
+							>
+								{data.name}
+							</motion.h1>
+						</div>
+
+						<motion.div
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.5 }}
+							className="border-white/5 border-t pt-8"
+						>
+							<h2 className="mb-4 font-semibold text-foreground text-lg">
+								About this course
+							</h2>
+							<p className="text-muted-foreground leading-relaxed">
+								{data.description ?? (
+									<span className="italic">No description available</span>
+								)}
+							</p>
+						</motion.div>
+
+						<motion.div
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.6 }}
+							className="mt-8 border border-white/5 bg-card/30 p-6"
+						>
+							<div className="flex items-center gap-3">
+								<Image
+									src="/icons/Thinking/zarivka_thinking_blue.svg"
+									alt="Coming soon"
+									width={32}
+									height={32}
+									className="size-8 opacity-60"
+								/>
+								<div>
+									<h3 className="font-medium text-foreground text-sm">
+										Course content coming soon
+									</h3>
+									<p className="text-muted-foreground text-xs">
+										Materials, live events, and quizzes will be available here.
+									</p>
+								</div>
+							</div>
+						</motion.div>
+					</motion.div>
+				)}
+			</main>
+		</div>
+	);
+}

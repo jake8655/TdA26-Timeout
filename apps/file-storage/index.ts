@@ -1,4 +1,4 @@
-import { readdir, mkdir, unlink } from "node:fs/promises";
+import { mkdir, unlink } from "node:fs/promises";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 
@@ -18,26 +18,6 @@ if (!API_KEY) {
 }
 
 await mkdir(UPLOADS_DIR, { recursive: true });
-
-async function buildFileRoutes(): Promise<Record<string, (req: Request) => Promise<Response>>> {
-  const routes: Record<string, (req: Request) => Promise<Response>> = {};
-  
-  try {
-    const files = await readdir(UPLOADS_DIR);
-    for (const filename of files) {
-      const filePath = join(UPLOADS_DIR, filename);
-      routes[`/${filename}`] = async () => {
-        const file = Bun.file(filePath);
-        if (!(await file.exists())) {
-          return new Response("File not found", { status: 404 });
-        }
-        return new Response(file);
-      };
-    }
-  } catch {}
-  
-  return routes;
-}
 
 function getExtension(filename: string): string {
   const lastDot = filename.lastIndexOf(".");
@@ -60,7 +40,16 @@ function isAllowedFile(filename: string): boolean {
   return ALLOWED_EXTENSIONS.has(getExtension(filename));
 }
 
-let fileRoutes = await buildFileRoutes();
+async function serveFile(filename: string): Promise<Response> {
+  const filePath = join(UPLOADS_DIR, filename);
+  const file = Bun.file(filePath);
+  
+  if (!(await file.exists())) {
+    return new Response("File not found", { status: 404 });
+  }
+  
+  return new Response(file);
+}
 
 const server = Bun.serve({
   port: process.env.PORT ?? 3000,
@@ -114,8 +103,6 @@ const server = Bun.serve({
         const filePath = join(UPLOADS_DIR, uniqueFilename);
         await Bun.write(filePath, data);
         
-        fileRoutes = await buildFileRoutes();
-        
         return new Response(JSON.stringify({ 
           success: true, 
           filename: uniqueFilename,
@@ -153,7 +140,6 @@ const server = Bun.serve({
       
       try {
         await unlink(filePath);
-        fileRoutes = await buildFileRoutes();
         
         return new Response(JSON.stringify({ 
           success: true, 
@@ -168,9 +154,9 @@ const server = Bun.serve({
       }
     }
     
-    const fileHandler = fileRoutes[path];
-    if (fileHandler) {
-      return fileHandler(req);
+    if (path.length > 1) {
+      const filename = path.slice(1);
+      return serveFile(filename);
     }
     
     return new Response("Not found", { status: 404 });

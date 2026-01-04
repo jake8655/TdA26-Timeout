@@ -364,7 +364,9 @@ function CourseCard({
 				</CardHeader>
 				<CardContent>
 					<CardDescription className="text-muted-foreground text-sm leading-relaxed">
-						{course.description}
+						{course.description || (
+							<span className="italic">No description available</span>
+						)}
 					</CardDescription>
 				</CardContent>
 			</Card>

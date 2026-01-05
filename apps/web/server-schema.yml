@@ -454,7 +454,7 @@ components:
         - $ref: '#/components/schemas/FileMaterial'
         - $ref: '#/components/schemas/UrlMaterial'
       discriminator:
-        propertyName: type
+        propertyName: materialType
 
     FileMaterial:
       type: object

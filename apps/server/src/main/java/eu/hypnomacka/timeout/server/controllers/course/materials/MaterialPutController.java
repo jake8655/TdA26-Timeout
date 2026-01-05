@@ -102,7 +102,7 @@ public class MaterialPutController extends Controller {
                 );
             }
 
-            attachment.setFileUrl(response.get("url").toString());
+            attachment.setFileUrl(cdn + response.get("url").toString());
             attachment.setSizeBytes(file.getSize());
             attachment.setMimeType(file.getContentType());
         }

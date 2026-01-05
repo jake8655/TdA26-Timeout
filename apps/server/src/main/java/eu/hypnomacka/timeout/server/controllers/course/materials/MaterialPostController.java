@@ -69,12 +69,12 @@ public class MaterialPostController extends Controller {
             );
         }
 
-        String fileUrl = response.get("url").toString();
+        String fileUrl = cdn + response.get("url").toString();
         long sizeBytes = file.getSize();
         String mimeType = file.getContentType();
 
         Course course = new QCourse().uuid.eq(UUID.fromString(courseId)).findOne();
-        FileAttachment attachment = new FileAttachment(course, name, description, FileAttachment.Type.FILE, sizeBytes, mimeType, fileUrl);
+        FileAttachment attachment = new FileAttachment(course, name, description, FileAttachment.Type.file, sizeBytes, mimeType, fileUrl);
         attachment.save();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(attachment);

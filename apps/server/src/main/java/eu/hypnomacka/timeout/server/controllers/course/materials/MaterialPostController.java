@@ -1,5 +1,6 @@
 package eu.hypnomacka.timeout.server.controllers.course.materials;
 
+import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
@@ -20,9 +21,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/courses/{courseId}/materials")
-public class MaterialPostController {
+public class MaterialPostController extends Controller {
 
-    private static final String URL = "http://100.99.1.121:8888/upload";
+    private static final String URL = cdn + "/upload";
     private final WebClient webClient = WebClient.builder().build();
 
     private String getApiKey() {
@@ -62,19 +63,18 @@ public class MaterialPostController {
             );
         }
 
-        System.out.println(response);
         if(!Boolean.parseBoolean(response.get("success").toString())) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 Map. of("status", "bad", "message", "cdn server error")
             );
         }
 
-        String fileUrl = response.get("url").toString();
+        String fileUrl = cdn + response.get("url").toString();
         long sizeBytes = file.getSize();
         String mimeType = file.getContentType();
 
         Course course = new QCourse().uuid.eq(UUID.fromString(courseId)).findOne();
-        FileAttachment attachment = new FileAttachment(course, name, description, FileAttachment.Type.FILE, sizeBytes, mimeType, fileUrl);
+        FileAttachment attachment = new FileAttachment(course, name, description, FileAttachment.Type.file, sizeBytes, mimeType, fileUrl);
         attachment.save();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(attachment);

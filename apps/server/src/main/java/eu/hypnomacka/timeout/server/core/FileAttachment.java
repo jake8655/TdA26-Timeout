@@ -18,7 +18,7 @@ import java.util.UUID;
 public class FileAttachment extends Model {
 
     public enum Type {
-        FILE("file");
+        file("file");
 
         private final String dbValue;
 

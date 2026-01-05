@@ -43,23 +43,4 @@ public class MaterialGetController extends Controller {
 
         return ResponseEntity. ok(materials);
     }
-
-    /*
-    @PostMapping(consumes = MediaType. MULTIPART_FORM_DATA_VALUE, produces = MediaType. APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addFileMaterial(
-            @PathVariable("courseId") String courseIdStr,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("name") String name) {
-
-        return ResponseEntity.status(HttpStatus.CREATED).body();
-    }
-
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addUrlMaterial(
-            @PathVariable("courseId") String courseIdStr,
-            @RequestBody UrlMaterialCreateRequest request) {
-
-        return ResponseEntity.status(HttpStatus.CREATED).body();
-    }
-    */
 }

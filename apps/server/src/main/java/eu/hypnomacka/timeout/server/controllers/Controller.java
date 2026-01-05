@@ -8,6 +8,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class Controller {
+
+    public static String cdn = "http://100.99.1.121:8888";
+
     public static Lecturer lecturer = new QLecturer().username.eq("lecturer").findOne();
 
     public boolean isCookieValid(String sessionId, String username) {

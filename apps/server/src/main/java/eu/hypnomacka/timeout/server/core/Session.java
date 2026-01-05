@@ -11,6 +11,8 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.UUID;
 
+import   eu.hypnomacka.timeout.server.core.*;
+
 @Getter @Setter
 @Entity
 @Table(name = "sessions")

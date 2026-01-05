@@ -1,8 +1,9 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Edit2, Loader2, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, Edit2, Loader2, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import z from "zod";
@@ -20,6 +21,7 @@ import {
 	Card,
 	CardContent,
 	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
@@ -369,6 +371,15 @@ function CourseCard({
 						)}
 					</CardDescription>
 				</CardContent>
+				<CardFooter className="p-0">
+					<Link
+						href={`/dashboard/courses/${course.uuid}`}
+						className="flex w-full items-center justify-between px-4 py-3 text-muted-foreground text-sm transition-colors hover:bg-primary/5 hover:text-primary"
+					>
+						Manage Materials
+						<ChevronRight className="size-4" />
+					</Link>
+				</CardFooter>
 			</Card>
 		</motion.div>
 	);

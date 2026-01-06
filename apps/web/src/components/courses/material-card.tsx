@@ -23,14 +23,11 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 
 	if (material.type === "url") {
 		return (
-			<motion.a
-				href={material.url}
-				target="_blank"
-				rel="noopener noreferrer"
+			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.4, delay: index * 0.05 }}
-				className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:bg-card/60 hover:shadow-lg"
+				className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-primary/30"
 			>
 				<div className="relative flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
 					{material.faviconUrl ? (
@@ -48,7 +45,7 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 				</div>
 
 				<div className="flex-1 overflow-hidden">
-					<h3 className="font-semibold text-foreground text-sm transition-colors group-hover:text-primary">
+					<h3 className="font-semibold text-foreground text-sm">
 						{material.name}
 					</h3>
 					{material.description && (
@@ -62,14 +59,18 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 					</div>
 				</div>
 
-				<motion.div
-					initial={{ opacity: 0, x: -10 }}
-					whileHover={{ scale: 1.1 }}
-					className="opacity-0 transition-opacity group-hover:opacity-100"
+				<Button
+					variant="outline"
+					size="sm"
+					className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+					asChild
 				>
-					<ExternalLink className="size-5 text-primary" />
-				</motion.div>
-			</motion.a>
+					<a href={material.url} target="_blank" rel="noopener noreferrer">
+						<ExternalLink className="size-3.5" />
+						<span className="hidden sm:inline">Visit Site</span>
+					</a>
+				</Button>
+			</motion.div>
 		);
 	}
 
@@ -78,7 +79,7 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.4, delay: index * 0.05 }}
-			className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:bg-card/60"
+			className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-primary/30"
 		>
 			<div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
 				<Icon className="size-6 text-primary" />
@@ -108,12 +109,12 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 				variant="outline"
 				size="sm"
 				className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
-				onClick={() => {
-					window.open(material.fileUrl, "_blank");
-				}}
+				asChild
 			>
-				<Download className="size-3.5" />
-				<span className="hidden sm:inline">Download</span>
+				<a href={material.fileUrl} target="_blank" rel="noopener noreferrer">
+					<Download className="size-3.5" />
+					<span className="hidden sm:inline">Download</span>
+				</a>
 			</Button>
 		</motion.div>
 	);

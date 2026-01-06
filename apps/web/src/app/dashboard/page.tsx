@@ -153,12 +153,17 @@ function DeleteCourseDialog({
 	course: CourseSummary;
 	trigger: React.ReactElement;
 }) {
+	const [open, setOpen] = useState(false);
+
 	const deleteCourseMutation = useMutation({
 		...deleteCoursesByCourseIdMutation(),
+		onSuccess: () => {
+			setOpen(false);
+		},
 	});
 
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger render={trigger} />
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
@@ -171,27 +176,23 @@ function DeleteCourseDialog({
 				</DialogHeader>
 				<DialogFooter>
 					<DialogClose render={<Button variant="outline">Cancel</Button>} />
-					<DialogClose
-						render={
-							<Button
-								variant="destructive"
-								disabled={deleteCourseMutation.isPending}
-								onClick={() =>
-									deleteCourseMutation.mutate({
-										// @ts-expect-error TdA is incompetent and I need to send all requests as json
-										body: {},
-										path: { courseId: course.uuid },
-									})
-								}
-							>
-								{deleteCourseMutation.isPending ? (
-									<Loader2 className="animate-spin text-muted-foreground" />
-								) : (
-									"Delete"
-								)}
-							</Button>
+					<Button
+						variant="destructive"
+						disabled={deleteCourseMutation.isPending}
+						onClick={() =>
+							deleteCourseMutation.mutate({
+								// @ts-expect-error TdA is incompetent and I need to send all requests as json
+								body: {},
+								path: { courseId: course.uuid },
+							})
 						}
-					/>
+					>
+						{deleteCourseMutation.isPending ? (
+							<Loader2 className="animate-spin text-muted-foreground" />
+						) : (
+							"Delete"
+						)}
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

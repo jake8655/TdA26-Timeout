@@ -2,6 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { deleteCoursesByCourseIdMaterialsByMaterialIdMutation } from "@/api-client/@tanstack/react-query.gen";
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
@@ -29,12 +30,17 @@ export function DeleteMaterialDialog({
 	material,
 	trigger,
 }: DeleteMaterialDialogProps) {
+	const [open, setOpen] = useState(false);
+
 	const deleteMutation = useMutation({
 		...deleteCoursesByCourseIdMaterialsByMaterialIdMutation(),
+		onSuccess: () => {
+			setOpen(false);
+		},
 	});
 
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger render={trigger} />
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
@@ -47,27 +53,23 @@ export function DeleteMaterialDialog({
 				</DialogHeader>
 				<DialogFooter>
 					<DialogClose render={<Button variant="outline">Cancel</Button>} />
-					<DialogClose
-						render={
-							<Button
-								variant="destructive"
-								disabled={deleteMutation.isPending}
-								onClick={() =>
-									deleteMutation.mutate({
-										// @ts-expect-error TdA requires json body even for DELETE
-										body: {},
-										path: { courseId, materialId: material.uuid },
-									})
-								}
-							>
-								{deleteMutation.isPending ? (
-									<Loader2 className="animate-spin text-muted-foreground" />
-								) : (
-									"Delete"
-								)}
-							</Button>
+					<Button
+						variant="destructive"
+						disabled={deleteMutation.isPending}
+						onClick={() =>
+							deleteMutation.mutate({
+								// @ts-expect-error TdA requires json body even for DELETE
+								body: {},
+								path: { courseId, materialId: material.uuid },
+							})
 						}
-					/>
+					>
+						{deleteMutation.isPending ? (
+							<Loader2 className="animate-spin text-muted-foreground" />
+						) : (
+							"Delete"
+						)}
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

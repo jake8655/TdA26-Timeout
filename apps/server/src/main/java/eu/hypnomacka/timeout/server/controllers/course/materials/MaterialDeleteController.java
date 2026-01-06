@@ -85,30 +85,8 @@ public class MaterialDeleteController extends Controller {
         }
 
         if(urlFile != null) {
-            String url = urlFile.getUrl();
-            String[] parts = url.split("/");
-            String fileName = parts[parts.length - 1];
-            try {
-                response = webClient.delete()
-                    .uri(URL + "/" + fileName)
-                    .header("Authorization", "Bearer " + getApiKey())
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .block();
-            } catch (WebClientResponseException e) {
-                System.err.println("Error: " + e.getRawStatusCode() + " - " + e.getResponseBodyAsString());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map.of("status", "error", "message", "Failed to delete file from CDN server")
-                );
-            }
-
-            if(response == null || !Boolean.parseBoolean(response.get("success").toString())) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map. of("status", "bad", "message", "cdn server error")
-                );
-            } else {
-                if(urlFile.delete()) {
-                    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
+            if(urlFile.delete()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
                         Map.of("status", "success", "message", "Material deleted successfully")
                     );
                 } else {
@@ -116,7 +94,6 @@ public class MaterialDeleteController extends Controller {
                             Map.of("status", "bad", "message", "Failed to delete from database")
                     );
                 }
-            }
         }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(

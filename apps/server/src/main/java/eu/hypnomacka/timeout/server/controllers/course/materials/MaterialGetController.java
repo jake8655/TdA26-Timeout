@@ -2,6 +2,8 @@ package eu.hypnomacka.timeout. server.controllers.course.materials;
 
 import eu.hypnomacka.timeout. server.controllers.Controller;
 import eu. hypnomacka.timeout.server. core.Course;
+import eu.hypnomacka.timeout.server.core.FileAttachment;
+import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu. hypnomacka.timeout.server. core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QFileAttachment;
 import eu.hypnomacka.timeout.server.core.query.QUrlAttachment;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web. multipart.MultipartFile;
 
 import java.lang.reflect.Array;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,25 +44,16 @@ public class MaterialGetController extends Controller {
         materials.addAll(course.getFileAttachments());
         materials.addAll(course.getUrlAttachments());
 
+        materials.sort((a, b) -> {
+            Instant dateA = a instanceof FileAttachment
+                ? ((FileAttachment) a).getUpdatedAt()
+                : ((UrlAttachment) a).getUpdatedAt();
+            Instant dateB = b instanceof FileAttachment
+                ? ((FileAttachment) b).getUpdatedAt()
+                : ((UrlAttachment) b).getUpdatedAt();
+            return dateB.compareTo(dateA);
+        });
+
         return ResponseEntity. ok(materials);
     }
-
-    /*
-    @PostMapping(consumes = MediaType. MULTIPART_FORM_DATA_VALUE, produces = MediaType. APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addFileMaterial(
-            @PathVariable("courseId") String courseIdStr,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("name") String name) {
-
-        return ResponseEntity.status(HttpStatus.CREATED).body();
-    }
-
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addUrlMaterial(
-            @PathVariable("courseId") String courseIdStr,
-            @RequestBody UrlMaterialCreateRequest request) {
-
-        return ResponseEntity.status(HttpStatus.CREATED).body();
-    }
-    */
 }

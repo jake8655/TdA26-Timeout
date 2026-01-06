@@ -71,7 +71,7 @@ public class MaterialPutController extends Controller {
 
         if (hasUrl) {
             attachment.setUrl(url);
-            attachment.setFaviconUrl("https://icons.duckduckgo.com/ip2/" + url + ".ico");
+            attachment.setFaviconUrl("https://icons.duckduckgo.com/ip2/" + url.replace("https://", "").split("/")[0] + ".ico");
         }
 
         if (hasDescription) {

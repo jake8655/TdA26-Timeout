@@ -1,7 +1,15 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Edit2, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+	ArrowLeft,
+	Download,
+	Edit2,
+	ExternalLink,
+	Loader2,
+	Plus,
+	Trash2,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -276,34 +284,65 @@ function DashboardMaterialCard({
 				</div>
 			</div>
 
-			<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
-				<MaterialFormDialog
-					mode="edit"
-					courseId={courseId}
-					material={material}
-					trigger={
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+			<div className="flex flex-col items-end gap-2">
+				{material.type === "url" ? (
+					<Button
+						variant="outline"
+						size="sm"
+						className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+						asChild
+					>
+						<a href={material.url} target="_blank" rel="noopener noreferrer">
+							<ExternalLink className="size-3.5" />
+							<span className="hidden sm:inline">Visit Site</span>
+						</a>
+					</Button>
+				) : (
+					<Button
+						variant="outline"
+						size="sm"
+						className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+						asChild
+					>
+						<a
+							href={material.fileUrl}
+							target="_blank"
+							rel="noopener noreferrer"
 						>
-							<Edit2 />
-						</Button>
-					}
-				/>
-				<DeleteMaterialDialog
-					courseId={courseId}
-					material={material}
-					trigger={
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
-						>
-							<Trash2 />
-						</Button>
-					}
-				/>
+							<Download className="size-3.5" />
+							<span className="hidden sm:inline">Download</span>
+						</a>
+					</Button>
+				)}
+				<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
+					<MaterialFormDialog
+						mode="edit"
+						courseId={courseId}
+						material={material}
+						trigger={
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+							>
+								<Edit2 />
+							</Button>
+						}
+					/>
+					<DeleteMaterialDialog
+						courseId={courseId}
+						material={material}
+						trigger={
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+							>
+								<Trash2 />
+							</Button>
+						}
+					/>
+				</div>
 			</div>
 		</motion.div>
 	);

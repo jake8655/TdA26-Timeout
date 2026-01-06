@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <alterColumn columnName="lecturer_uuid" tableName="courses" references="lecturers.uuid" foreignKeyName="fk_courses_lecturer_uuid" foreignKeyIndex="ix_courses_lecturer_uuid" dropForeignKey="fk_courses_lecturer_id" dropForeignKeyIndex="ix_courses_lecturer_id"/>
+        <alterColumn columnName="course_uuid" tableName="file_attachments" references="courses.uuid" foreignKeyName="fk_file_attachments_course_uuid" foreignKeyIndex="ix_file_attachments_course_uuid" dropForeignKey="fk_file_attachments_course_id" dropForeignKeyIndex="ix_file_attachments_course_id"/>
+        <alterColumn columnName="lecturer_uuid" tableName="sessions" references="lecturers.uuid" foreignKeyName="fk_sessions_lecturer_uuid" foreignKeyIndex="ix_sessions_lecturer_uuid" dropForeignKey="fk_sessions_lecturer_id" dropForeignKeyIndex="ix_sessions_lecturer_id"/>
+        <alterColumn columnName="course_uuid" tableName="url_attachments" references="courses.uuid" foreignKeyName="fk_url_attachments_course_uuid" foreignKeyIndex="ix_url_attachments_course_uuid" dropForeignKey="fk_url_attachments_course_id" dropForeignKeyIndex="ix_url_attachments_course_id"/>
+        <addColumn tableName="url_attachments">
+            <column name="type" type="varchar(3)" defaultValue="'url'" notnull="true" checkConstraint="check ( type in ('url'))" checkConstraintName="ck_url_attachments_type"/>
+        </addColumn>
+    </changeSet>
+</migration>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { use } from "react";
 import { getCoursesByCourseIdOptions } from "@/api-client/@tanstack/react-query.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
+import { MaterialsList } from "@/components/courses/materials-list";
 
 export default function CourseDetailPage({
 	params,
@@ -121,25 +122,15 @@ export default function CourseDetailPage({
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.4, delay: 0.6 }}
-							className="mt-8 border border-white/5 bg-card/30 p-6"
+							className="mt-8 border-white/5 border-t pt-8"
 						>
-							<div className="flex items-center gap-3">
-								<Image
-									src="/icons/Thinking/zarivka_thinking_blue.svg"
-									alt="Coming soon"
-									width={32}
-									height={32}
-									className="size-8 opacity-60"
-								/>
-								<div>
-									<h3 className="font-medium text-foreground text-sm">
-										Course content coming soon
-									</h3>
-									<p className="text-muted-foreground text-xs">
-										Materials, live events, and quizzes will be available here.
-									</p>
-								</div>
+							<div className="mb-6 flex items-center gap-3">
+								<BookOpen className="size-5 text-primary" />
+								<h2 className="font-semibold text-foreground text-lg">
+									Course Materials
+								</h2>
 							</div>
+							<MaterialsList courseId={uuid} />
 						</motion.div>
 					</motion.div>
 				)}

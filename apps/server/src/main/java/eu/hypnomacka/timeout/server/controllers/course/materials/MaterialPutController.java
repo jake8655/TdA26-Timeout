@@ -3,8 +3,10 @@ package eu.hypnomacka.timeout.server.controllers.course.materials;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
+import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QFileAttachment;
+import eu.hypnomacka.timeout.server.core.query.QUrlAttachment;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
@@ -23,8 +25,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/courses/{courseId}/materials")
 public class MaterialPutController extends Controller {
-
-    private static final String URL = cdn + "/upload";
     private final WebClient webClient = WebClient.builder().build();
 
     private String getApiKey() {
@@ -33,6 +33,54 @@ public class MaterialPutController extends Controller {
             key = System.getProperty("API_KEY");
         }
         return key;
+    }
+
+    @PutMapping(value = "/{materialId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<? > updateMaterialJson(
+            @PathVariable String courseId,
+            @PathVariable("materialId") String materialId,
+            @RequestBody Map<String, String> request) {
+
+        String name = request.get("name");
+        String url = request.get("url");
+        String description = request.get("description");
+
+        boolean hasName = name != null && !name.isBlank();
+        boolean hasUrl = url != null && !url.isBlank();
+        boolean hasDescription = description != null;
+
+        if (!hasName && ! hasUrl && !hasDescription) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    Map.of("status", "bad", "message", "at least one field must be provided")
+            );
+        }
+
+        UrlAttachment attachment = new QUrlAttachment()
+                .uuid. eq(UUID.fromString(materialId))
+                .findOne();
+
+        if (attachment == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "bad", "message", "attachment not found")
+            );
+        }
+
+        if (hasName) {
+            attachment.setName(name);
+        }
+
+        if (hasUrl) {
+            attachment.setUrl(url);
+            attachment.setFaviconUrl("https://icons.duckduckgo.com/ip2/" + url.replace("https://", "").split("/")[0] + ".ico");
+        }
+
+        if (hasDescription) {
+            attachment.setDescription(description);
+        }
+
+        attachment.save();
+
+        return ResponseEntity.ok(attachment);
     }
 
     @PutMapping(value = "/{materialId}", consumes = MediaType. MULTIPART_FORM_DATA_VALUE)
@@ -96,7 +144,7 @@ public class MaterialPutController extends Controller {
                 );
             }
 
-            if (! Boolean.parseBoolean(response.get("success").toString())) {
+            if (response == null || ! Boolean.parseBoolean(response.get("success").toString())) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                         Map.of("status", "bad", "message", "cdn server error")
                 );
@@ -137,7 +185,7 @@ public class MaterialPutController extends Controller {
             return false;
         }
 
-        if(!Boolean.parseBoolean(response.get("success").toString())) {
+        if(response == null || !Boolean.parseBoolean(response.get("success").toString())) {
             return false;
         }
 

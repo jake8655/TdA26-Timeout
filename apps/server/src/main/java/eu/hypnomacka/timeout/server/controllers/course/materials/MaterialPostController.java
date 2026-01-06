@@ -42,6 +42,12 @@ public class MaterialPostController extends Controller {
 
         Course course = new QCourse().uuid.eq(UUID. fromString(courseId)).findOne();
 
+        if(course == null) {
+            return ResponseEntity. status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map. of("status", "bad", "message", "course not found")
+            );
+        }
+
         String name = request.get("name");
         String url = request.get("url");
         String type = request.get("type");
@@ -64,7 +70,7 @@ public class MaterialPostController extends Controller {
             name,
             url,
             description,
-            "https://icons.duckduckgo.com/ip2/" + url + ".ico"
+            "https://icons.duckduckgo.com/ip2/" + url.replace("https://", "").split("/")[0] + ".ico"
         );
         attachment.save();
 
@@ -72,7 +78,7 @@ public class MaterialPostController extends Controller {
     }
 
     @PostMapping(consumes = MediaType. MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<? > uploadMaterial(@PathVariable String courseId, @RequestPart(value = "file", required = false) MultipartFile file, @RequestPart("type") String type, @RequestPart("name") String name, @RequestPart(value = "description", required = false) String description, @RequestPart(value = "url", required = false) String url) throws Exception {
+    public ResponseEntity<? > uploadMaterial(@PathVariable String courseId, @RequestPart(value = "file") MultipartFile file, @RequestPart("type") String type, @RequestPart("name") String name, @RequestPart(value = "description", required = false) String description) throws Exception {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("file", new ByteArrayResource(file.getBytes()) {
             @Override
@@ -100,7 +106,7 @@ public class MaterialPostController extends Controller {
             );
         }
 
-        if(!Boolean. parseBoolean(response.get("success").toString())) {
+        if(response == null || !Boolean. parseBoolean(response.get("success").toString())) {
             return ResponseEntity. status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 Map. of("status", "bad", "message", "cdn server error")
             );
@@ -115,6 +121,11 @@ public class MaterialPostController extends Controller {
         }
 
         Course course = new QCourse().uuid.eq(UUID.fromString(courseId)).findOne();
+        if(course == null) {
+            return ResponseEntity. status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map. of("status", "bad", "message", "course not found")
+            );
+        }
         FileAttachment attachment = new FileAttachment(course, name, description, FileAttachment.Type.file, sizeBytes, mimeType, fileUrl);
         attachment.save();
 

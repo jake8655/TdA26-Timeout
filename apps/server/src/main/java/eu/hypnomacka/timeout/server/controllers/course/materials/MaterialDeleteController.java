@@ -67,7 +67,7 @@ public class MaterialDeleteController extends Controller {
                 );
             }
 
-            if(!Boolean.parseBoolean(response.get("success").toString())) {
+            if(response == null || !Boolean.parseBoolean(response.get("success").toString())) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     Map. of("status", "bad", "message", "cdn server error")
                 );
@@ -102,12 +102,12 @@ public class MaterialDeleteController extends Controller {
                 );
             }
 
-            if(!Boolean.parseBoolean(response.get("success").toString())) {
+            if(response == null || !Boolean.parseBoolean(response.get("success").toString())) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     Map. of("status", "bad", "message", "cdn server error")
                 );
             } else {
-                if(file.delete()) {
+                if(urlFile.delete()) {
                     return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
                         Map.of("status", "success", "message", "Material deleted successfully")
                     );

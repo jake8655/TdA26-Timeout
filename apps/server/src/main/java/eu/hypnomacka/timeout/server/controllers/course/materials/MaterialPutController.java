@@ -144,7 +144,7 @@ public class MaterialPutController extends Controller {
                 );
             }
 
-            if (! Boolean.parseBoolean(response.get("success").toString())) {
+            if (response == null || ! Boolean.parseBoolean(response.get("success").toString())) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                         Map.of("status", "bad", "message", "cdn server error")
                 );
@@ -185,7 +185,7 @@ public class MaterialPutController extends Controller {
             return false;
         }
 
-        if(!Boolean.parseBoolean(response.get("success").toString())) {
+        if(response == null || !Boolean.parseBoolean(response.get("success").toString())) {
             return false;
         }
 

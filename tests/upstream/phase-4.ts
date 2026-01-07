@@ -9,7 +9,7 @@ import {
 	type Material,
 	phase,
 	type Quiz,
-} from "./phase-utils";
+} from "../phase-utils";
 
 phase(4, () => {
 	let testCourseId: string;

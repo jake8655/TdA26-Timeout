@@ -7,7 +7,7 @@ import {
 	type Course,
 	type Material,
 	phase,
-} from "./phase-utils";
+} from "../phase-utils";
 
 phase(2, () => {
 	let testCourseId: string;

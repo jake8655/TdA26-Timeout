@@ -9,7 +9,7 @@ import {
 	type Quiz,
 	type QuizSubmitRequest,
 	type QuizSubmitResponse,
-} from "./phase-utils";
+} from "../phase-utils";
 
 phase(3, () => {
 	let testCourseId: string;

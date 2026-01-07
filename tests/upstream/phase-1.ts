@@ -7,7 +7,7 @@ import {
 	apiPut,
 	type Course,
 	phase,
-} from "./phase-utils";
+} from "../phase-utils";
 
 phase(1, ({ page }) => {
 	let testCourseId: string;

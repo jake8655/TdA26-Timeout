@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { apiGet, phase } from "./phase-utils.ts";
+import { phase } from "../phase-utils";
 
 phase(0, ({ page }) => {
 	it("Test / is a valid page", async () => {

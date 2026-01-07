@@ -173,12 +173,12 @@ public class MaterialPostController extends Controller {
                 .header("Authorization", "Bearer " + getApiKey())
                 .header("Xfilename", file.getOriginalFilename())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData(builder.build()))
+                .body(BodyInserters.fromMultipartData(builder. build()))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .block();
         } catch (WebClientResponseException e) {
-            System.err.println("Error: " + e.getRawStatusCode() + " - " + e.getResponseBodyAsString());
+            System.err. println("Error: " + e.getRawStatusCode() + " - " + e. getResponseBodyAsString());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 Map.of("status", "bad", "message", "file upload to cdn server failed")
             );

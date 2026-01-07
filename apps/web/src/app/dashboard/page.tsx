@@ -1,8 +1,9 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Edit2, Loader2, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, Edit2, Loader2, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import z from "zod";
@@ -20,6 +21,7 @@ import {
 	Card,
 	CardContent,
 	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
@@ -151,12 +153,17 @@ function DeleteCourseDialog({
 	course: CourseSummary;
 	trigger: React.ReactElement;
 }) {
+	const [open, setOpen] = useState(false);
+
 	const deleteCourseMutation = useMutation({
 		...deleteCoursesByCourseIdMutation(),
+		onSuccess: () => {
+			setOpen(false);
+		},
 	});
 
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger render={trigger} />
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
@@ -169,27 +176,23 @@ function DeleteCourseDialog({
 				</DialogHeader>
 				<DialogFooter>
 					<DialogClose render={<Button variant="outline">Cancel</Button>} />
-					<DialogClose
-						render={
-							<Button
-								variant="destructive"
-								disabled={deleteCourseMutation.isPending}
-								onClick={() =>
-									deleteCourseMutation.mutate({
-										// @ts-expect-error TdA is incompetent and I need to send all requests as json
-										body: {},
-										path: { courseId: course.uuid },
-									})
-								}
-							>
-								{deleteCourseMutation.isPending ? (
-									<Loader2 className="animate-spin text-muted-foreground" />
-								) : (
-									"Delete"
-								)}
-							</Button>
+					<Button
+						variant="destructive"
+						disabled={deleteCourseMutation.isPending}
+						onClick={() =>
+							deleteCourseMutation.mutate({
+								// @ts-expect-error TdA is incompetent and I need to send all requests as json
+								body: {},
+								path: { courseId: course.uuid },
+							})
 						}
-					/>
+					>
+						{deleteCourseMutation.isPending ? (
+							<Loader2 className="animate-spin text-muted-foreground" />
+						) : (
+							"Delete"
+						)}
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
@@ -364,9 +367,20 @@ function CourseCard({
 				</CardHeader>
 				<CardContent>
 					<CardDescription className="text-muted-foreground text-sm leading-relaxed">
-						{course.description}
+						{course.description || (
+							<span className="italic">No description available</span>
+						)}
 					</CardDescription>
 				</CardContent>
+				<CardFooter className="p-0">
+					<Link
+						href={`/dashboard/courses/${course.uuid}`}
+						className="flex w-full items-center justify-between px-4 py-3 text-muted-foreground text-sm transition-colors hover:bg-primary/5 hover:text-primary"
+					>
+						Manage Materials
+						<ChevronRight className="size-4" />
+					</Link>
+				</CardFooter>
 			</Card>
 		</motion.div>
 	);

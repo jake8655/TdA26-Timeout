@@ -10,6 +10,8 @@ services:
     build: apps/server
     ports:
       - "3000:3000"
+    env_file:
+      - apps/server/.env
   caddy:
     build: apps/caddy
     environment:

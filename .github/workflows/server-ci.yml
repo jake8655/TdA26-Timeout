@@ -27,9 +27,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/apps/server/build
-          # Generate a new cache whenever Gradle configuration or source files change.
           key: ${{ runner.os }}-spring-${{ hashFiles('apps/server/**/*.gradle*', 'apps/server/gradle.properties', 'apps/server/src/**/*.java') }}
-          # If source files or Gradle files changed, try to restore from a prior cache with the same prefix.
           restore-keys: |
             ${{ runner.os }}-spring-
 
@@ -41,3 +39,6 @@ jobs:
         working-directory: apps/server
         run: chmod +x ./gradlew && just build
 
+  test:
+    uses: ./.github/workflows/tests-ci.yml
+    needs: build

@@ -72,6 +72,7 @@ public class UrlAttachment extends Model {
         this.name = name;
         this.url = url;
         this.description = description;
+        this.type = type;
         this.faviconUrl = faviconUrl;
     }
 }

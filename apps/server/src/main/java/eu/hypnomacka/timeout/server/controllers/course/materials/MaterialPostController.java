@@ -113,6 +113,7 @@ public class MaterialPostController extends Controller {
             name,
             url,
             description,
+            UrlAttachment.Type.url,
             "https://icons.duckduckgo.com/ip2/" + url.replace("https://", "").replace("http://", "").split("/")[0] + ".ico"
         );
         attachment.save();

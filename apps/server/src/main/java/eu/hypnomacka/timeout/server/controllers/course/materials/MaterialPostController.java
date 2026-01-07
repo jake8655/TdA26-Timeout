@@ -172,7 +172,7 @@ public class MaterialPostController extends Controller {
             response = webClient.post()
                 .uri(URL)
                 .header("Authorization", "Bearer " + getApiKey())
-                .header("Xfilename", file.getOriginalFilename())
+                .header("X-Filename", file.getOriginalFilename())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(builder. build()))
                 .retrieve()

@@ -214,13 +214,14 @@ public class MaterialPutController extends Controller {
                     return file.getOriginalFilename();
                 }
             });
+            System.out.println("file name: " + file.getOriginalFilename());
 
             Map<String, Object> response;
             try {
                 response = webClient.post()
                     .uri(UPLOAD_URL)
                     .header("Authorization", "Bearer " + getApiKey())
-                    .header("Xfilename", file.getOriginalFilename())
+                    .header("X-Filename", file.getOriginalFilename())
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(BodyInserters.fromMultipartData(builder.build()))
                     .retrieve()

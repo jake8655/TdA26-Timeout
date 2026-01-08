@@ -85,7 +85,12 @@ const server = Bun.serve({
 				let originalFilename: string | null = null;
 				let data: ArrayBuffer;
 
-				if (contentType.includes("multipart/form-data")) {
+				if (req.headers.get("X-Filename") || url.searchParams.get("filename")) {
+					originalFilename =
+						req.headers.get("X-Filename") || url.searchParams.get("filename");
+
+					data = await req.arrayBuffer();
+				} else if (contentType.includes("multipart/form-data")) {
 					const formData = await req.formData();
 					const file = formData.get("file");
 
@@ -96,17 +101,14 @@ const server = Bun.serve({
 					originalFilename = file.name;
 					data = await file.arrayBuffer();
 				} else {
-					originalFilename =
-						req.headers.get("X-Filename") || url.searchParams.get("filename");
+					return new Response("Invalid filename", { status: 400 });
+				}
 
-					if (!originalFilename) {
-						return new Response(
-							"Filename required via X-Filename header or ?filename= query param",
-							{ status: 400 },
-						);
-					}
-
-					data = await req.arrayBuffer();
+				if (!originalFilename) {
+					return new Response(
+						"Filename required via X-Filename header or ?filename= query param",
+						{ status: 400 },
+					);
 				}
 
 				if (!isAllowedFile(originalFilename)) {

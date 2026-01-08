@@ -22,3 +22,11 @@ services:
     depends_on:
       - web
       - server
+  # file-storage:
+  #   build: apps/file-storage
+  #   ports:
+  #     - "8080:8080"
+  #   env_file:
+  #     - apps/file-storage/.env
+  #   volumes:
+  #     - ./apps/file-storage/uploads:/uploads

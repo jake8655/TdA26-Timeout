@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { mkdir, realpath, unlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+// const UPLOADS_DIR = "/uploads";
 const UPLOADS_DIR = "./uploads";
 const API_KEY = process.env.API_KEY;
 const MAX_FILE_SIZE = 30 * 1024 * 1024;

@@ -129,7 +129,10 @@ public class MaterialPostController extends Controller {
             @RequestPart("name") String name,
             @RequestPart(value = "description", required = false) String description) throws Exception {
 
+        System.out.println("Uploading file: " + file.getOriginalFilename() + " (" + file.getSize() + " bytes)");
+
         if (file.getSize() > MAX_FILE_SIZE) {
+            System.err.println("File" + file.getOriginalFilename() + " exceeds max size: " + file.getSize());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 Map.of("status", "bad", "message", "file size exceeds 30MB limit")
             );
@@ -137,6 +140,7 @@ public class MaterialPostController extends Controller {
 
         String mimeType = normalizeMimeType(file.getContentType());
         if (!isSupportedMimeType(file.getContentType())) {
+            System.err.println("File " + file.getOriginalFilename() + " has unsupported mime type: " + mimeType);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 Map.of("status", "bad", "message", "unsupported file format")
             );
@@ -146,6 +150,7 @@ public class MaterialPostController extends Controller {
         try {
             uuid = UUID.fromString(courseId);
         } catch (IllegalArgumentException e) {
+            System.err.println("Invalid UUID format: " + courseId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 Map.of("status", "bad", "message", "invalid UUID format")
             );
@@ -153,6 +158,7 @@ public class MaterialPostController extends Controller {
 
         Course course = new QCourse().uuid.eq(uuid).findOne();
         if (course == null) {
+            System.err.println("Course not found for UUID: " + courseId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 Map.of("status", "bad", "message", "course not found")
             );
@@ -186,6 +192,7 @@ public class MaterialPostController extends Controller {
         }
 
         if (response == null || !Boolean.parseBoolean(response.get("success").toString())) {
+            System.err. println("CDN server error: " + response);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 Map.of("status", "bad", "message", "cdn server error")
             );

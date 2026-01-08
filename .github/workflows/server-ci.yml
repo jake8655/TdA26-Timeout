@@ -38,7 +38,3 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: apps/server
         run: chmod +x ./gradlew && just build
-
-  test:
-    uses: ./.github/workflows/tests-ci.yml
-    needs: build

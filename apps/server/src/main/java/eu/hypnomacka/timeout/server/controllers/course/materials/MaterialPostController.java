@@ -17,6 +17,8 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +27,24 @@ import java.util.UUID;
 public class MaterialPostController extends Controller {
 
     private static final String URL = cdn + "/upload";
+    private static final long MAX_FILE_SIZE = 30 * 1024 * 1024;
+    private static final List<String> SUPPORTED_MIME_TYPES = Arrays.asList(
+
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/plain",
+
+        "image/png",
+        "image/jpg",
+        "image/jpeg",
+        "image/gif",
+
+        "video/mp4",
+
+        "audio/mpeg",
+        "audio/mp3"
+    );
+    
     private final WebClient webClient = WebClient.builder().build();
 
     private String getApiKey() {
@@ -35,29 +55,52 @@ public class MaterialPostController extends Controller {
         return key;
     }
 
-    @PostMapping(consumes = MediaType. APPLICATION_JSON_VALUE)
+    private String normalizeMimeType(String mimeType) {
+        if (mimeType == null) {
+            return null;
+        }
+
+        int semicolonIndex = mimeType.indexOf(';');
+        if (semicolonIndex != -1) {
+            return mimeType.substring(0, semicolonIndex).trim();
+        }
+        return mimeType.trim();
+    }
+
+    private boolean isSupportedMimeType(String mimeType) {
+        String normalized = normalizeMimeType(mimeType);
+        return normalized != null && SUPPORTED_MIME_TYPES.contains(normalized);
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<? > uploadMaterialJson(
             @PathVariable String courseId,
             @RequestBody Map<String, String> request) {
 
-        Course course = new QCourse().uuid.eq(UUID. fromString(courseId)).findOne();
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(courseId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("status", "bad", "message", "invalid UUID format")
+            );
+        }
 
-        if(course == null) {
-            return ResponseEntity. status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                Map. of("status", "bad", "message", "course not found")
+        Course course = new QCourse().uuid.eq(uuid).findOne();
+
+        if (course == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("status", "bad", "message", "course not found")
             );
         }
 
         String name = request.get("name");
         String url = request.get("url");
-        String type = request.get("type");
         String description = request.get("description");
 
-        if (name == null || name.isEmpty() ||
-            url == null || url.isEmpty() ||
-            type == null || type.isEmpty()) {
+        if (name == null || name.isEmpty() || url == null || url.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    Map.of("status", "bad", "message", "bad request")
+                Map.of("status", "bad", "message", "bad request")
             );
         }
 
@@ -71,15 +114,50 @@ public class MaterialPostController extends Controller {
             url,
             description,
             UrlAttachment.Type.url,
-            "https://icons.duckduckgo.com/ip2/" + url.replace("https://", "").split("/")[0] + ".ico"
+            "https://icons.duckduckgo.com/ip2/" + url.replace("https://", "").replace("http://", "").split("/")[0] + ".ico"
         );
         attachment.save();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
     }
 
-    @PostMapping(consumes = MediaType. MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<? > uploadMaterial(@PathVariable String courseId, @RequestPart(value = "file") MultipartFile file, @RequestPart("type") String type, @RequestPart("name") String name, @RequestPart(value = "description", required = false) String description) throws Exception {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadMaterial(
+            @PathVariable String courseId,
+            @RequestPart(value = "file") MultipartFile file,
+            @RequestPart("type") String type,
+            @RequestPart("name") String name,
+            @RequestPart(value = "description", required = false) String description) throws Exception {
+
+        if (file.getSize() > MAX_FILE_SIZE) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("status", "bad", "message", "file size exceeds 30MB limit")
+            );
+        }
+
+        String mimeType = normalizeMimeType(file.getContentType());
+        if (!isSupportedMimeType(file.getContentType())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("status", "bad", "message", "unsupported file format")
+            );
+        }
+
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(courseId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Map.of("status", "bad", "message", "invalid UUID format")
+            );
+        }
+
+        Course course = new QCourse().uuid.eq(uuid).findOne();
+        if (course == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("status", "bad", "message", "course not found")
+            );
+        }
+
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("file", new ByteArrayResource(file.getBytes()) {
             @Override
@@ -91,10 +169,10 @@ public class MaterialPostController extends Controller {
         Map<String, Object> response;
 
         try {
-             response = webClient. post()
+            response = webClient.post()
                 .uri(URL)
                 .header("Authorization", "Bearer " + getApiKey())
-                .header("Xfilename", file.getOriginalFilename())
+                .header("X-Filename", file.getOriginalFilename())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(builder. build()))
                 .retrieve()
@@ -103,30 +181,23 @@ public class MaterialPostController extends Controller {
         } catch (WebClientResponseException e) {
             System.err. println("Error: " + e.getRawStatusCode() + " - " + e. getResponseBodyAsString());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                Map.  of("status", "bad", "message", "file upload to cdn server failed")
+                Map.of("status", "bad", "message", "file upload to cdn server failed")
             );
         }
 
-        if(response == null || !Boolean. parseBoolean(response.get("success").toString())) {
-            return ResponseEntity. status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                Map. of("status", "bad", "message", "cdn server error")
+        if (response == null || !Boolean.parseBoolean(response.get("success").toString())) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                Map.of("status", "bad", "message", "cdn server error")
             );
         }
 
         String fileUrl = cdn + response.get("url").toString();
         long sizeBytes = file.getSize();
-        String mimeType = file.getContentType();
 
         if (description == null) {
             description = "";
         }
 
-        Course course = new QCourse().uuid.eq(UUID.fromString(courseId)).findOne();
-        if(course == null) {
-            return ResponseEntity. status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                Map. of("status", "bad", "message", "course not found")
-            );
-        }
         FileAttachment attachment = new FileAttachment(course, name, description, FileAttachment.Type.file, sizeBytes, mimeType, fileUrl);
         attachment.save();
 

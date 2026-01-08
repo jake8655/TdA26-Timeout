@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { mkdir, realpath, unlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+// const UPLOADS_DIR = "/uploads";
 const UPLOADS_DIR = "./uploads";
 const API_KEY = process.env.API_KEY;
 const MAX_FILE_SIZE = 30 * 1024 * 1024;
@@ -85,7 +86,12 @@ const server = Bun.serve({
 				let originalFilename: string | null = null;
 				let data: ArrayBuffer;
 
-				if (contentType.includes("multipart/form-data")) {
+				if (req.headers.get("X-Filename") || url.searchParams.get("filename")) {
+					originalFilename =
+						req.headers.get("X-Filename") || url.searchParams.get("filename");
+
+					data = await req.arrayBuffer();
+				} else if (contentType.includes("multipart/form-data")) {
 					const formData = await req.formData();
 					const file = formData.get("file");
 
@@ -96,17 +102,14 @@ const server = Bun.serve({
 					originalFilename = file.name;
 					data = await file.arrayBuffer();
 				} else {
-					originalFilename =
-						req.headers.get("X-Filename") || url.searchParams.get("filename");
+					return new Response("Invalid filename", { status: 400 });
+				}
 
-					if (!originalFilename) {
-						return new Response(
-							"Filename required via X-Filename header or ?filename= query param",
-							{ status: 400 },
-						);
-					}
-
-					data = await req.arrayBuffer();
+				if (!originalFilename) {
+					return new Response(
+						"Filename required via X-Filename header or ?filename= query param",
+						{ status: 400 },
+					);
 				}
 
 				if (!isAllowedFile(originalFilename)) {

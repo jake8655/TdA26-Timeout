@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class EbeanConfiguration {
 
-    @Bean
-    public Database database() {
-        DatabaseConfig config = new DatabaseConfig();
-        config.loadFromProperties();
-        return DatabaseFactory.create(config);
-    }
+  @Bean
+  public Database database() {
+    DatabaseConfig config = new DatabaseConfig();
+    config.loadFromProperties();
+    return DatabaseFactory.create(config);
+  }
 }

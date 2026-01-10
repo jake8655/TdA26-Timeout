@@ -9,45 +9,45 @@ import java.util.UUID;
 
 public class Controller {
 
-    public static String cdn = getCDNUrl();
+  public static String cdn = getCDNUrl();
 
-    private static String getCDNUrl() {
-        String key = System.getenv("CDN_URL");
-        if (key == null || key.isEmpty()) {
-            key = System.getProperty("CDN_URL");
-        }
-        return key;
+  private static String getCDNUrl() {
+    String key = System.getenv("CDN_URL");
+    if (key == null || key.isEmpty()) {
+      key = System.getProperty("CDN_URL");
+    }
+    return key;
+  }
+
+  public static Lecturer lecturer = new QLecturer().username.eq("lecturer").findOne();
+
+  public boolean isCookieValid(String sessionId, String username) {
+    if (sessionId == null || sessionId.isEmpty() || username == null || username.isEmpty()) {
+      return false;
     }
 
-    public static Lecturer lecturer = new QLecturer().username.eq("lecturer").findOne();
-
-    public boolean isCookieValid(String sessionId, String username) {
-        if (sessionId == null || sessionId.isEmpty() || username == null || username.isEmpty()) {
-            return false;
-        }
-
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(sessionId);
-        } catch (Exception e) {
-            return false;
-        }
-
-        Session session = new QSession().uuid.eq(UUID.fromString(sessionId)).findOne();
-        if (session == null || session.getExpiresAt() == null) {
-            return false;
-        }
-
-        Instant now = Instant.now();
-        if (!session.getExpiresAt().isAfter(now)) {
-            return false;
-        }
-
-        Lecturer sessionLecturer = session.getLecturer();
-        if (sessionLecturer == null || sessionLecturer.getUsername() == null) {
-            return false;
-        }
-
-        return sessionLecturer.getUsername().equals(username);
+    UUID uuid;
+    try {
+      uuid = UUID.fromString(sessionId);
+    } catch (Exception e) {
+      return false;
     }
+
+    Session session = new QSession().uuid.eq(UUID.fromString(sessionId)).findOne();
+    if (session == null || session.getExpiresAt() == null) {
+      return false;
+    }
+
+    Instant now = Instant.now();
+    if (!session.getExpiresAt().isAfter(now)) {
+      return false;
+    }
+
+    Lecturer sessionLecturer = session.getLecturer();
+    if (sessionLecturer == null || sessionLecturer.getUsername() == null) {
+      return false;
+    }
+
+    return sessionLecturer.getUsername().equals(username);
+  }
 }

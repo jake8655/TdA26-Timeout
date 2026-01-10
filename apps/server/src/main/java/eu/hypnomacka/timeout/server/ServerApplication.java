@@ -10,26 +10,21 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ServerApplication {
 
-    public static void main(String[] args) {
-        Dotenv dotenv = Dotenv.configure()
-                .ignoreIfMissing()
-                .load();
+  public static void main(String[] args) {
+    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-        dotenv.entries().forEach(entry ->
-                System.setProperty(entry.getKey(), entry.getValue())
-        );
+    dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 
-        SpringApplication.run(ServerApplication.class, args);
+    SpringApplication.run(ServerApplication.class, args);
 
-        try {
-            Lecturer dummy = new QLecturer().username.eq("lecturer").findOne();
-            if(dummy == null) {
-                dummy = new Lecturer("lecturer", HashUtil.hashPassword("TdA26!"));
-                dummy.save();
-            }
-        } catch (Exception e) {
+    try {
+      Lecturer dummy = new QLecturer().username.eq("lecturer").findOne();
+      if (dummy == null) {
+        dummy = new Lecturer("lecturer", HashUtil.hashPassword("TdA26!"));
+        dummy.save();
+      }
+    } catch (Exception e) {
 
-        }
     }
-
+  }
 }

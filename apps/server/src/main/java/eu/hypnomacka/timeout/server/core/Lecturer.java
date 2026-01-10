@@ -6,42 +6,39 @@ import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "lecturers")
 public class Lecturer extends Model {
 
-    @Id
-    private UUID uuid;
+  @Id private UUID uuid;
 
-    @Column(nullable = false)
-    private String username;
+  @Column(nullable = false)
+  private String username;
 
-    @JsonIgnore
-    @Column(name = "hashed_pass", nullable = false)
-    private String hashedPass;
+  @JsonIgnore
+  @Column(name = "hashed_pass", nullable = false)
+  private String hashedPass;
 
-    @OneToMany(mappedBy = "lecturer", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<Course> courses;
+  @OneToMany(mappedBy = "lecturer", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  private List<Course> courses;
 
-    @WhenCreated
-    private Instant createdAt;
+  @WhenCreated private Instant createdAt;
 
-    @WhenModified
-    private Instant updatedAt;
+  @WhenModified private Instant updatedAt;
 
-    public Lecturer() {}
+  public Lecturer() {}
 
-    public Lecturer(String username, String hashedPass) {
-        this.username = username;
-        this.hashedPass = hashedPass;
-    }
+  public Lecturer(String username, String hashedPass) {
+    this.username = username;
+    this.hashedPass = hashedPass;
+  }
 }

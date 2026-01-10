@@ -6,52 +6,52 @@ import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "courses")
 public class Course extends Model {
 
-    @Id
-    private UUID uuid;
+  @Id private UUID uuid;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "lecturer_uuid", nullable = false)
-    @JsonBackReference
-    private Lecturer lecturer;
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "lecturer_uuid", nullable = false)
+  @JsonBackReference
+  private Lecturer lecturer;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    @Column
-    private String description;
+  @Column private String description;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<FileAttachment> fileAttachments = new ArrayList<>();
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  private List<FileAttachment> fileAttachments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<UrlAttachment> urlAttachments = new ArrayList<>();
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  private List<UrlAttachment> urlAttachments = new ArrayList<>();
 
-    @WhenCreated
-    private Instant createdAt;
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  private List<Quiz> quizzes = new ArrayList<>();
 
-    @WhenModified
-    private Instant updatedAt;
+  @WhenCreated private Instant createdAt;
 
-    public Course() {}
+  @WhenModified private Instant updatedAt;
 
-    public Course(Lecturer lecturer, String name, String description) {
-        this.lecturer = lecturer;
-        this.name = name;
-        this.description = description;
-    }
+  public Course() {}
+
+  public Course(Lecturer lecturer, String name, String description) {
+    this.lecturer = lecturer;
+    this.name = name;
+    this.description = description;
+  }
 }

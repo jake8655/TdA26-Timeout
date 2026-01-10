@@ -83,24 +83,38 @@ public class QuizSubmitController extends Controller {
         List<Boolean> correctPerQuestion = new ArrayList<>();
         int correctCount = 0;
 
-        for (int i = 0; i < questions.size(); i++) {
-            Question question = questions.get(i);
-            QuizAnswer answer = answers.get(i);
+        for (QuizAnswer answer : answers) {
+            Question question = questions.stream()
+                .filter(q -> q.getUuid().toString().equals(answer.getUuid()))
+                .findFirst()
+                .orElse(null);
+            if (question == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    Map.of("message", "invalid question UUID in answers")
+                );
+            }
+
             boolean isCorrect = false;
 
             if (question.getType() == Question.Type.singleChoice) {
-                if (answer.getSelectedIndex() != null) {
-                    isCorrect = answer.getSelectedIndex().equals(question.getCorrectIndex());
+                if (answer.getSelectedIndex() == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        Map.of("message", "selectedIndex is required for singleChoice question")
+                    );
                 }
+                isCorrect = answer.getSelectedIndex().equals(question.getCorrectIndex());
             } else if (question.getType() == Question.Type.multipleChoice) {
-                if (answer.getSelectedIndices() != null && question.getCorrectIndices() != null) {
+                if (answer.getSelectedIndices() == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        Map.of("message", "selectedIndices is required for multipleChoice question")
+                    );
+                }
                     List<Integer> selected = answer.getSelectedIndices();
                     List<Integer> correct = question.getCorrectIndices();
                     if (selected.size() == correct.size()) {
                         selected.sort(Integer::compareTo);
                         correct.sort(Integer::compareTo);
                         isCorrect = selected.equals(correct);
-                    }
                 }
             }
 

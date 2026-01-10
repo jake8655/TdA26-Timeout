@@ -7,6 +7,7 @@ import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Question;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import eu.hypnomacka.timeout.server.core.query.QQuiz;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -93,7 +94,13 @@ public class QuizPostController extends Controller {
             question.save();
         }
 
-        QuizResponse response = buildQuizResponse(quiz);
+        Quiz updatedQuiz = new QQuiz().uuid.eq(quiz.getUuid()).findOne();
+        if (updatedQuiz == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("message", "newly created quiz not found in database")
+            );
+        }
+        QuizResponse response = buildQuizResponse(updatedQuiz);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

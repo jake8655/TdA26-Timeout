@@ -1,23 +1,23 @@
 package eu.hypnomacka.timeout.server.utils;
 
-import org.bouncycastle.crypto.params.Argon2Parameters;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
+import org.bouncycastle.crypto.params.Argon2Parameters;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Arrays;
 
 public class HashUtil {
 
     private static final int HASH_LENGTH = 32;
-    private static final byte[] SALT = Base64.getDecoder().decode("PU8HlVnSIXjqU1zEexYD92870xqXaFsBOLP5lWMPnNQ=");
+    private static final byte[] SALT =
+            Base64.getDecoder().decode("PU8HlVnSIXjqU1zEexYD92870xqXaFsBOLP5lWMPnNQ=");
 
     public static String hashPassword(String password) {
-        Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-                .withSalt(SALT)
-                .withIterations(2)
-                .withMemoryAsKB(65536)
-                .withParallelism(1);
+        Argon2Parameters.Builder builder =
+                new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+                        .withSalt(SALT)
+                        .withIterations(2)
+                        .withMemoryAsKB(65536)
+                        .withParallelism(1);
 
         Argon2BytesGenerator generator = new Argon2BytesGenerator();
         generator.init(builder.build());
@@ -31,11 +31,12 @@ public class HashUtil {
     public static boolean verifyPassword(String password, String stored) {
         byte[] storedHash = Base64.getDecoder().decode(stored);
 
-        Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-                .withSalt(SALT)
-                .withIterations(2)
-                .withMemoryAsKB(65536)
-                .withParallelism(1);
+        Argon2Parameters.Builder builder =
+                new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+                        .withSalt(SALT)
+                        .withIterations(2)
+                        .withMemoryAsKB(65536)
+                        .withParallelism(1);
 
         Argon2BytesGenerator generator = new Argon2BytesGenerator();
         generator.init(builder.build());

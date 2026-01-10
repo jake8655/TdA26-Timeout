@@ -1,11 +1,14 @@
 package eu.hypnomacka.timeout.server.core;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import io.ebean.Model;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
+
 import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +16,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "questions")
 public class Question extends Model {
@@ -23,8 +27,7 @@ public class Question extends Model {
         multipleChoice
     }
 
-    @Id
-    private UUID uuid;
+    @Id private UUID uuid;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "quiz_uuid", nullable = false)
@@ -48,11 +51,9 @@ public class Question extends Model {
     @Column(columnDefinition = "json")
     private List<Integer> correctIndices;
 
-    @WhenCreated
-    private Instant createdAt;
+    @WhenCreated private Instant createdAt;
 
-    @WhenModified
-    private Instant updatedAt;
+    @WhenModified private Instant updatedAt;
 
     public Question() {}
 }

@@ -2,10 +2,13 @@ package eu.hypnomacka.timeout.server.core;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
+
 import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,13 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "courses")
 public class Course extends Model {
 
-    @Id
-    private UUID uuid;
+    @Id private UUID uuid;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "lecturer_uuid", nullable = false)
@@ -30,8 +33,7 @@ public class Course extends Model {
     @Column(nullable = false)
     private String name;
 
-    @Column
-    private String description;
+    @Column private String description;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     @JsonManagedReference
@@ -45,11 +47,9 @@ public class Course extends Model {
     @JsonManagedReference
     private List<Quiz> quizzes = new ArrayList<>();
 
-    @WhenCreated
-    private Instant createdAt;
+    @WhenCreated private Instant createdAt;
 
-    @WhenModified
-    private Instant updatedAt;
+    @WhenModified private Instant updatedAt;
 
     public Course() {}
 

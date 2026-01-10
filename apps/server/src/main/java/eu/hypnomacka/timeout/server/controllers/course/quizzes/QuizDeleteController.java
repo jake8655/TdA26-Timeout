@@ -5,6 +5,7 @@ import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QQuiz;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,43 +19,35 @@ public class QuizDeleteController extends Controller {
 
     @DeleteMapping(value = "/{quizId}")
     public ResponseEntity<?> deleteQuiz(
-            @PathVariable String courseId,
-            @PathVariable String quizId) {
+            @PathVariable String courseId, @PathVariable String quizId) {
 
         UUID courseUuid;
         try {
             courseUuid = UUID.fromString(courseId);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("message", "invalid UUID format")
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "invalid UUID format"));
         }
 
         UUID quizUuid;
         try {
             quizUuid = UUID.fromString(quizId);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("message", "invalid UUID format")
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "invalid UUID format"));
         }
 
         Course course = new QCourse().uuid.eq(courseUuid).findOne();
         if (course == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("message", "course not found")
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "course not found"));
         }
 
-        Quiz quiz = new QQuiz()
-            .uuid.eq(quizUuid)
-            .course.eq(course)
-            .findOne();
+        Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();
 
         if (quiz == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("message", "quiz not found")
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "quiz not found"));
         }
 
         quiz.delete();

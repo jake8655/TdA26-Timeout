@@ -7,6 +7,7 @@ import eu.hypnomacka.timeout.server.core.QuizResult;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QQuiz;
 import eu.hypnomacka.timeout.server.core.query.QQuizResult;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,60 +24,49 @@ public class QuizResultsGetController extends Controller {
 
     @GetMapping(value = "/{quizId}/results", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getQuizResults(
-            @PathVariable String courseId,
-            @PathVariable String quizId) {
+            @PathVariable String courseId, @PathVariable String quizId) {
 
         UUID courseUuid;
         try {
             courseUuid = UUID.fromString(courseId);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("message", "invalid UUID format")
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "invalid UUID format"));
         }
 
         UUID quizUuid;
         try {
             quizUuid = UUID.fromString(quizId);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("message", "invalid UUID format")
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "invalid UUID format"));
         }
 
         Course course = new QCourse().uuid.eq(courseUuid).findOne();
         if (course == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("message", "course not found")
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "course not found"));
         }
 
-        Quiz quiz = new QQuiz()
-            .uuid.eq(quizUuid)
-            .course.eq(course)
-            .findOne();
+        Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();
 
         if (quiz == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("message", "quiz not found")
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "quiz not found"));
         }
 
-        List<QuizResult> results = new QQuizResult()
-            .quiz.eq(quiz)
-            .orderBy()
-            .submittedAt.desc()
-            .findList();
+        List<QuizResult> results =
+                new QQuizResult().quiz.eq(quiz).orderBy().submittedAt.desc().findList();
 
         List<QuizSubmitResponse> responses = new ArrayList<>();
         for (QuizResult result : results) {
-            responses.add(new QuizSubmitResponse(
-                result.getQuiz().getUuid().toString(),
-                result.getScore(),
-                result.getMaxScore(),
-                result.getCorrectPerQuestion(),
-                result.getSubmittedAt()
-            ));
+            responses.add(
+                    new QuizSubmitResponse(
+                            result.getQuiz().getUuid().toString(),
+                            result.getScore(),
+                            result.getMaxScore(),
+                            result.getCorrectPerQuestion(),
+                            result.getSubmittedAt()));
         }
 
         return ResponseEntity.ok(responses);

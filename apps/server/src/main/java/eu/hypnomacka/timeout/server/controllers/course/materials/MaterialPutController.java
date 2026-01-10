@@ -7,6 +7,7 @@ import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QFileAttachment;
 import eu.hypnomacka.timeout.server.core.query.QUrlAttachment;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
@@ -31,22 +32,18 @@ public class MaterialPutController extends Controller {
     private static final String UPLOAD_URL = cdn + "/upload";
     private static final String DELETE_URL = cdn + "/delete";
     private static final long MAX_FILE_SIZE = 30 * 1024 * 1024;
-    private static final List<String> SUPPORTED_MIME_TYPES = Arrays.asList(
-
-        "application/pdf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/plain",
-
-        "image/png",
-        "image/jpg",
-        "image/jpeg",
-        "image/gif",
-
-        "video/mp4",
-
-        "audio/mpeg",
-        "audio/mp3"
-    );
+    private static final List<String> SUPPORTED_MIME_TYPES =
+            Arrays.asList(
+                    "application/pdf",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "text/plain",
+                    "image/png",
+                    "image/jpg",
+                    "image/jpeg",
+                    "image/gif",
+                    "video/mp4",
+                    "audio/mpeg",
+                    "audio/mp3");
 
     private final WebClient webClient = WebClient.builder().build();
 
@@ -75,7 +72,7 @@ public class MaterialPutController extends Controller {
     }
 
     @PutMapping(value = "/{materialId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<? > updateMaterialJson(
+    public ResponseEntity<?> updateMaterialJson(
             @PathVariable String courseId,
             @PathVariable String materialId,
             @RequestBody Map<String, String> request) {
@@ -86,16 +83,14 @@ public class MaterialPutController extends Controller {
             courseUuid = UUID.fromString(courseId);
             materialUuid = UUID.fromString(materialId);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("status", "bad", "message", "invalid UUID format")
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("status", "bad", "message", "invalid UUID format"));
         }
 
         Course course = new QCourse().uuid.eq(courseUuid).findOne();
         if (course == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("status", "bad", "message", "course not found")
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "bad", "message", "course not found"));
         }
 
         UrlAttachment urlAttachment = new QUrlAttachment().uuid.eq(materialUuid).findOne();
@@ -104,12 +99,15 @@ public class MaterialPutController extends Controller {
             String url = request.get("url");
             String description = request.get("description");
 
-            if (name != null && ! name.isEmpty()) {
+            if (name != null && !name.isEmpty()) {
                 urlAttachment.setName(name);
             }
             if (url != null && !url.isEmpty()) {
                 urlAttachment.setUrl(url);
-                urlAttachment.setFaviconUrl("https://icons.duckduckgo.com/ip2/" + url.replace("https://", "").replace("http://", "").split("/")[0] + ".ico");
+                urlAttachment.setFaviconUrl(
+                        "https://icons.duckduckgo.com/ip2/"
+                                + url.replace("https://", "").replace("http://", "").split("/")[0]
+                                + ".ico");
             }
             if (description != null) {
                 urlAttachment.setDescription(description);
@@ -135,9 +133,8 @@ public class MaterialPutController extends Controller {
             return ResponseEntity.ok(fileAttachment);
         }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            Map.of("status", "bad", "message", "material not found")
-        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("status", "bad", "message", "material not found"));
     }
 
     @PutMapping(value = "/{materialId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -146,7 +143,8 @@ public class MaterialPutController extends Controller {
             @PathVariable String materialId,
             @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestPart(value = "name", required = false) String name,
-            @RequestPart(value = "description", required = false) String description) throws Exception {
+            @RequestPart(value = "description", required = false) String description)
+            throws Exception {
 
         UUID courseUuid;
         UUID materialUuid;
@@ -154,90 +152,96 @@ public class MaterialPutController extends Controller {
             courseUuid = UUID.fromString(courseId);
             materialUuid = UUID.fromString(materialId);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("status", "bad", "message", "invalid UUID format")
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("status", "bad", "message", "invalid UUID format"));
         }
 
         Course course = new QCourse().uuid.eq(courseUuid).findOne();
         if (course == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("status", "bad", "message", "course not found")
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "bad", "message", "course not found"));
         }
 
         FileAttachment fileAttachment = new QFileAttachment().uuid.eq(materialUuid).findOne();
         if (fileAttachment == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                Map.of("status", "bad", "message", "material not found")
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "bad", "message", "material not found"));
         }
 
-        if (name != null && ! name.isEmpty()) {
+        if (name != null && !name.isEmpty()) {
             fileAttachment.setName(name);
         }
         if (description != null) {
             fileAttachment.setDescription(description);
         }
 
-        if (file != null && ! file.isEmpty()) {
+        if (file != null && !file.isEmpty()) {
             if (file.getSize() > MAX_FILE_SIZE) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    Map.of("status", "bad", "message", "file size exceeds 30MB limit")
-                );
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("status", "bad", "message", "file size exceeds 30MB limit"));
             }
 
             if (!isSupportedMimeType(file.getContentType())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    Map.of("status", "bad", "message", "unsupported file format")
-                );
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("status", "bad", "message", "unsupported file format"));
             }
 
             String oldUrl = fileAttachment.getFileUrl();
             String[] parts = oldUrl.split("/");
             String oldFileName = parts[parts.length - 1];
             try {
-                webClient.delete()
-                    .uri(DELETE_URL + "/" + oldFileName)
-                    .header("Authorization", "Bearer " + getApiKey())
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .block();
+                webClient
+                        .delete()
+                        .uri(DELETE_URL + "/" + oldFileName)
+                        .header("Authorization", "Bearer " + getApiKey())
+                        .retrieve()
+                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                        .block();
             } catch (WebClientResponseException e) {
-                System.err.println("Warning: Failed to delete old file from CDN:  " + e.getMessage());
+                System.err.println(
+                        "Warning: Failed to delete old file from CDN:  " + e.getMessage());
             }
 
             MultipartBodyBuilder builder = new MultipartBodyBuilder();
-            builder.part("file", new ByteArrayResource(file.getBytes()) {
-                @Override
-                public String getFilename() {
-                    return file.getOriginalFilename();
-                }
-            });
+            builder.part(
+                    "file",
+                    new ByteArrayResource(file.getBytes()) {
+                        @Override
+                        public String getFilename() {
+                            return file.getOriginalFilename();
+                        }
+                    });
             System.out.println("file name: " + file.getOriginalFilename());
 
             Map<String, Object> response;
             try {
-                response = webClient.post()
-                    .uri(UPLOAD_URL)
-                    .header("Authorization", "Bearer " + getApiKey())
-                    .header("X-Filename", file.getOriginalFilename())
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(BodyInserters.fromMultipartData(builder.build()))
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .block();
+                response =
+                        webClient
+                                .post()
+                                .uri(UPLOAD_URL)
+                                .header("Authorization", "Bearer " + getApiKey())
+                                .header("X-Filename", file.getOriginalFilename())
+                                .contentType(MediaType.MULTIPART_FORM_DATA)
+                                .body(BodyInserters.fromMultipartData(builder.build()))
+                                .retrieve()
+                                .bodyToMono(
+                                        new ParameterizedTypeReference<Map<String, Object>>() {})
+                                .block();
             } catch (WebClientResponseException e) {
-                System.err.println("Error: " + e.getRawStatusCode() + " - " + e.getResponseBodyAsString());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map.of("status", "bad", "message", "file upload to cdn server failed")
-                );
+                System.err.println(
+                        "Error: " + e.getRawStatusCode() + " - " + e.getResponseBodyAsString());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(
+                                Map.of(
+                                        "status",
+                                        "bad",
+                                        "message",
+                                        "file upload to cdn server failed"));
             }
 
             if (response == null || !Boolean.parseBoolean(response.get("success").toString())) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map.of("status", "bad", "message", "cdn server error")
-                );
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("status", "bad", "message", "cdn server error"));
             }
 
             String newFileUrl = cdn + response.get("url").toString();

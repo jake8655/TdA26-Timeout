@@ -1,18 +1,22 @@
 package eu.hypnomacka.timeout.server.core;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import io.ebean.Model;
 import io.ebean.annotation.DbEnumValue;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
+
 import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "file_attachments")
 public class FileAttachment extends Model {
@@ -32,8 +36,7 @@ public class FileAttachment extends Model {
         }
     }
 
-    @Id
-    private UUID uuid;
+    @Id private UUID uuid;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "course_uuid", nullable = false)
@@ -43,8 +46,7 @@ public class FileAttachment extends Model {
     @Column(nullable = false)
     private String name;
 
-    @Column
-    private String description;
+    @Column private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -57,16 +59,20 @@ public class FileAttachment extends Model {
     @Column(nullable = false)
     private String fileUrl;
 
-    @WhenCreated
-    private Instant createdAt;
+    @WhenCreated private Instant createdAt;
 
-    @WhenModified
-    private Instant updatedAt;
+    @WhenModified private Instant updatedAt;
 
-    public FileAttachment() {
-    }
+    public FileAttachment() {}
 
-    public FileAttachment(Course course, String name, String description, Type type, Long sizeBytes, String mimeType, String fileUrl) {
+    public FileAttachment(
+            Course course,
+            String name,
+            String description,
+            Type type,
+            Long sizeBytes,
+            String mimeType,
+            String fileUrl) {
         this.course = course;
         this.name = name;
         this.description = description;

@@ -2,25 +2,24 @@ package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
-import eu.hypnomacka.timeout.server.core.Lecturer;
-import eu.hypnomacka.timeout.server.core.Session;
-import eu.hypnomacka.timeout.server.core.query.QCourse;
-import eu.hypnomacka.timeout.server.core.query.QLecturer;
-import eu.hypnomacka.timeout.server.core.query.QSession;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/courses")
 public class CoursePostController extends Controller {
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> create(@CookieValue(value = "SESSION_ID", required = false) String sessionId, @RequestBody Map<String, String> body) {
+    @PostMapping(
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> create(
+            @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+            @RequestBody Map<String, String> body) {
         /*if (sessionId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 Map.of("status", "bad", "message", "no session found")
@@ -37,9 +36,8 @@ public class CoursePostController extends Controller {
         }*/
 
         if (name == null || name.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                Map.of("status", "bad", "message", "invalid name")
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("status", "bad", "message", "invalid name"));
         }
 
         /*Session session = new QSession().token.eq(sessionId).findOne();
@@ -51,9 +49,8 @@ public class CoursePostController extends Controller {
 
         Lecturer lecturer = new QLecturer().username.eq(session.getLecturer().getUsername()).findOne();*/
         if (lecturer == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                Map.of("status", "bad", "message", "session not linked to an account")
-            );
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "bad", "message", "session not linked to an account"));
         }
 
         Course course = new Course(lecturer, name, description);

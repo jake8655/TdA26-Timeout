@@ -41,6 +41,10 @@ public class Course extends Model {
     @JsonManagedReference
     private List<UrlAttachment> urlAttachments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Quiz> quizzes = new ArrayList<>();
+
     @WhenCreated
     private Instant createdAt;
 

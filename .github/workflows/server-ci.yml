@@ -13,6 +13,30 @@ on:
       - "apps/server/**"
 
 jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check build cache
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            ${{ github.workspace }}/apps/server/build
+          key: ${{ runner.os }}-spring-${{ hashFiles('apps/server/**/*.gradle*', 'apps/server/gradle.properties', 'apps/server/src/**/*.java') }}
+          restore-keys: |
+            ${{ runner.os }}-spring-
+
+      - name: Format
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: axel-op/googlejavaformat-action@4
+        with:
+          args: "-a --set-exit-if-changed"
+
   build:
     runs-on: ubuntu-latest
     steps:

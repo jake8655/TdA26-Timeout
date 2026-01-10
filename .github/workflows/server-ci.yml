@@ -32,7 +32,6 @@ jobs:
             ${{ runner.os }}-spring-
 
       - name: Format
-        if: steps.cache.outputs.cache-hit != 'true'
         uses: axel-op/googlejavaformat-action@v4
         with:
           args: "-a --set-exit-if-changed"

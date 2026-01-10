@@ -3,6 +3,7 @@ package eu.hypnomacka.timeout.server.controllers.course;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
+import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import org.springframework.http.HttpStatus;
@@ -59,6 +60,9 @@ public class CourseGetController extends Controller {
             return dateB.compareTo(dateA);
         });
 
+        List<Quiz> quizzes = new ArrayList<>(course.getQuizzes());
+        quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
+
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("uuid", course.getUuid());
         response.put("name", course.getName());
@@ -66,6 +70,7 @@ public class CourseGetController extends Controller {
         response.put("createdAt", course.getCreatedAt());
         response.put("updatedAt", course.getUpdatedAt());
         response.put("materials", materials);
+        response.put("quizzes", quizzes);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -85,6 +90,9 @@ public class CourseGetController extends Controller {
             return dateB.compareTo(dateA);
         });
 
+        List<Quiz> quizzes = new ArrayList<>(course.getQuizzes());
+        quizzes.sort(Comparator.comparing(Quiz::getCreatedAt).reversed());
+
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("uuid", course.getUuid());
         response.put("name", course.getName());
@@ -92,6 +100,7 @@ public class CourseGetController extends Controller {
         response.put("createdAt", course.getCreatedAt());
         response.put("updatedAt", course.getUpdatedAt());
         response.put("materials", materials);
+        response.put("quizzes", quizzes);
 
         return response;
     }

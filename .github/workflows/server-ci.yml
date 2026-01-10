@@ -31,19 +31,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spring-
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: 21
-          cache: 'gradle'
-          server-id: github
-          settings-path: ${{ github.workspace }}
-
       - name: Format
-        uses: axel-op/googlejavaformat-action@v4
-        with:
-          args: "-a --set-exit-if-changed"
+        working-directory: apps/server
+        run: |
+          chmod +x ./google-java-format
+          ./google-java-format --set-exit-if-changed $(find ./src -name "*.java")
 
   build:
     runs-on: ubuntu-latest

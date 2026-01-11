@@ -11,6 +11,7 @@ import { getCoursesByCourseIdOptions } from "@/api-client/@tanstack/react-query.
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { MaterialsList } from "@/components/courses/materials-list";
+import { CourseQuizCard } from "@/components/quizzes/CourseQuizCard";
 
 export default function CourseDetailPage({
 	params,
@@ -122,6 +123,42 @@ export default function CourseDetailPage({
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.4, delay: 0.6 }}
+							className="mt-8 border-white/5 border-t pt-8"
+						>
+							<div className="mb-6 flex items-center gap-3">
+								<BookOpen className="size-5 text-primary" />
+								<h2 className="font-semibold text-foreground text-lg">
+									Quizzes
+								</h2>
+							</div>
+							{data.quizzes && data.quizzes.length > 0 ? (
+								<div className="flex flex-col gap-3">
+									{data.quizzes.map((quiz) => (
+										<CourseQuizCard
+											key={quiz.uuid ?? quiz.title}
+											quiz={quiz}
+											courseId={uuid}
+											onSaveResult={(result) => {
+												// save to localStorage using default key pattern
+												localStorage.setItem(
+													`quizResult:${quiz.uuid}`,
+													JSON.stringify(result),
+												);
+											}}
+										/>
+									))}
+								</div>
+							) : (
+								<p className="text-muted-foreground">
+									No quizzes available for this course.
+								</p>
+							)}
+						</motion.div>
+
+						<motion.div
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.7 }}
 							className="mt-8 border-white/5 border-t pt-8"
 						>
 							<div className="mb-6 flex items-center gap-3">

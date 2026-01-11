@@ -6,6 +6,7 @@ import {
 	Download,
 	Edit2,
 	ExternalLink,
+	HelpCircle,
 	Loader2,
 	Plus,
 	Trash2,
@@ -18,12 +19,17 @@ import { use, useEffect } from "react";
 import {
 	getCoursesByCourseIdMaterialsOptions,
 	getCoursesByCourseIdOptions,
+	getCoursesByCourseIdQuizzesOptions,
 } from "@/api-client/@tanstack/react-query.gen";
-import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
+import type { FileMaterial, Quiz, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { DeleteMaterialDialog } from "@/components/dashboard/delete-material-dialog";
 import { MaterialFormDialog } from "@/components/dashboard/material-form-dialog";
+import {
+	DeleteQuizDialog,
+	QuizFormDialog,
+} from "@/components/dashboard/quiz-form-dialog";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -59,6 +65,16 @@ export default function DashboardCourseDetailPage({
 		isError: materialsError,
 	} = useQuery({
 		...getCoursesByCourseIdMaterialsOptions({
+			path: { courseId: uuid },
+		}),
+	});
+
+	const {
+		data: quizzes,
+		isPending: quizzesLoading,
+		isError: quizzesError,
+	} = useQuery({
+		...getCoursesByCourseIdQuizzesOptions({
 			path: { courseId: uuid },
 		}),
 	});
@@ -150,70 +166,141 @@ export default function DashboardCourseDetailPage({
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.5, delay: 0.1 }}
+							className="mb-6 flex items-center justify-between"
 						>
-							<div className="mb-6 flex items-center justify-between">
-								<h2 className="font-semibold text-foreground text-xl">
-									Course Materials
-								</h2>
+							<h2 className="font-semibold text-foreground text-xl">
+								Course Materials
+							</h2>
+							<MaterialFormDialog
+								mode="add"
+								courseId={uuid}
+								trigger={
+									<Button variant="accent" size="sm">
+										<Plus />
+										Add Material
+									</Button>
+								}
+							/>
+						</motion.div>
+
+						{materialsLoading ? (
+							<div className="flex justify-center py-12">
+								<Loader2 className="size-8 animate-spin text-primary" />
+							</div>
+						) : materialsError ? (
+							<div className="py-12 text-center text-muted-foreground">
+								<p>Failed to load materials. Please try again later.</p>
+							</div>
+						) : materials.length === 0 ? (
+							<motion.div
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ duration: 0.5, delay: 0.3 }}
+								className="flex flex-col items-center justify-center rounded-none border border-white/10 border-dashed py-16 text-center"
+							>
+								<div className="mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
+									<Plus className="size-8 text-primary" />
+								</div>
+								<h3 className="mb-2 font-medium text-foreground">
+									No materials yet
+								</h3>
+								<p className="mb-6 text-muted-foreground text-sm">
+									Add files or links for your students.
+								</p>
 								<MaterialFormDialog
 									mode="add"
 									courseId={uuid}
 									trigger={
 										<Button variant="accent" size="sm">
 											<Plus />
-											Add Material
+											Add First Material
+										</Button>
+									}
+								/>
+							</motion.div>
+						) : (
+							<div className="flex flex-col gap-3">
+								<AnimatePresence mode="popLayout">
+									{materials.map((material, index) => (
+										<DashboardMaterialCard
+											key={material.uuid}
+											material={material}
+											courseId={uuid}
+											index={index}
+										/>
+									))}
+								</AnimatePresence>
+							</div>
+						)}
+
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.2 }}
+							className="mb-8 border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
+						>
+							<div className="mb-6 flex items-center justify-between">
+								<h2 className="font-semibold text-foreground text-xl">
+									Course Quizzes
+								</h2>
+								<QuizFormDialog
+									mode="create"
+									courseId={uuid}
+									trigger={
+										<Button variant="accent" size="sm">
+											<Plus />
+											Add Quiz
 										</Button>
 									}
 								/>
 							</div>
 
-							{materialsLoading ? (
+							{quizzesLoading ? (
 								<div className="flex justify-center py-12">
 									<Loader2 className="size-8 animate-spin text-primary" />
 								</div>
-							) : materialsError ? (
+							) : quizzesError ? (
 								<div className="py-12 text-center text-muted-foreground">
-									<p>Failed to load materials. Please try again later.</p>
+									<p>Failed to load quizzes. Please try again later.</p>
 								</div>
-							) : materials.length === 0 ? (
+							) : quizzes.length === 0 ? (
 								<motion.div
 									initial={{ opacity: 0, y: 10 }}
 									animate={{ opacity: 1, y: 0 }}
+									transition={{ duration: 0.5, delay: 0.3 }}
 									className="flex flex-col items-center justify-center rounded-none border border-white/10 border-dashed py-16 text-center"
 								>
 									<div className="mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
 										<Plus className="size-8 text-primary" />
 									</div>
-									<h3 className="mb-2 font-medium text-foreground">
-										No materials yet
+									<h3 className="mb-2 font-semibold text-foreground text-lg">
+										No quizzes yet
 									</h3>
 									<p className="mb-6 text-muted-foreground text-sm">
-										Add files or links for your students.
+										Create your first quiz to test student knowledge.
 									</p>
-									<MaterialFormDialog
-										mode="add"
+									<QuizFormDialog
+										mode="create"
 										courseId={uuid}
 										trigger={
-											<Button variant="accent" size="sm">
-												<Plus />
-												Add First Material
+											<Button variant="accent" className="gap-2">
+												<Plus className="size-4" />
+												Create Your First Quiz
 											</Button>
 										}
 									/>
 								</motion.div>
 							) : (
-								<div className="flex flex-col gap-3">
-									<AnimatePresence mode="popLayout">
-										{materials.map((material, index) => (
-											<DashboardMaterialCard
-												key={material.uuid}
-												material={material}
-												courseId={uuid}
-												index={index}
-											/>
-										))}
-									</AnimatePresence>
-								</div>
+								<AnimatePresence mode="popLayout">
+									{quizzes.map((quiz, index) => (
+										<DashboardQuizCard
+											key={quiz.uuid}
+											quiz={quiz}
+											courseId={uuid}
+											index={index}
+										/>
+									))}
+								</AnimatePresence>
 							)}
 						</motion.div>
 					</>
@@ -314,6 +401,7 @@ function DashboardMaterialCard({
 						</a>
 					</Button>
 				)}
+
 				<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
 					<MaterialFormDialog
 						mode="edit"
@@ -343,6 +431,80 @@ function DashboardMaterialCard({
 						}
 					/>
 				</div>
+			</div>
+		</motion.div>
+	);
+}
+
+function DashboardQuizCard({
+	quiz,
+	courseId,
+	index,
+}: {
+	quiz: Quiz;
+	courseId: string;
+	index: number;
+}) {
+	return (
+		<motion.div
+			layout
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -20 }}
+			transition={{ duration: 0.3, delay: index * 0.03 }}
+			className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-white/10"
+		>
+			<div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+				<HelpCircle className="size-6 text-primary" />
+			</div>
+
+			<div className="flex-1 overflow-hidden">
+				<h3 className="font-semibold text-foreground text-sm">{quiz.title}</h3>
+				<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
+					<span>
+						{quiz.questions.length} question
+						{quiz.questions.length !== 1 ? "s" : ""}
+					</span>
+					{quiz.attemptsCount !== undefined && (
+						<>
+							<span className="text-white/20">•</span>
+							<span>
+								{quiz.attemptsCount} attempt
+								{quiz.attemptsCount !== 1 ? "s" : ""}
+							</span>
+						</>
+					)}
+				</div>
+			</div>
+
+			<div className="flex flex-col items-end gap-2 transition-opacity group-hover:opacity-100 lg:opacity-0">
+				<QuizFormDialog
+					mode="edit"
+					courseId={courseId}
+					quiz={quiz}
+					trigger={
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+						>
+							<Edit2 />
+						</Button>
+					}
+				/>
+				<DeleteQuizDialog
+					courseId={courseId}
+					quiz={quiz}
+					trigger={
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+						>
+							<Trash2 />
+						</Button>
+					}
+				/>
 			</div>
 		</motion.div>
 	);

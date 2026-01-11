@@ -9,6 +9,9 @@
 - DO NOT stage, commit, push code or open PRs, I will handle that
 - DO NOT run the dev server or any interactive commands, I will handle that
 - Use kebab-case for file and folder names
+- Prefer implicit return types over explicit ones
+  - When it is a complex type or there already is an explicit type that matches, you can use explicit types
+- DO NOT implement any tests or testing behavior or preparing for tests
 
 ## UI
 - Use Tailwind CSS for styling

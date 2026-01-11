@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
@@ -443,7 +443,6 @@ function DeleteQuizDialog({
 	trigger: React.ReactElement;
 }) {
 	const [open, setOpen] = useState(false);
-	const queryClient = useQueryClient();
 
 	const deleteMutation = useMutation({
 		...deleteCoursesByCourseIdQuizzesByQuizIdMutation(),
@@ -455,9 +454,6 @@ function DeleteQuizDialog({
 	const handleDelete = async () => {
 		await deleteMutation.mutateAsync({
 			path: { courseId, quizId: quiz.uuid as string },
-		});
-		await queryClient.invalidateQueries({
-			queryKey: ["getCoursesByCourseIdQuizzes", { path: { courseId } }],
 		});
 	};
 

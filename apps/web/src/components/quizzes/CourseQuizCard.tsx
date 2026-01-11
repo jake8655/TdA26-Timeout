@@ -1,14 +1,10 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { HelpCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import {
-	getCoursesByCourseIdQueryKey,
-	getCoursesByCourseIdQuizzesQueryKey,
-	postCoursesByCourseIdQuizzesByQuizIdSubmitMutation,
-} from "@/api-client/@tanstack/react-query.gen";
+import { postCoursesByCourseIdQuizzesByQuizIdSubmitMutation } from "@/api-client/@tanstack/react-query.gen";
 import type {
 	Quiz,
 	QuizAnswer,
@@ -30,7 +26,6 @@ export function CourseQuizCard({
 	onSaveResult,
 }: CourseQuizCardProps) {
 	const [isPlaying, setIsPlaying] = useState(false);
-	const queryClient = useQueryClient();
 	const mutation = useMutation(
 		postCoursesByCourseIdQuizzesByQuizIdSubmitMutation(),
 	);
@@ -49,13 +44,6 @@ export function CourseQuizCard({
 		});
 
 		localStorage.setItem(`quizResult:${quiz.uuid}`, JSON.stringify(response));
-
-		await queryClient.invalidateQueries({
-			queryKey: getCoursesByCourseIdQuizzesQueryKey({ path: { courseId } }),
-		});
-		await queryClient.invalidateQueries({
-			queryKey: getCoursesByCourseIdQueryKey({ path: { courseId } }),
-		});
 
 		return response;
 	};

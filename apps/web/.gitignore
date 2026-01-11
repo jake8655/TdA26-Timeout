@@ -40,3 +40,5 @@ next-env.d.ts
 
 # generated files
 src/api-client
+
+.sisyphus

@@ -454,7 +454,10 @@ components:
         - $ref: '#/components/schemas/FileMaterial'
         - $ref: '#/components/schemas/UrlMaterial'
       discriminator:
-        propertyName: materialType
+        propertyName: type
+        mapping:
+          file: '#/components/schemas/FileMaterial'
+          url: '#/components/schemas/UrlMaterial'
 
     FileMaterial:
       type: object
@@ -570,6 +573,9 @@ components:
         - $ref: '#/components/schemas/MultipleChoiceQuestion'
       discriminator:
         propertyName: type
+        mapping:
+          singleChoice: '#/components/schemas/SingleChoiceQuestion'
+          multipleChoice: '#/components/schemas/MultipleChoiceQuestion'
 
     SingleChoiceQuestion:
       type: object

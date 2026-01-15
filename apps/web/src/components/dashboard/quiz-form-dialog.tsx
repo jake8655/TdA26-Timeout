@@ -11,6 +11,7 @@ import {
 } from "@/api-client/@tanstack/react-query.gen";
 import type { Question, Quiz } from "@/api-client/types.gen";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogClose,
@@ -21,6 +22,15 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { useAppForm } from "@/hooks/form";
 
 const quizFormSchema = z.object({
@@ -158,28 +168,34 @@ function QuizFormDialog({
 											className="space-y-4 border border-white/5 bg-card/40 p-4"
 										>
 											<div className="mb-4">
-												<label className="font-medium text-sm">
+												<Label
+													htmlFor={`question-type-${index}`}
+													className="font-medium text-sm"
+												>
 													Question {index + 1}
-												</label>
+												</Label>
 												<form.AppField name={`questions[${index}].type`}>
 													{(typeField) => (
-														<select
+														<Select
 															value={typeField.state.value}
-															onChange={(e) => {
-																const newType = e.target.value as
-																	| "singleChoice"
-																	| "multipleChoice";
-																typeField.handleChange(newType);
+															onValueChange={(newType) => {
+																typeField.handleChange(
+																	newType as "singleChoice" | "multipleChoice",
+																);
 															}}
-															className="h-8 rounded-none border border-input bg-background px-2 text-xs outline-none transition-colors focus-visible:border-ring"
 														>
-															<option value="singleChoice">
-																Single Choice
-															</option>
-															<option value="multipleChoice">
-																Multiple Choice
-															</option>
-														</select>
+															<SelectTrigger name={`question-type-${index}`}>
+																<SelectValue />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value="singleChoice">
+																	Single Choice
+																</SelectItem>
+																<SelectItem value="multipleChoice">
+																	Multiple Choice
+																</SelectItem>
+															</SelectContent>
+														</Select>
 													)}
 												</form.AppField>
 
@@ -293,45 +309,47 @@ function QuizFormDialog({
 												>
 													{(qValues) => {
 														const qType = qValues[index]?.type;
+														const correctIndex =
+															qType === "singleChoice"
+																? (qValues[index] as { correctIndex: number })
+																		.correctIndex
+																: undefined;
 														return (
-															<>
+															<RadioGroup
+																value={
+																	qType === "singleChoice"
+																		? String(correctIndex ?? 0)
+																		: undefined
+																}
+																onValueChange={(value) => {
+																	if (qType !== "singleChoice") return;
+																	form.setFieldValue(
+																		`questions[${index}].correctIndex`,
+																		Number.parseInt(String(value), 10),
+																	);
+																}}
+															>
 																{qValues[index]?.options.map((_, optIndex) => (
 																	<div
 																		// biome-ignore lint/suspicious/noArrayIndexKey: dont have anything else
 																		key={optIndex}
 																		className="flex items-center gap-2"
 																	>
-																		<form.AppField
-																			name={`questions[${index}].correctIndex`}
-																		>
-																			{() => (
-																				<input
-																					type="radio"
-																					name={`q${index}-correct`}
-																					checked={
-																						qType === "multipleChoice"
-																							? undefined
-																							: qValues[index]?.correctIndex ===
-																								optIndex
-																					}
-																					onChange={() => {
-																						form.setFieldValue(
-																							`questions[${index}].correctIndex`,
-																							optIndex,
-																						);
-																					}}
-																					className="size-4 shrink-0 appearance-none rounded-none border border-input bg-background outline-none transition-colors checked:border-primary checked:bg-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-																				/>
-																			)}
-																		</form.AppField>
-
+																		<RadioGroupItem
+																			value={optIndex.toString()}
+																			id={`correct-radio-${index}-${optIndex}`}
+																			className={
+																				qType === "multipleChoice"
+																					? "pointer-events-none opacity-30"
+																					: ""
+																			}
+																		/>
 																		<form.AppField
 																			name={`questions[${index}].correctIndices`}
 																		>
 																			{(_field) => (
-																				<input
-																					type="checkbox"
-																					name={`q${index}-correct`}
+																				<Checkbox
+																					name={`correct-checkbox-${index}-${optIndex}`}
 																					checked={
 																						qType === "multipleChoice"
 																							? (
@@ -340,32 +358,36 @@ function QuizFormDialog({
 																								).includes(optIndex)
 																							: false
 																					}
-																					onChange={() => {
+																					onCheckedChange={(checked) => {
 																						if (qType !== "multipleChoice")
 																							return;
 
 																						const current =
 																							qValues[index]?.correctIndices ??
 																							[];
-																						const updated = current.includes(
-																							optIndex,
-																						)
-																							? current.filter(
+
+																						const updated = checked
+																							? [...current, optIndex]
+																							: current.filter(
 																									(i) => i !== optIndex,
-																								)
-																							: [...current, optIndex];
+																								);
+
 																						form.setFieldValue(
 																							`questions[${index}].correctIndices`,
 																							updated,
 																						);
 																					}}
-																					className="size-4 shrink-0 appearance-none rounded-none border border-input bg-background outline-none transition-colors checked:border-primary checked:bg-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+																					className={
+																						qType === "singleChoice"
+																							? "pointer-events-none opacity-30"
+																							: ""
+																					}
 																				/>
 																			)}
 																		</form.AppField>
 																	</div>
 																))}
-															</>
+															</RadioGroup>
 														);
 													}}
 												</form.Subscribe>

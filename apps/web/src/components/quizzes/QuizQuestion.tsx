@@ -6,6 +6,9 @@ import type {
 	Question,
 	SingleChoiceQuestion,
 } from "@/api-client/types.gen";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 
 interface QuizQuestionProps {
@@ -28,9 +31,9 @@ export function QuizQuestion({
 	const isSingleChoice = question.type === "singleChoice";
 	const isMultipleChoice = question.type === "multipleChoice";
 
-	const handleSingleChoiceChange = (value: string) => {
+	const handleSingleChoiceChange = (value: unknown) => {
 		if (isReadOnly) return;
-		onAnswerChange(parseInt(value, 10));
+		onAnswerChange(parseInt(String(value), 10));
 	};
 
 	const handleMultipleChoiceChange = (index: number, checked: boolean) => {
@@ -114,67 +117,64 @@ export function QuizQuestion({
 				</div>
 			</div>
 
-			<fieldset
+			<RadioGroup
 				className="mt-4 space-y-2"
-				data-testid={`question-${questionIndex}`}
+				value={isSingleChoice ? String(selectedAnswer ?? "") : undefined}
+				onValueChange={isSingleChoice ? handleSingleChoiceChange : undefined}
 			>
-				<legend className="sr-only">
-					Answer options for question {questionIndex + 1}
-				</legend>
-				{options.map((option: string, index: number) => {
+				{options.map((option, index) => {
 					const inputId = `q${questionIndex}-opt${index}`;
 					const checked = isChecked(index);
 
 					return (
-						<motion.label
+						<Label
 							key={inputId}
-							initial={{ opacity: 0, x: -10 }}
-							animate={{ opacity: 1, x: 0 }}
-							transition={{ delay: index * 0.05 }}
+							htmlFor={inputId}
 							className={cn(
 								"group flex items-center gap-3 rounded-none border p-3 transition-colors duration-200",
 								getOptionStyle(index),
 								isReadOnly && "cursor-not-allowed",
 								!isReadOnly && "cursor-pointer",
 							)}
-							htmlFor={inputId}
 						>
-							<input
-								id={inputId}
-								type={isMultipleChoice ? "checkbox" : "radio"}
-								name={`question-${questionIndex}`}
-								value={index}
-								checked={checked}
-								onChange={(e) => {
-									if (isMultipleChoice) {
-										handleMultipleChoiceChange(index, e.target.checked);
-									} else {
-										handleSingleChoiceChange(e.target.value);
-									}
-								}}
-								disabled={isReadOnly}
-								className={cn(
-									"size-4 shrink-0 appearance-none rounded-none border border-input bg-background outline-none transition-colors",
-									"checked:after:-translate-x-1/2 checked:after:-translate-y-1/2 checked:border-primary checked:bg-primary checked:after:absolute checked:after:top-1/2 checked:after:left-1/2 checked:after:content-['']",
-									"focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-									"disabled:cursor-not-allowed disabled:opacity-50",
-									isMultipleChoice
-										? "rounded-none checked:after:top-1 checked:after:left-0.5 checked:after:size-1.5"
-										: "rounded-full checked:after:size-1.5",
+							<motion.div
+								initial={{ opacity: 0, x: -10 }}
+								animate={{ opacity: 1, x: 0 }}
+								transition={{ delay: index * 0.05 }}
+								className="flex w-full items-center gap-3"
+							>
+								{isSingleChoice ? (
+									<RadioGroupItem
+										id={inputId}
+										value={index}
+										disabled={isReadOnly}
+									/>
+								) : (
+									<Checkbox
+										id={inputId}
+										checked={checked}
+										onCheckedChange={(checked) =>
+											handleMultipleChoiceChange(index, checked)
+										}
+										disabled={isReadOnly}
+									/>
 								)}
-								data-testid={`${inputId}-input`}
-							/>
-							<span className="text-foreground text-sm">{option}</span>
-							{isReadOnly && isOptionCorrect(index) === true && (
-								<span className="ml-auto text-green-500 text-xs">Correct</span>
-							)}
-							{isReadOnly && isOptionCorrect(index) === false && checked && (
-								<span className="ml-auto text-red-500 text-xs">Incorrect</span>
-							)}
-						</motion.label>
+								<span className="text-foreground text-sm">{option}</span>
+								{isReadOnly && isOptionCorrect(index) === true && (
+									<span className="ml-auto text-green-500 text-xs">
+										Correct
+									</span>
+								)}
+								{isReadOnly && isOptionCorrect(index) === false && checked && (
+									<span className="ml-auto text-red-500 text-xs">
+										Incorrect
+									</span>
+								)}
+							</motion.div>
+						</Label>
 					);
 				})}
-			</fieldset>
+			</RadioGroup>
 		</motion.div>
 	);
 }

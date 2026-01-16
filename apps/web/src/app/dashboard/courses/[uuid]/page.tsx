@@ -25,6 +25,12 @@ import {
 import type { FileMaterial, Quiz, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
+import { CourseFeed } from "@/components/courses/course-feed";
+import { DeleteFeedPostButton } from "@/components/courses/delete-feed-post-dialog";
+import {
+	CreateFeedPostButton,
+	EditFeedPostButton,
+} from "@/components/courses/feed-post-form-dialog";
 import { CourseFormDialog } from "@/components/dashboard/course-form-dialog";
 import { DeleteMaterialDialog } from "@/components/dashboard/delete-material-dialog";
 import { MaterialFormDialog } from "@/components/dashboard/material-form-dialog";
@@ -174,6 +180,29 @@ export default function DashboardCourseDetailPage({
 								</div>
 							</div>
 						</motion.div>
+
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.1 }}
+							className="flex items-center justify-between"
+						>
+							<h2 className="font-semibold text-foreground text-xl">
+								Course Feed
+							</h2>
+							<CreateFeedPostButton courseId={uuid} />
+						</motion.div>
+
+						<CourseFeed
+							courseId={uuid}
+							showActions
+							editTrigger={(item) => (
+								<EditFeedPostButton post={item} courseId={uuid} />
+							)}
+							deleteTrigger={(item) => (
+								<DeleteFeedPostButton post={item} courseId={uuid} />
+							)}
+						/>
 
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}

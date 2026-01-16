@@ -36,9 +36,3 @@ You can check them with:
 bun check
 bun types
 ```
-
-## Ideas
-
-A book 3d model on the homepage similar to my website. It opens on page load. Open/close with mouse click.
-It should have some kind of learning cover/text inside.
-If not book maybe some other 3d model (rubicks cube like resend?)

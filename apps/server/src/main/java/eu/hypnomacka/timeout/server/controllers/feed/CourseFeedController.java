@@ -6,15 +6,14 @@ import eu.hypnomacka.timeout.server.core.Event;
 import io.ebean.DB;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import java.io.IOException;
+import java.util.*;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.io.IOException;
-import java.util.*;
 
 @RestController
 @RequestMapping("/courses")
@@ -43,12 +42,7 @@ public class CourseFeedController extends Controller {
     }
 
     List<Event> events =
-        DB.find(Event.class)
-            .where()
-            .eq("course.uuid", uuid)
-            .orderBy()
-            .desc("createdAt")
-            .findList();
+        DB.find(Event.class).where().eq("course.uuid", uuid).orderBy().desc("createdAt").findList();
 
     List<Map<String, Object>> response = new ArrayList<>();
     for (Event event : events) {

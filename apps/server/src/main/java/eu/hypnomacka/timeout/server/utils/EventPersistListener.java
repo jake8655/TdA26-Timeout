@@ -13,24 +13,24 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EventPersistListener extends BeanPersistAdapter {
 
-    private final CourseFeedService feedService;
+  private final CourseFeedService feedService;
 
-    @Override
-    public boolean isRegisterFor(Class<?> cls) {
-        return Event.class.equals(cls);
-    }
+  @Override
+  public boolean isRegisterFor(Class<?> cls) {
+    return Event.class.equals(cls);
+  }
 
-    @Override
-    public void postInsert(BeanPersistRequest<?> request) {
-        Event event = (Event) request.bean();
-        log.debug("Event created, broadcasting: {}", event.getUuid());
-        feedService.broadcastEvent(event);
-    }
+  @Override
+  public void postInsert(BeanPersistRequest<?> request) {
+    Event event = (Event) request.bean();
+    log.debug("Event created, broadcasting: {}", event.getUuid());
+    feedService.broadcastEvent(event);
+  }
 
-    @Override
-    public void postUpdate(BeanPersistRequest<?> request) {
-        Event event = (Event) request.bean();
-        log.debug("Event updated, broadcasting: {}", event.getUuid());
-        feedService.broadcastEvent(event);
-    }
+  @Override
+  public void postUpdate(BeanPersistRequest<?> request) {
+    Event event = (Event) request.bean();
+    log.debug("Event updated, broadcasting: {}", event.getUuid());
+    feedService.broadcastEvent(event);
+  }
 }

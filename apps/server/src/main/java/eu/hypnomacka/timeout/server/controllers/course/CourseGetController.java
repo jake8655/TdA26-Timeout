@@ -8,7 +8,6 @@ import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QEvent;
-import io.ebean.DB;
 import java.time.Instant;
 import java.util.*;
 import org.springframework.http.HttpStatus;
@@ -68,11 +67,7 @@ public class CourseGetController extends Controller {
     List<Quiz> quizzes = new ArrayList<>(course.getQuizzes());
     quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
 
-    List<Event> events = new QEvent()
-        .course.eq(course)
-        .orderBy()
-        .createdAt.desc()
-        .findList();
+    List<Event> events = new QEvent().course.eq(course).orderBy().createdAt.desc().findList();
 
     List<Map<String, Object>> feed = new ArrayList<>();
     for (Event event : events) {

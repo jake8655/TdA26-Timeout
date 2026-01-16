@@ -10,6 +10,7 @@ import {
 	phase,
 	type Quiz,
 } from "../phase-utils";
+import { EventSource } from "eventsource";
 
 phase(4, () => {
 	let testCourseId: string;

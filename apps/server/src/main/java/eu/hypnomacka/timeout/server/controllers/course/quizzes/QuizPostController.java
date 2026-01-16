@@ -3,7 +3,9 @@ package eu.hypnomacka.timeout.server.controllers.course.quizzes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.Question;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
@@ -20,6 +22,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/courses/{courseId}/quizzes")
 public class QuizPostController extends Controller {
+
+  private final CourseFeedService feedService;
+
+  public QuizPostController(CourseFeedService feedService) {
+    this.feedService = feedService;
+  }
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -50,6 +58,16 @@ public class QuizPostController extends Controller {
 
     Quiz quiz = new Quiz(course, request.getTitle());
     quiz.save();
+
+    Event event = new Event();
+    event.setUuid(java.util.UUID.randomUUID());
+    event.setCourse(course);
+    event.setType(Event.Type.SYSTEM);
+    event.setMessage("New quiz created: " + request.getTitle());
+    event.setEdited(false);
+    event.save();
+
+    feedService.broadcastEvent(event);
 
     if (request.getQuestions() == null) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)

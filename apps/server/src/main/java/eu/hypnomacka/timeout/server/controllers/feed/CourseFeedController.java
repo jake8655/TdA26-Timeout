@@ -91,6 +91,8 @@ public class CourseFeedController extends Controller {
     event.setEdited(false);
     event.save();
 
+    feedService.broadcastEvent(event);
+
     Map<String, Object> eventMap = new LinkedHashMap<>();
     eventMap.put("uuid", event.getUuid());
     eventMap.put("type", event.getType().name().toLowerCase());
@@ -103,17 +105,17 @@ public class CourseFeedController extends Controller {
   }
 
   @GetMapping(value = "/{UUID}/feed/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public SseEmitter streamFeed(@PathVariable("UUID") String uuidStr) {
+  public ResponseEntity<SseEmitter> streamFeed(@PathVariable("UUID") String uuidStr) {
     UUID uuid;
     try {
       uuid = UUID.fromString(uuidStr);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid UUID format");
+      return ResponseEntity.badRequest().build();
     }
 
     Course course = DB.find(Course.class, uuid);
     if (course == null) {
-      throw new IllegalArgumentException("Course not found");
+      return ResponseEntity.notFound().build();
     }
 
     SseEmitter emitter = new SseEmitter(1800000L);
@@ -129,9 +131,10 @@ public class CourseFeedController extends Controller {
           SseEmitter.event().name("connected").data("{\"message\":\"Connected to course feed\"}"));
     } catch (IOException e) {
       feedService.removeEmitter(uuid, emitter);
+      return ResponseEntity.internalServerError().build();
     }
 
-    return emitter;
+    return ResponseEntity.ok().header("Content-Type", "text/event-stream").body(emitter);
   }
 
   @PutMapping(value = "/{UUID}/feed/{postUUID}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -170,6 +173,8 @@ public class CourseFeedController extends Controller {
     event.setMessage(request.getMessage());
     event.setEdited(request.getEdited());
     event.save();
+
+    feedService.broadcastEvent(event);
 
     Map<String, Object> eventMap = new LinkedHashMap<>();
     eventMap.put("uuid", event.getUuid());

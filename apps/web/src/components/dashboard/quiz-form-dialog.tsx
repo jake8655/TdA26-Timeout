@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 import {
@@ -9,8 +9,14 @@ import {
 	postCoursesByCourseIdQuizzesMutation,
 	putCoursesByCourseIdQuizzesByQuizIdMutation,
 } from "@/api-client/@tanstack/react-query.gen";
-import type { Question, Quiz } from "@/api-client/types.gen";
+import type {
+	MultipleChoiceQuestion,
+	Question,
+	Quiz,
+	SingleChoiceQuestion,
+} from "@/api-client/types.gen";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
@@ -24,14 +30,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { useAppForm } from "@/hooks/form";
+import { Switch } from "../ui/switch";
 
 const quizFormSchema = z.object({
 	title: z.string().min(1, "Title is required"),
@@ -43,7 +43,7 @@ const quizFormSchema = z.object({
 					question: z.string().min(1, "Question text is required"),
 					type: z.literal("singleChoice"),
 					options: z
-						.array(z.string())
+						.array(z.string().nonempty("Option text is required"))
 						.min(2, "At least 2 options are required"),
 					correctIndex: z.number(),
 				}),
@@ -52,7 +52,7 @@ const quizFormSchema = z.object({
 					question: z.string().min(1, "Question text is required"),
 					type: z.literal("multipleChoice"),
 					options: z
-						.array(z.string())
+						.array(z.string().nonempty("Option text is required"))
 						.min(2, "At least 2 options are required"),
 					correctIndices: z
 						.array(z.number())
@@ -153,7 +153,6 @@ function QuizFormDialog({
 							<field.TextField
 								label="Quiz Title"
 								placeholder="Enter quiz title"
-								className="h-10"
 							/>
 						)}
 					</form.AppField>
@@ -161,80 +160,115 @@ function QuizFormDialog({
 					<div className="space-y-4">
 						<form.Subscribe selector={(state) => state.values.questions}>
 							{(questions) => (
-								<div className="space-y-6">
+								<div className="space-y-4">
 									{questions.map((q, index) => (
-										<div
+										<Card
 											key={q.uuid}
-											className="space-y-4 border border-white/5 bg-card/40 p-4"
+											className="relative border-border/50 bg-card/50 py-4"
 										>
-											<div className="mb-4">
-												<Label
-													htmlFor={`question-type-${index}`}
-													className="font-medium text-sm"
-												>
-													Question {index + 1}
-												</Label>
-												<form.AppField name={`questions[${index}].type`}>
-													{(typeField) => (
-														<Select
-															value={typeField.state.value}
-															onValueChange={(newType) => {
-																typeField.handleChange(
-																	newType as "singleChoice" | "multipleChoice",
-																);
-															}}
-														>
-															<SelectTrigger name={`question-type-${index}`}>
-																<SelectValue />
-															</SelectTrigger>
-															<SelectContent>
-																<SelectItem value="singleChoice">
-																	Single Choice
-																</SelectItem>
-																<SelectItem value="multipleChoice">
+											<CardContent className="space-y-4">
+												<div className="flex items-start justify-between gap-4">
+													<div className="flex-1 space-y-1">
+														<div className="mb-2 flex items-center justify-between">
+															<Label className="font-medium text-muted-foreground text-xs">
+																Question {index + 1}
+															</Label>
+															<div className="ml-auto flex items-center gap-2">
+																<Label
+																	htmlFor={`question-type-${index}`}
+																	className="font-normal text-muted-foreground text-xs"
+																>
 																	Multiple Choice
-																</SelectItem>
-															</SelectContent>
-														</Select>
-													)}
-												</form.AppField>
+																</Label>
+																<form.AppField
+																	name={`questions[${index}].type`}
+																>
+																	{(field) => (
+																		<Switch
+																			id={`question-type-${index}`}
+																			checked={
+																				field.state.value === "multipleChoice"
+																			}
+																			onCheckedChange={(checked) => {
+																				field.handleChange(
+																					checked
+																						? "multipleChoice"
+																						: "singleChoice",
+																				);
 
-												<form.AppField name={`questions[${index}].question`}>
-													{(field) => (
-														<field.TextField
-															label="Question"
-															placeholder="Enter question text"
-															className="h-10"
-														/>
-													)}
-												</form.AppField>
-											</div>
+																				if (checked) {
+																					form.setFieldValue(
+																						`questions[${index}].correctIndices`,
+																						[0],
+																					);
+																				} else {
+																					form.setFieldValue(
+																						`questions[${index}].correctIndex`,
+																						0,
+																					);
+																				}
+																			}}
+																		/>
+																	)}
+																</form.AppField>
+															</div>
+															<Button
+																type="button"
+																variant="ghost"
+																size="icon-sm"
+																onClick={() => {
+																	form.setFieldValue("questions", (current) =>
+																		current.filter((_, i) => i !== index),
+																	);
+																}}
+																className="ml-4 shrink-0 text-muted-foreground hover:text-destructive"
+																aria-label={`Remove question ${index + 1}`}
+															>
+																<Trash2 />
+															</Button>
+														</div>
+														<form.AppField
+															name={`questions[${index}].question`}
+														>
+															{(field) => (
+																<field.TextField placeholder="Enter question text" />
+															)}
+														</form.AppField>
+													</div>
+												</div>
 
-											<div className="space-y-3">
-												<form.Subscribe
-													selector={(state) => state.values.questions}
-												>
-													{(qValues) => (
-														<>
-															{qValues[index]?.options.map((_, optIndex) => (
+												<div className="space-y-2">
+													<form.Subscribe
+														selector={(state) => state.values.questions}
+													>
+														{(qValues) => {
+															const qType = qValues[index]?.type;
+															const options = qValues[index]?.options ?? [];
+															const correctIndex =
+																qType === "singleChoice"
+																	? (qValues[index] as SingleChoiceQuestion)
+																			.correctIndex
+																	: undefined;
+
+															const renderOptionRow = (
+																optIndex: number,
+																control: React.ReactNode,
+															) => (
 																<div
-																	// biome-ignore lint/suspicious/noArrayIndexKey: dont have anything else
 																	key={optIndex}
 																	className="flex items-center gap-2"
 																>
+																	{control}
 																	<form.AppField
 																		name={`questions[${index}].options[${optIndex}]`}
 																	>
 																		{(field) => (
 																			<field.TextField
-																				label={`Option ${optIndex + 1}`}
 																				placeholder={`Option ${optIndex + 1}`}
-																				className="h-8 flex-1"
 																			/>
 																		)}
 																	</form.AppField>
-																	{(qValues[index]?.options.length ?? 0) >
-																		2 && (
+																	{options.length > 2 && (
 																		<Button
 																			type="button"
 																			variant="ghost"
@@ -254,195 +288,151 @@ function QuizFormDialog({
 																							),
 																						};
 
-																						return current;
+																						return structuredClone(current);
 																					},
 																				);
 																			}}
 																			className="shrink-0 text-muted-foreground hover:text-destructive"
 																		>
-																			<Trash2 className="size-3" />
+																			<X className="size-3.5" />
 																		</Button>
 																	)}
 																</div>
-															))}
+															);
 
-															<form.Subscribe
-																selector={(state) => state.values.questions}
-															>
-																{(qValues) => (
-																	<Button
-																		type="button"
-																		variant="ghost"
-																		size="xs"
-																		disabled={
-																			(qValues[index]?.options.length ?? 0) >= 6
-																		}
-																		onClick={() => {
+															if (qType === "singleChoice") {
+																return (
+																	<RadioGroup
+																		value={String(correctIndex ?? 0)}
+																		onValueChange={(value) => {
 																			form.setFieldValue(
-																				"questions",
-																				(current) => {
-																					const question = current[
-																						index
-																					] as Question;
-
-																					current[index] = {
-																						...question,
-																						options: [...question.options, ""],
-																					};
-
-																					return current;
-																				},
+																				`questions[${index}].correctIndex`,
+																				Number.parseInt(value as string, 10),
 																			);
 																		}}
-																		className="gap-1 text-muted-foreground text-xs hover:text-foreground"
+																		className="grid gap-2"
 																	>
-																		Add Option
-																	</Button>
-																)}
-															</form.Subscribe>
-														</>
-													)}
-												</form.Subscribe>
+																		{options.map((_, optIndex) =>
+																			renderOptionRow(
+																				optIndex,
+																				<RadioGroupItem
+																					value={optIndex.toString()}
+																					id={`q${index}-opt${optIndex}`}
+																				/>,
+																			),
+																		)}
+																	</RadioGroup>
+																);
+															}
 
-												<form.Subscribe
-													selector={(state) => state.values.questions}
-												>
-													{(qValues) => {
-														const qType = qValues[index]?.type;
-														const correctIndex =
-															qType === "singleChoice"
-																? (qValues[index] as { correctIndex: number })
-																		.correctIndex
-																: undefined;
-														return (
-															<RadioGroup
-																value={
-																	qType === "singleChoice"
-																		? String(correctIndex ?? 0)
-																		: undefined
-																}
-																onValueChange={(value) => {
-																	if (qType !== "singleChoice") return;
-																	form.setFieldValue(
-																		`questions[${index}].correctIndex`,
-																		Number.parseInt(String(value), 10),
-																	);
-																}}
-															>
-																{qValues[index]?.options.map((_, optIndex) => (
-																	<div
-																		// biome-ignore lint/suspicious/noArrayIndexKey: dont have anything else
-																		key={optIndex}
-																		className="flex items-center gap-2"
-																	>
-																		<RadioGroupItem
-																			value={optIndex.toString()}
-																			id={`correct-radio-${index}-${optIndex}`}
-																			className={
-																				qType === "multipleChoice"
-																					? "pointer-events-none opacity-30"
-																					: ""
-																			}
-																		/>
-																		<form.AppField
-																			name={`questions[${index}].correctIndices`}
-																		>
-																			{(_field) => (
-																				<Checkbox
-																					name={`correct-checkbox-${index}-${optIndex}`}
-																					checked={
-																						qType === "multipleChoice"
-																							? (
-																									qValues[index]
-																										?.correctIndices ?? []
-																								).includes(optIndex)
-																							: false
-																					}
-																					onCheckedChange={(checked) => {
-																						if (qType !== "multipleChoice")
-																							return;
+															return (
+																<div className="grid gap-2">
+																	{options.map((_, optIndex) =>
+																		renderOptionRow(
+																			optIndex,
+																			<Checkbox
+																				checked={(
+																					(
+																						qValues[
+																							index
+																						] as MultipleChoiceQuestion
+																					)?.correctIndices ?? []
+																				).includes(optIndex)}
+																				onCheckedChange={(checked) => {
+																					const current =
+																						(
+																							qValues[
+																								index
+																							] as MultipleChoiceQuestion
+																						)?.correctIndices ?? [];
 
-																						const current =
-																							qValues[index]?.correctIndices ??
-																							[];
+																					const updated = checked
+																						? [...current, optIndex]
+																						: current.filter(
+																								(i) => i !== optIndex,
+																							);
 
-																						const updated = checked
-																							? [...current, optIndex]
-																							: current.filter(
-																									(i) => i !== optIndex,
-																								);
-
-																						form.setFieldValue(
-																							`questions[${index}].correctIndices`,
-																							updated,
-																						);
-																					}}
-																					className={
-																						qType === "singleChoice"
-																							? "pointer-events-none opacity-30"
-																							: ""
-																					}
-																				/>
-																			)}
-																		</form.AppField>
-																	</div>
-																))}
-															</RadioGroup>
-														);
-													}}
-												</form.Subscribe>
-
-												{questions.length > 1 && (
-													<Button
-														type="button"
-														variant="ghost"
-														size="icon-sm"
-														onClick={() => {
-															form.setFieldValue("questions", (current) =>
-																current.filter((_, i) => i !== index),
+																					form.setFieldValue(
+																						`questions[${index}].correctIndices`,
+																						updated,
+																					);
+																				}}
+																			/>,
+																		),
+																	)}
+																</div>
 															);
 														}}
-														className="shrink-0 text-muted-foreground hover:text-destructive"
-														aria-label={`Remove question ${index + 1}`}
+													</form.Subscribe>
+
+													<form.Subscribe
+														selector={(state) => state.values.questions}
 													>
-														<Trash2 className="size-3.5" />
-													</Button>
-												)}
-											</div>
-										</div>
+														{(qValues) => (
+															<Button
+																type="button"
+																variant="ghost"
+																size="xs"
+																disabled={
+																	(qValues[index]?.options.length ?? 0) >= 6
+																}
+																onClick={() => {
+																	form.setFieldValue("questions", (current) => {
+																		const question = current[index] as Question;
+
+																		current[index] = {
+																			...question,
+																			options: [...question.options, ""],
+																		};
+																		return structuredClone(current);
+																	});
+																}}
+																className="gap-1 text-muted-foreground text-xs hover:text-foreground"
+															>
+																<Plus className="size-3" />
+																Add Option
+															</Button>
+														)}
+													</form.Subscribe>
+												</div>
+											</CardContent>
+										</Card>
 									))}
 
-									<form.Subscribe selector={(state) => state.values.questions}>
-										{(_qValues) => (
-											<Button
-												type="button"
-												variant="outline"
-												size="sm"
-												onClick={() => {
-													form.setFieldValue("questions", (current) => [
-														...current,
-														{
-															uuid: crypto.randomUUID(),
-															question: "",
-															type: "singleChoice",
-															options: ["", ""],
-															correctIndex: 0,
-														},
-													]);
-												}}
-												className="w-full"
-											>
-												Add Question
-											</Button>
-										)}
-									</form.Subscribe>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => {
+											form.setFieldValue("questions", (current) => [
+												...current,
+												{
+													uuid: crypto.randomUUID(),
+													question: "",
+													type: "singleChoice",
+													options: ["", ""],
+													correctIndex: 0,
+												},
+											]);
+										}}
+										className="w-full gap-2"
+									>
+										<Plus className="size-4" />
+										Add Question
+									</Button>
 								</div>
 							)}
 						</form.Subscribe>
 					</div>
 
 					<DialogFooter>
-						<DialogClose render={<Button variant="outline">Cancel</Button>} />
+						<DialogClose
+							render={
+								<Button variant="outline" className="h-9 px-4 py-2 text-sm">
+									Cancel
+								</Button>
+							}
+						/>
 						<form.AppForm>
 							<form.SubscribeButton
 								label={mode === "create" ? "Create Quiz" : "Save Changes"}
@@ -498,7 +488,11 @@ function DeleteQuizDialog({
 						disabled={deleteMutation.isPending}
 						onClick={handleDelete}
 					>
-						{deleteMutation.isPending ? "Deleting..." : "Delete"}
+						{deleteMutation.isPending ? (
+							<Loader2 className="animate-spin text-muted-foreground" />
+						) : (
+							"Delete"
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

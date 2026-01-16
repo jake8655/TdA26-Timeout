@@ -11,7 +11,7 @@ import { getCoursesByCourseIdOptions } from "@/api-client/@tanstack/react-query.
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { MaterialsList } from "@/components/courses/materials-list";
-import { CourseQuizCard } from "@/components/quizzes/CourseQuizCard";
+import { CourseQuizCard } from "@/components/quizzes/course-quiz-card";
 
 export default function CourseDetailPage({
 	params,
@@ -71,19 +71,9 @@ export default function CourseDetailPage({
 						<p>Failed to load course details. Please try again later.</p>
 					</motion.div>
 				) : (
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, delay: 0.1 }}
-						className="border border-white/5 bg-card/40 p-8 backdrop-blur-sm md:p-12"
-					>
+					<section className="border border-white/5 bg-card/40 p-8 backdrop-blur-sm md:p-12">
 						<div className="mb-8 flex items-center gap-6">
-							<motion.div
-								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: 1, scale: 1 }}
-								transition={{ duration: 0.4, delay: 0.2 }}
-								className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10 md:size-20"
-							>
+							<div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10 md:size-20">
 								<Image
 									src="/icons/Idea/zarivka_idea_blue.svg"
 									alt="Course icon"
@@ -91,24 +81,13 @@ export default function CourseDetailPage({
 									height={40}
 									className="size-10 md:size-12"
 								/>
-							</motion.div>
-
-							<motion.h1
-								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.4, delay: 0.3 }}
-								className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl"
-							>
+							</div>
+							<h1 className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl">
 								{data.name}
-							</motion.h1>
+							</h1>
 						</div>
 
-						<motion.div
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.5 }}
-							className="border-white/5 border-t pt-8"
-						>
+						<div className="border-white/5 border-t pt-8">
 							<h2 className="mb-4 font-semibold text-foreground text-lg">
 								About this course
 							</h2>
@@ -117,14 +96,9 @@ export default function CourseDetailPage({
 									<span className="italic">No description available</span>
 								)}
 							</p>
-						</motion.div>
+						</div>
 
-						<motion.div
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.6 }}
-							className="mt-8 border-white/5 border-t pt-8"
-						>
+						<div className="mt-8">
 							<div className="mb-6 flex items-center gap-3">
 								<BookOpen className="size-5 text-primary" />
 								<h2 className="font-semibold text-foreground text-lg">
@@ -138,13 +112,7 @@ export default function CourseDetailPage({
 											key={quiz.uuid ?? quiz.title}
 											quiz={quiz}
 											courseId={uuid}
-											onSaveResult={(result) => {
-												// save to localStorage using default key pattern
-												localStorage.setItem(
-													`quizResult:${quiz.uuid}`,
-													JSON.stringify(result),
-												);
-											}}
+											onSaveResult={() => {}}
 										/>
 									))}
 								</div>
@@ -153,14 +121,9 @@ export default function CourseDetailPage({
 									No quizzes available for this course.
 								</p>
 							)}
-						</motion.div>
+						</div>
 
-						<motion.div
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.7 }}
-							className="mt-8 border-white/5 border-t pt-8"
-						>
+						<div className="mt-8 border-white/5 border-t pt-8">
 							<div className="mb-6 flex items-center gap-3">
 								<BookOpen className="size-5 text-primary" />
 								<h2 className="font-semibold text-foreground text-lg">
@@ -168,8 +131,8 @@ export default function CourseDetailPage({
 								</h2>
 							</div>
 							<MaterialsList courseId={uuid} />
-						</motion.div>
-					</motion.div>
+						</div>
+					</section>
 				)}
 			</main>
 		</div>

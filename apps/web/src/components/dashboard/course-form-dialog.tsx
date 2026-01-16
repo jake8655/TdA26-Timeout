@@ -1,12 +1,13 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import z from "zod";
-import type { CourseSummary } from "@/api-client/types.gen";
 import {
 	postCoursesMutation,
 	putCoursesByCourseIdMutation,
 } from "@/api-client/@tanstack/react-query.gen";
+import type { CourseSummary } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import {
 	Dialog,
@@ -19,7 +20,6 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/hooks/form";
-import { useState } from "react";
 
 const formSchema = z.object({
 	name: z.string().min(3, "Course name must be at least 3 characters"),

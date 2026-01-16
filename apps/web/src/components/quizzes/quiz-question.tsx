@@ -146,7 +146,7 @@ export function QuizQuestion({
 								{isSingleChoice ? (
 									<RadioGroupItem
 										id={inputId}
-										value={index}
+										value={index.toString()}
 										disabled={isReadOnly}
 									/>
 								) : (

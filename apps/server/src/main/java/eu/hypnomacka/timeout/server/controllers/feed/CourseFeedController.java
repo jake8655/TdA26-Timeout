@@ -43,9 +43,26 @@ public class CourseFeedController extends Controller {
     }
 
     List<Event> events =
-        DB.find(Event.class).where().eq("course.uuid", uuid).orderBy().desc("createdAt").findList();
+        DB.find(Event.class)
+            .where()
+            .eq("course.uuid", uuid)
+            .orderBy()
+            .desc("createdAt")
+            .findList();
 
-    return ResponseEntity.status(HttpStatus.OK).body(events);
+    List<Map<String, Object>> response = new ArrayList<>();
+    for (Event event : events) {
+      Map<String, Object> eventMap = new LinkedHashMap<>();
+      eventMap.put("uuid", event.getUuid());
+      eventMap.put("type", event.getType().name().toLowerCase());
+      eventMap.put("message", event.getMessage());
+      eventMap.put("edited", event.getEdited());
+      eventMap.put("createdAt", event.getCreatedAt());
+      eventMap.put("updatedAt", event.getUpdatedAt());
+      response.add(eventMap);
+    }
+
+    return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
   @PostMapping(value = "/{UUID}/feed", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,41 +91,29 @@ public class CourseFeedController extends Controller {
     event.setEdited(false);
     event.save();
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(event);
+    Map<String, Object> eventMap = new LinkedHashMap<>();
+    eventMap.put("uuid", event.getUuid());
+    eventMap.put("type", event.getType().name().toLowerCase());
+    eventMap.put("message", event.getMessage());
+    eventMap.put("edited", event.getEdited());
+    eventMap.put("createdAt", event.getCreatedAt());
+    eventMap.put("updatedAt", event.getUpdatedAt());
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(eventMap);
   }
 
   @GetMapping(value = "/{UUID}/feed/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public ResponseEntity<?> streamFeed(@PathVariable("UUID") String uuidStr) {
+  public SseEmitter streamFeed(@PathVariable("UUID") String uuidStr) {
     UUID uuid;
     try {
       uuid = UUID.fromString(uuidStr);
     } catch (IllegalArgumentException e) {
-      SseEmitter errorEmitter = new SseEmitter(0L);
-      try {
-        errorEmitter.send(
-            SseEmitter.event()
-                .name("error")
-                .data("{\"status\":\"bad\",\"message\":\"invalid UUID format\"}"));
-        errorEmitter.complete();
-      } catch (IOException e2) {
-        e2.printStackTrace();
-      }
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorEmitter);
+      throw new IllegalArgumentException("Invalid UUID format");
     }
 
     Course course = DB.find(Course.class, uuid);
     if (course == null) {
-      SseEmitter errorEmitter = new SseEmitter(0L);
-      try {
-        errorEmitter.send(
-            SseEmitter.event()
-                .name("error")
-                .data("{\"status\":\"bad\",\"message\":\"course not found\"}"));
-        errorEmitter.complete();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorEmitter);
+      throw new IllegalArgumentException("Course not found");
     }
 
     SseEmitter emitter = new SseEmitter(1800000L);
@@ -126,7 +131,7 @@ public class CourseFeedController extends Controller {
       feedService.removeEmitter(uuid, emitter);
     }
 
-    return ResponseEntity.status(HttpStatus.OK).body(emitter);
+    return emitter;
   }
 
   @PutMapping(value = "/{UUID}/feed/{postUUID}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -166,7 +171,15 @@ public class CourseFeedController extends Controller {
     event.setEdited(request.getEdited());
     event.save();
 
-    return ResponseEntity.status(HttpStatus.OK).body(event);
+    Map<String, Object> eventMap = new LinkedHashMap<>();
+    eventMap.put("uuid", event.getUuid());
+    eventMap.put("type", event.getType().name().toLowerCase());
+    eventMap.put("message", event.getMessage());
+    eventMap.put("edited", event.getEdited());
+    eventMap.put("createdAt", event.getCreatedAt());
+    eventMap.put("updatedAt", event.getUpdatedAt());
+
+    return ResponseEntity.status(HttpStatus.OK).body(eventMap);
   }
 
   @DeleteMapping(value = "/{UUID}/feed/{postUUID}")

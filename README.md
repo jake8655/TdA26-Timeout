@@ -2,9 +2,9 @@
 An online course platform for educators and learners alike.
 
 ## Team Members
-- [Dominik Tóth (Jake)](https://github.com/jake8655)
-- [Filip Konc (hypnomacka)](https://github.com/hypnomacka)
-- [Jakub Cagáň](https://github.com/koobisko)
+- [Dominik Tóth (Jake)](https://github.com/jake8655) - frontend, team lead
+- [Filip Konc (hypnomacka)](https://github.com/hypnomacka) - backend
+- [Jakub Cagáň](https://github.com/koobisko) - financial support
 
 ## Getting Started
 
@@ -18,7 +18,8 @@ An online course platform for educators and learners alike.
 1. Open [http://localhost](http://localhost) to see the result.
 
 ## Tech Stack
-- Frontend: TypeScript, React
-- Backend: Java, Spring Boot
-- Database: MySQL (externally hosted)
+- Frontend: Next.js, TypeScript, React, Tailwind CSS, Tanstack
+- Backend: Java, Spring Boot, eBean ORM
+- Database: MySQL
 - Infra: Docker, TdA Cloud
+- Deploy time: 3mins

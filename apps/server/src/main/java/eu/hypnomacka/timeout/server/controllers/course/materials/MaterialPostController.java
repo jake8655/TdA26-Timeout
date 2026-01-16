@@ -1,7 +1,9 @@
 package eu.hypnomacka.timeout.server.controllers.course.materials;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
@@ -24,6 +26,12 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @RestController
 @RequestMapping("/courses/{courseId}/materials")
 public class MaterialPostController extends Controller {
+
+  private final CourseFeedService feedService;
+
+  public MaterialPostController(CourseFeedService feedService) {
+    this.feedService = feedService;
+  }
 
   private static final String URL = cdn + "/upload";
   private static final long MAX_FILE_SIZE = 30 * 1024 * 1024;
@@ -110,6 +118,16 @@ public class MaterialPostController extends Controller {
                 + url.replace("https://", "").replace("http://", "").split("/")[0]
                 + ".ico");
     attachment.save();
+
+    Event event = new Event();
+    event.setUuid(java.util.UUID.randomUUID());
+    event.setCourse(course);
+    event.setType(Event.Type.SYSTEM);
+    event.setMessage("New material added: " + name);
+    event.setEdited(false);
+    event.save();
+
+    feedService.broadcastEvent(event);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
   }
@@ -204,6 +222,16 @@ public class MaterialPostController extends Controller {
         new FileAttachment(
             course, name, description, FileAttachment.Type.file, sizeBytes, mimeType, fileUrl);
     attachment.save();
+
+    Event event = new Event();
+    event.setUuid(java.util.UUID.randomUUID());
+    event.setCourse(course);
+    event.setType(Event.Type.SYSTEM);
+    event.setMessage("New material added: " + name);
+    event.setEdited(false);
+    event.save();
+
+    feedService.broadcastEvent(event);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
   }

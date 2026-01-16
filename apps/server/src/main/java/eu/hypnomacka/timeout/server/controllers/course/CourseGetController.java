@@ -2,10 +2,12 @@ package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import eu.hypnomacka.timeout.server.core.query.QEvent;
 import java.time.Instant;
 import java.util.*;
 import org.springframework.http.HttpStatus;
@@ -65,6 +67,20 @@ public class CourseGetController extends Controller {
     List<Quiz> quizzes = new ArrayList<>(course.getQuizzes());
     quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
 
+    List<Event> events = new QEvent().course.eq(course).orderBy().createdAt.desc().findList();
+
+    List<Map<String, Object>> feed = new ArrayList<>();
+    for (Event event : events) {
+      Map<String, Object> eventMap = new LinkedHashMap<>();
+      eventMap.put("uuid", event.getUuid());
+      eventMap.put("type", event.getType().name().toLowerCase());
+      eventMap.put("message", event.getMessage());
+      eventMap.put("edited", event.getEdited());
+      eventMap.put("createdAt", event.getCreatedAt());
+      eventMap.put("updatedAt", event.getUpdatedAt());
+      feed.add(eventMap);
+    }
+
     Map<String, Object> response = new LinkedHashMap<>();
     response.put("uuid", course.getUuid());
     response.put("name", course.getName());
@@ -73,6 +89,7 @@ public class CourseGetController extends Controller {
     response.put("updatedAt", course.getUpdatedAt());
     response.put("materials", materials);
     response.put("quizzes", quizzes);
+    response.put("feed", feed);
 
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }

@@ -43,6 +43,10 @@ public class Course extends Model {
   @JsonManagedReference
   private List<Quiz> quizzes = new ArrayList<>();
 
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  private List<Event> events = new ArrayList<>();
+
   @WhenCreated private Instant createdAt;
 
   @WhenModified private Instant updatedAt;

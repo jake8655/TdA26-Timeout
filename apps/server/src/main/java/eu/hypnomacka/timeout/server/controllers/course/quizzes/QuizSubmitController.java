@@ -4,6 +4,7 @@ import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Question;
 import eu.hypnomacka.timeout.server.core.Quiz;
+import eu.hypnomacka.timeout.server.core.QuizAnswerSubmission;
 import eu.hypnomacka.timeout.server.core.QuizResult;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QQuiz;
@@ -120,6 +121,19 @@ public class QuizSubmitController extends Controller {
 
     QuizResult result = new QuizResult(quiz, score, maxScore, correctPerQuestion, Instant.now());
     result.save();
+
+    for (QuizAnswer answer : answers) {
+      List<Integer> selectedIndices = new ArrayList<>();
+      if (answer.getSelectedIndex() != null) {
+        selectedIndices.add(answer.getSelectedIndex());
+      } else if (answer.getSelectedIndices() != null) {
+        selectedIndices = new ArrayList<>(answer.getSelectedIndices());
+      }
+
+      QuizAnswerSubmission submission =
+          new QuizAnswerSubmission(result, answer.getUuid(), selectedIndices, Instant.now());
+      submission.save();
+    }
 
     quiz.setAttemptsCount(quiz.getAttemptsCount() + 1);
     quiz.save();

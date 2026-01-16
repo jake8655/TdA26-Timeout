@@ -18,4 +18,6 @@ public class QuestionResponse {
   private types type;
   private String question;
   private List<String> options;
+  private Integer correctIndex;
+  private List<Integer> correctIndices;
 }

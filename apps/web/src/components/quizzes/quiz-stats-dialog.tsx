@@ -7,7 +7,6 @@ import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tansta
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
 	DialogTitle,
 	DialogTrigger,
@@ -57,7 +56,7 @@ export function QuizStatsDialog({
 		queryKey: ["quiz-stats", courseId, quizId],
 		queryFn: async () => {
 			const response = await fetch(
-				`${env.NEXT_PUBLIC_API_BASE}/api/courses/${courseId}/quizzes/${quizId}/stats`,
+				`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/quizzes/${quizId}/stats`,
 			);
 			if (!response.ok) {
 				throw new Error("Failed to fetch quiz stats");
@@ -95,7 +94,7 @@ export function QuizStatsDialog({
 	return (
 		<Dialog>
 			<DialogTrigger render={trigger} />
-			<DialogContent showCloseButton={false} className="sm:max-w-2xl">
+			<DialogContent className="sm:max-w-2xl">
 				<DialogTitle className="sr-only">Quiz Results: {quizTitle}</DialogTitle>
 
 				<div className="mb-4 flex items-start justify-between gap-4">
@@ -114,9 +113,6 @@ export function QuizStatsDialog({
 							</p>
 						)}
 					</div>
-					<Button variant="ghost" size="icon-sm">
-						<X className="size-4" />
-					</Button>
 				</div>
 
 				{stats && (

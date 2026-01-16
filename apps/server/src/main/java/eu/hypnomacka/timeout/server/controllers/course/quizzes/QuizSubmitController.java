@@ -131,8 +131,7 @@ public class QuizSubmitController extends Controller {
       }
 
       QuizAnswerSubmission submission =
-          new QuizAnswerSubmission(
-              result, answer.getUuid(), selectedIndices, Instant.now());
+          new QuizAnswerSubmission(result, answer.getUuid(), selectedIndices, Instant.now());
       submission.save();
     }
 

@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/courses/{courseId}/quizzes")
 public class QuizStatsGetController extends Controller {
 
-  @GetMapping(
-      value = "/{quizId}/stats",
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{quizId}/stats", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> getQuizStats(
       @PathVariable String courseId, @PathVariable String quizId) {
 

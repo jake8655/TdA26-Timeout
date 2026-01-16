@@ -10,6 +10,7 @@ import { use } from "react";
 import { getCoursesByCourseIdOptions } from "@/api-client/@tanstack/react-query.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
+import { CourseFeed } from "@/components/courses/course-feed";
 import { MaterialsList } from "@/components/courses/materials-list";
 import { CourseQuizCard } from "@/components/quizzes/course-quiz-card";
 
@@ -121,6 +122,16 @@ export default function CourseDetailPage({
 									No quizzes available for this course.
 								</p>
 							)}
+						</div>
+
+						<div className="mt-8 border-white/5 border-t pt-8">
+							<div className="mb-6 flex items-center gap-3">
+								<BookOpen className="size-5 text-primary" />
+								<h2 className="font-semibold text-foreground text-lg">
+									Course Feed
+								</h2>
+							</div>
+							<CourseFeed courseId={uuid} />
 						</div>
 
 						<div className="mt-8 border-white/5 border-t pt-8">

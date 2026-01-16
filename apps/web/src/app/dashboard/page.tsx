@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ChevronRight, Edit2, Loader2, Plus, Trash2 } from "lucide-react";
+import { Edit2, Loader2, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,6 @@ import {
 	Card,
 	CardContent,
 	CardDescription,
-	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
@@ -337,19 +336,15 @@ function CourseCard({
 							{course.name}
 						</CardTitle>
 						<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
-							<CourseFormDialog
-								mode="edit"
-								course={course}
-								trigger={
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
-									>
-										<Edit2 />
-									</Button>
-								}
-							/>
+							<Link href={`/dashboard/courses/${course.uuid}`}>
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									className="size-8 text-muted-foreground"
+								>
+									<Edit2 />
+								</Button>
+							</Link>
 							<DeleteCourseDialog
 								course={course}
 								trigger={
@@ -372,15 +367,6 @@ function CourseCard({
 						)}
 					</CardDescription>
 				</CardContent>
-				<CardFooter className="p-0">
-					<Link
-						href={`/dashboard/courses/${course.uuid}`}
-						className="flex w-full items-center justify-between px-4 py-3 text-muted-foreground text-sm transition-colors hover:bg-primary/5 hover:text-primary"
-					>
-						Manage Materials
-						<ChevronRight className="size-4" />
-					</Link>
-				</CardFooter>
 			</Card>
 		</motion.div>
 	);

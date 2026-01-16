@@ -12,7 +12,13 @@ import type {
 	QuizSubmitResponse,
 } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
-import { QuizPlayer } from "./QuizPlayer";
+import {
+	Dialog,
+	DialogContent,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import { QuizPlayer } from "./quiz-player";
 
 interface CourseQuizCardProps {
 	quiz: Quiz;
@@ -26,6 +32,12 @@ export function CourseQuizCard({
 	onSaveResult,
 }: CourseQuizCardProps) {
 	const [isPlaying, setIsPlaying] = useState(false);
+
+	const existingResult =
+		typeof window !== "undefined" && quiz.uuid
+			? localStorage.getItem(`quizResult:${quiz.uuid}`)
+			: null;
+	const hasTaken = !!existingResult;
 	const mutation = useMutation(
 		postCoursesByCourseIdQuizzesByQuizIdSubmitMutation(),
 	);
@@ -48,25 +60,11 @@ export function CourseQuizCard({
 		return response;
 	};
 
-	if (isPlaying && quiz.uuid) {
+	if (hasTaken && !isPlaying) {
 		return (
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.3 }}
-				className="border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
-			>
-				<QuizPlayer
-					quizUuid={quiz.uuid}
-					courseId={courseId}
-					onCancel={() => setIsPlaying(false)}
-					onSubmitComplete={(result: QuizSubmitResponse) => {
-						onSaveResult(result);
-						setIsPlaying(false);
-					}}
-					onSubmitAnswers={handleSubmitAnswers}
-				/>
-			</motion.div>
+			<div className="border border-white/5 bg-card/40 p-4 text-center text-muted-foreground">
+				<p className="font-medium">You have already taken this quiz.</p>
+			</div>
 		);
 	}
 
@@ -100,14 +98,34 @@ export function CourseQuizCard({
 				</div>
 			</div>
 
-			<Button
-				variant="outline"
-				size="sm"
-				className="shrink-0 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
-				onClick={() => setIsPlaying(true)}
-			>
-				Start Quiz
-			</Button>
+			<Dialog open={isPlaying} onOpenChange={setIsPlaying}>
+				<DialogTrigger
+					render={
+						<Button
+							variant="outline"
+							size="sm"
+							className="shrink-0 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+						>
+							Start Quiz
+						</Button>
+					}
+				/>
+				<DialogContent showCloseButton={false} className="sm:max-w-2xl">
+					<DialogTitle className="sr-only">Quiz: {quiz.title}</DialogTitle>
+					<QuizPlayer
+						quizUuid={quiz.uuid ?? ""}
+						courseId={courseId}
+						initialSubmittedResult={
+							existingResult ? JSON.parse(existingResult) : null
+						}
+						onCancel={() => setIsPlaying(false)}
+						onSubmitComplete={(result: QuizSubmitResponse) => {
+							onSaveResult(result);
+						}}
+						onSubmitAnswers={handleSubmitAnswers}
+					/>
+				</DialogContent>
+			</Dialog>
 		</motion.div>
 	);
 }

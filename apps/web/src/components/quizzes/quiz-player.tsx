@@ -7,9 +7,10 @@ import { useState } from "react";
 import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { QuizAnswer, QuizSubmitResponse } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
-import { QuizQuestion } from "./QuizQuestion";
+import { QuizQuestion } from "./quiz-question";
 
 interface QuizPlayerProps {
+	initialSubmittedResult?: QuizSubmitResponse | null;
 	quizUuid: string;
 	courseId: string;
 	onCancel: () => void;
@@ -18,6 +19,7 @@ interface QuizPlayerProps {
 }
 
 export function QuizPlayer({
+	initialSubmittedResult = null,
 	quizUuid,
 	courseId,
 	onCancel,
@@ -27,7 +29,7 @@ export function QuizPlayer({
 	const [answers, setAnswers] = useState<Record<number, number | number[]>>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submittedResult, setSubmittedResult] =
-		useState<QuizSubmitResponse | null>(null);
+		useState<QuizSubmitResponse | null>(initialSubmittedResult);
 
 	const {
 		data: quiz,
@@ -77,14 +79,19 @@ export function QuizPlayer({
 			const answerArray: QuizAnswer[] = quiz.questions.map(
 				(question, index) => {
 					const selectedAnswer = answers[index];
+					const base = { uuid: question.uuid };
+
 					if (question.type === "multipleChoice") {
 						return {
+							...base,
 							selectedIndices: Array.isArray(selectedAnswer)
 								? selectedAnswer
 								: [],
 						};
 					}
+
 					return {
+						...base,
 						selectedIndex:
 							typeof selectedAnswer === "number" ? selectedAnswer : undefined,
 					};

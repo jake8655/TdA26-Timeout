@@ -24,6 +24,7 @@ import {
 import type { FileMaterial, Quiz, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
+import { CourseFormDialog } from "@/components/dashboard/course-form-dialog";
 import { DeleteMaterialDialog } from "@/components/dashboard/delete-material-dialog";
 import { MaterialFormDialog } from "@/components/dashboard/material-form-dialog";
 import {
@@ -97,12 +98,11 @@ export default function DashboardCourseDetailPage({
 		<section className="relative min-h-screen overflow-hidden pt-28 pb-16">
 			<BackgroundGrid />
 
-			<div className="relative z-10 mx-auto max-w-4xl px-6">
+			<div className="relative z-10 mx-auto max-w-4xl space-y-8 px-6">
 				<motion.div
 					initial={{ opacity: 0, x: -20 }}
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ duration: 0.4 }}
-					className="mb-8"
 				>
 					<Link href="/dashboard">
 						<Button
@@ -138,7 +138,7 @@ export default function DashboardCourseDetailPage({
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.5 }}
-							className="mb-8 border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
+							className="border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
 						>
 							<div className="flex items-center gap-4">
 								<div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
@@ -150,14 +150,25 @@ export default function DashboardCourseDetailPage({
 									/>
 								</div>
 								<div className="flex-1 overflow-hidden">
-									<h1 className="font-bold text-primary text-xl sm:text-2xl">
-										{course.name}
-									</h1>
-									{course?.description && (
-										<p className="mt-1 truncate text-muted-foreground text-sm">
-											{course.description}
-										</p>
-									)}
+									<div className="flex items-start justify-between">
+										<h1 className="font-bold text-primary text-xl sm:text-2xl">
+											{course.name}
+										</h1>
+										<CourseFormDialog
+											mode="edit"
+											course={course}
+											trigger={
+												<Button variant="ghost" size="sm" className="ml-2">
+													<Edit2 />
+												</Button>
+											}
+										/>
+									</div>
+									<p className="mt-1 truncate text-muted-foreground text-sm">
+										{course.description || (
+											<span className="italic">No description available</span>
+										)}
+									</p>
 								</div>
 							</div>
 						</motion.div>
@@ -166,7 +177,7 @@ export default function DashboardCourseDetailPage({
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.5, delay: 0.1 }}
-							className="mb-6 flex items-center justify-between"
+							className="flex items-center justify-between"
 						>
 							<h2 className="font-semibold text-foreground text-xl">
 								Course Materials
@@ -237,60 +248,60 @@ export default function DashboardCourseDetailPage({
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.5, delay: 0.2 }}
-							className="mb-8 border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
+							className="flex items-center justify-between"
 						>
-							<div className="mb-6 flex items-center justify-between">
-								<h2 className="font-semibold text-foreground text-xl">
-									Course Quizzes
-								</h2>
+							<h2 className="font-semibold text-foreground text-xl">
+								Course Quizzes
+							</h2>
+							<QuizFormDialog
+								mode="create"
+								courseId={uuid}
+								trigger={
+									<Button variant="accent" size="sm">
+										<Plus />
+										Add Quiz
+									</Button>
+								}
+							/>
+						</motion.div>
+
+						{quizzesLoading ? (
+							<div className="flex justify-center py-12">
+								<Loader2 className="size-8 animate-spin text-primary" />
+							</div>
+						) : quizzesError ? (
+							<div className="py-12 text-center text-muted-foreground">
+								<p>Failed to load quizzes. Please try again later.</p>
+							</div>
+						) : quizzes.length === 0 ? (
+							<motion.div
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ duration: 0.5, delay: 0.3 }}
+								className="flex flex-col items-center justify-center rounded-none border border-white/10 border-dashed py-16 text-center"
+							>
+								<div className="mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
+									<Plus className="size-8 text-primary" />
+								</div>
+								<h3 className="mb-2 font-semibold text-foreground text-lg">
+									No quizzes yet
+								</h3>
+								<p className="mb-6 text-muted-foreground text-sm">
+									Create your first quiz to test student knowledge.
+								</p>
 								<QuizFormDialog
 									mode="create"
 									courseId={uuid}
 									trigger={
-										<Button variant="accent" size="sm">
-											<Plus />
-											Add Quiz
+										<Button variant="accent" className="gap-2">
+											<Plus className="size-4" />
+											Create Your First Quiz
 										</Button>
 									}
 								/>
-							</div>
-
-							{quizzesLoading ? (
-								<div className="flex justify-center py-12">
-									<Loader2 className="size-8 animate-spin text-primary" />
-								</div>
-							) : quizzesError ? (
-								<div className="py-12 text-center text-muted-foreground">
-									<p>Failed to load quizzes. Please try again later.</p>
-								</div>
-							) : quizzes.length === 0 ? (
-								<motion.div
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.5, delay: 0.3 }}
-									className="flex flex-col items-center justify-center rounded-none border border-white/10 border-dashed py-16 text-center"
-								>
-									<div className="mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
-										<Plus className="size-8 text-primary" />
-									</div>
-									<h3 className="mb-2 font-semibold text-foreground text-lg">
-										No quizzes yet
-									</h3>
-									<p className="mb-6 text-muted-foreground text-sm">
-										Create your first quiz to test student knowledge.
-									</p>
-									<QuizFormDialog
-										mode="create"
-										courseId={uuid}
-										trigger={
-											<Button variant="accent" className="gap-2">
-												<Plus className="size-4" />
-												Create Your First Quiz
-											</Button>
-										}
-									/>
-								</motion.div>
-							) : (
+							</motion.div>
+						) : (
+							<div className="flex flex-col gap-3">
 								<AnimatePresence mode="popLayout">
 									{quizzes.map((quiz, index) => (
 										<DashboardQuizCard
@@ -301,8 +312,8 @@ export default function DashboardCourseDetailPage({
 										/>
 									))}
 								</AnimatePresence>
-							)}
-						</motion.div>
+							</div>
+						)}
 					</>
 				)}
 			</div>
@@ -349,11 +360,11 @@ function DashboardMaterialCard({
 				<h3 className="font-semibold text-foreground text-sm">
 					{material.name}
 				</h3>
-				{material.description && (
-					<p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
-						{material.description}
-					</p>
-				)}
+				<p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
+					{material.description || (
+						<span className="italic">No description available</span>
+					)}
+				</p>
 				<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
 					{material.type === "url" ? (
 						<span className="truncate">{new URL(material.url).hostname}</span>
@@ -477,7 +488,7 @@ function DashboardQuizCard({
 				</div>
 			</div>
 
-			<div className="flex flex-col items-end gap-2 transition-opacity group-hover:opacity-100 lg:opacity-0">
+			<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
 				<QuizFormDialog
 					mode="edit"
 					courseId={courseId}

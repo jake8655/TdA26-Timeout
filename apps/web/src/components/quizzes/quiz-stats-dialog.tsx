@@ -1,10 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, Loader2, X } from "lucide-react";
+import { BarChart3, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
-import { Button } from "@/components/animate-ui/components/buttons/button";
 import {
 	Dialog,
 	DialogContent,

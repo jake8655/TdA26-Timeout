@@ -43,7 +43,8 @@ export function CourseFeed({
 
 		return combined.sort(
 			(a, b) =>
-				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+				new Date(b.updatedAt ?? b.createdAt).getTime() -
+				new Date(a.updatedAt ?? a.createdAt).getTime(),
 		);
 	})();
 
@@ -114,7 +115,7 @@ function FeedItemCard({
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, scale: 0.95 }}
 			transition={{ duration: 0.3, delay: index * 0.03 }}
-			className={`flex gap-3 rounded-none border bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 ${
+			className={`group flex gap-3 rounded-none border bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 ${
 				isSystem ? "border-white/5" : "border-white/5 hover:border-white/10"
 			}`}
 		>
@@ -135,7 +136,7 @@ function FeedItemCard({
 					</div>
 
 					{showActions && !isSystem && (
-						<div className="flex gap-1">
+						<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
 							{editTrigger?.(item)}
 							{deleteTrigger?.(item)}
 						</div>

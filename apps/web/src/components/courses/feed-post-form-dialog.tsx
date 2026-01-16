@@ -1,7 +1,7 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { MessageSquarePlus } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { MessageSquarePlus, Pencil } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 import {
@@ -40,7 +40,6 @@ export function FeedPostFormDialog({
 	trigger,
 }: FeedPostFormDialogProps) {
 	const [open, setOpen] = useState(false);
-	const queryClient = useQueryClient();
 
 	const createMutation = useMutation({
 		...postCoursesByCourseIdFeedMutation(),
@@ -76,7 +75,6 @@ export function FeedPostFormDialog({
 			}
 			form.reset();
 			setOpen(false);
-			await queryClient.invalidateQueries();
 		},
 	});
 
@@ -134,7 +132,7 @@ export function CreateFeedPostButton({ courseId }: { courseId: string }) {
 			courseId={courseId}
 			trigger={
 				<Button variant="accent" size="sm">
-					<MessageSquarePlus className="size-4" />
+					<MessageSquarePlus />
 					<span className="hidden sm:inline">Create Post</span>
 				</Button>
 			}
@@ -160,7 +158,7 @@ export function EditFeedPostButton({
 					size="icon-sm"
 					className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
 				>
-					<MessageSquarePlus className="size-4 rotate-0" />
+					<Pencil />
 				</Button>
 			}
 		/>

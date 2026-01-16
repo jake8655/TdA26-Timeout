@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { deleteCoursesByCourseIdFeedByPostIdMutation } from "@/api-client/@tanstack/react-query.gen";
@@ -29,13 +29,11 @@ export function DeleteFeedPostDialog({
 	trigger,
 }: DeleteFeedPostDialogProps) {
 	const [open, setOpen] = useState(false);
-	const queryClient = useQueryClient();
 
 	const deleteMutation = useMutation({
 		...deleteCoursesByCourseIdFeedByPostIdMutation(),
 		onSuccess: () => {
 			setOpen(false);
-			queryClient.invalidateQueries();
 		},
 	});
 

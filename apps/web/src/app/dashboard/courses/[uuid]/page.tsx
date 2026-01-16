@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
 	ArrowLeft,
+	ChartColumnDecreasing,
 	Download,
 	Edit2,
 	ExternalLink,
@@ -32,6 +33,7 @@ import {
 	QuizFormDialog,
 } from "@/components/dashboard/quiz-form-dialog";
 import LoadingPlaceholder from "@/components/loading-placeholder";
+import { QuizStatsDialog } from "@/components/quizzes/quiz-stats-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import {
 	formatFileSize,
@@ -489,6 +491,20 @@ function DashboardQuizCard({
 			</div>
 
 			<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
+				<QuizStatsDialog
+					quizId={quiz.uuid ?? ""}
+					courseId={courseId}
+					quizTitle={quiz.title}
+					trigger={
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+						>
+							<ChartColumnDecreasing />
+						</Button>
+					}
+				/>
 				<QuizFormDialog
 					mode="edit"
 					courseId={courseId}

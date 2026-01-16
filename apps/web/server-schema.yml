@@ -258,6 +258,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/QuizSubmitResponse'
 
+  /courses/{courseId}/quizzes/{quizId}/stats:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/QuizId'
+    get:
+      summary: Get quiz statistics
+      description: Returns aggregated statistics for quiz answers, including the number of submissions for each option.
+      responses:
+        '200':
+          description: Quiz statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizStatsResponse'
+
   /courses/{courseId}/feed:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -656,6 +671,49 @@ components:
           type: string
           format: date-time
       required: [quizUuid, score, maxScore, submittedAt]
+
+    QuizStatsResponse:
+      type: object
+      properties:
+        quizUuid:
+          type: string
+          format: uuid
+        quizTitle:
+          type: string
+        totalSubmissions:
+          type: integer
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionStats'
+      required: [quizUuid, quizTitle, totalSubmissions, questions]
+
+    QuestionStats:
+      type: object
+      properties:
+        questionUuid:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [singleChoice, multipleChoice]
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        correctIndex:
+          type: integer
+        correctIndices:
+          type: array
+          items:
+            type: integer
+        optionCounts:
+          type: object
+          additionalProperties:
+            type: integer
+      required: [questionUuid, type, question, options, optionCounts]
 
     FeedItem:
       type: object

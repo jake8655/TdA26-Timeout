@@ -90,6 +90,11 @@ public class QuizGetController extends Controller {
               : QuestionResponse.types.multipleChoice);
       qResponse.setQuestion(question.getQuestion());
       qResponse.setOptions(question.getOptions());
+      if (question.getType() == Question.Type.singleChoice) {
+        qResponse.setCorrectIndex(question.getCorrectIndex());
+      } else {
+        qResponse.setCorrectIndices(question.getCorrectIndices());
+      }
       questionResponses.add(qResponse);
     }
 

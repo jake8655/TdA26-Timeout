@@ -1,10 +1,12 @@
 package eu.hypnomacka.timeout.server.core;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.ebean.Model;
 import io.ebean.annotation.DbJson;
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
@@ -35,6 +37,10 @@ public class QuizResult extends Model {
 
   @Column(nullable = false)
   private Instant submittedAt;
+
+  @OneToMany(mappedBy = "quizResult", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  private List<QuizAnswerSubmission> answerSubmissions = new ArrayList<>();
 
   public QuizResult() {}
 

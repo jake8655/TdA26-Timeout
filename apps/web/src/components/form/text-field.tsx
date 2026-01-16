@@ -9,7 +9,7 @@ export default function TextField({
 	type,
 	className,
 }: {
-	label: string;
+	label?: string;
 	placeholder: string;
 	type?: "text" | "password";
 	className?: string;
@@ -22,7 +22,7 @@ export default function TextField({
 		<Field
 			data-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
 		>
-			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+			{label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 			<Input
 				id={field.name}
 				name={field.name}

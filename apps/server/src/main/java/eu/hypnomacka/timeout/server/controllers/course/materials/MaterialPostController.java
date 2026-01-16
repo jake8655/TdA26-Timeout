@@ -5,6 +5,8 @@ import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.core.ParameterizedTypeReference;
@@ -25,6 +27,19 @@ public class MaterialPostController extends Controller {
 
   private static final String URL = cdn + "/upload";
   private final WebClient webClient = WebClient.builder().build();
+
+  private static final List<String> SUPPORTED_MIME_TYPES =
+      Arrays.asList(
+          "application/pdf",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "text/plain",
+          "image/png",
+          "image/jpg",
+          "image/jpeg",
+          "image/gif",
+          "video/mp4",
+          "audio/mpeg",
+          "audio/mp3");
 
   private String getApiKey() {
     String key = System.getenv("API_KEY");
@@ -87,6 +102,20 @@ public class MaterialPostController extends Controller {
       @RequestPart("name") String name,
       @RequestPart(value = "description", required = false) String description)
       throws Exception {
+
+    // Validate MIME type
+    String mimeType = file.getContentType();
+    if (mimeType == null || !SUPPORTED_MIME_TYPES.contains(mimeType)) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  "status",
+                  "bad",
+                  "message",
+                  "Unsupported file type. Allowed types: "
+                      + String.join(", ", SUPPORTED_MIME_TYPES)));
+    }
+
     MultipartBodyBuilder builder = new MultipartBodyBuilder();
     builder.part(
         "file",
@@ -124,7 +153,6 @@ public class MaterialPostController extends Controller {
 
     String fileUrl = cdn + response.get("url").toString();
     long sizeBytes = file.getSize();
-    String mimeType = file.getContentType();
 
     if (description == null) {
       description = "";

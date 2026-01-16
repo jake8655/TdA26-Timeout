@@ -37,7 +37,10 @@ export function CourseQuizCard({
 		typeof window !== "undefined" && quiz.uuid
 			? localStorage.getItem(`quizResult:${quiz.uuid}`)
 			: null;
-	const hasTaken = !!existingResult;
+	const existingAnswers =
+		typeof window !== "undefined" && quiz.uuid
+			? localStorage.getItem(`quizAnswers:${quiz.uuid}`)
+			: null;
 	const mutation = useMutation(
 		postCoursesByCourseIdQuizzesByQuizIdSubmitMutation(),
 	);
@@ -56,17 +59,10 @@ export function CourseQuizCard({
 		});
 
 		localStorage.setItem(`quizResult:${quiz.uuid}`, JSON.stringify(response));
+		localStorage.setItem(`quizAnswers:${quiz.uuid}`, JSON.stringify(answers));
 
 		return response;
 	};
-
-	if (hasTaken && !isPlaying) {
-		return (
-			<div className="border border-white/5 bg-card/40 p-4 text-center text-muted-foreground">
-				<p className="font-medium">You have already taken this quiz.</p>
-			</div>
-		);
-	}
 
 	return (
 		<motion.div
@@ -106,7 +102,7 @@ export function CourseQuizCard({
 							size="sm"
 							className="shrink-0 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
 						>
-							Start Quiz
+							{existingResult ? "View Results" : "Start Quiz"}
 						</Button>
 					}
 				/>
@@ -117,6 +113,9 @@ export function CourseQuizCard({
 						courseId={courseId}
 						initialSubmittedResult={
 							existingResult ? JSON.parse(existingResult) : null
+						}
+						initialAnswers={
+							existingAnswers ? JSON.parse(existingAnswers) : null
 						}
 						onCancel={() => setIsPlaying(false)}
 						onSubmitComplete={(result: QuizSubmitResponse) => {

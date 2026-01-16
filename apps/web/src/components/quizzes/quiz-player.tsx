@@ -7,10 +7,12 @@ import { useState } from "react";
 import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { QuizAnswer, QuizSubmitResponse } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
+import { cn } from "@/lib/utils";
 import { QuizQuestion } from "./quiz-question";
 
 interface QuizPlayerProps {
 	initialSubmittedResult?: QuizSubmitResponse | null;
+	initialAnswers?: QuizAnswer[] | null;
 	quizUuid: string;
 	courseId: string;
 	onCancel: () => void;
@@ -18,15 +20,32 @@ interface QuizPlayerProps {
 	onSubmitAnswers: (answers: QuizAnswer[]) => Promise<QuizSubmitResponse>;
 }
 
+const convertAnswersToRecord = (answers: QuizAnswer[] | null) => {
+	if (!answers) return {};
+	const record: Record<number, number | number[]> = {};
+
+	answers.forEach((answer, index) => {
+		if (answer.selectedIndex !== undefined) {
+			record[index] = answer.selectedIndex;
+		} else if (answer.selectedIndices) {
+			record[index] = answer.selectedIndices;
+		}
+	});
+	return record;
+};
+
 export function QuizPlayer({
 	initialSubmittedResult = null,
+	initialAnswers = null,
 	quizUuid,
 	courseId,
 	onCancel,
 	onSubmitComplete,
 	onSubmitAnswers,
 }: QuizPlayerProps) {
-	const [answers, setAnswers] = useState<Record<number, number | number[]>>({});
+	const [answers, setAnswers] = useState<Record<number, number | number[]>>(
+		initialSubmittedResult ? convertAnswersToRecord(initialAnswers) : {},
+	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submittedResult, setSubmittedResult] =
 		useState<QuizSubmitResponse | null>(initialSubmittedResult);
@@ -176,9 +195,25 @@ export function QuizPlayer({
 						animate={{ opacity: 1, y: 0 }}
 						className="space-y-4"
 					>
-						<div className="border border-green-500/50 bg-green-500/10 p-4 text-center">
-							<p className="font-semibold text-green-400 text-lg">
-								Quiz Submitted!
+						<div
+							className={cn(
+								"rounded-md border p-4 text-center",
+								submittedResult.score <= submittedResult.maxScore / 2
+									? "border-red-500/50 bg-red-500/10"
+									: "border-green-500/50 bg-green-500/10",
+							)}
+						>
+							<p
+								className={cn(
+									"font-semibold text-lg",
+									submittedResult.score <= submittedResult.maxScore / 2
+										? "text-red-400"
+										: "text-green-400",
+								)}
+							>
+								{initialSubmittedResult
+									? "Your previous quiz results"
+									: "Quiz submitted successfully!"}
 							</p>
 							<p className="mt-2 text-foreground">
 								Your score:{" "}
@@ -186,13 +221,6 @@ export function QuizPlayer({
 									{submittedResult.score} / {submittedResult.maxScore}
 								</span>
 							</p>
-							{submittedResult.correctPerQuestion && (
-								<p className="mt-1 text-muted-foreground text-sm">
-									{submittedResult.correctPerQuestion.filter((c) => c).length}{" "}
-									of {submittedResult.correctPerQuestion.length} questions
-									correct
-								</p>
-							)}
 						</div>
 
 						<div className="space-y-3">

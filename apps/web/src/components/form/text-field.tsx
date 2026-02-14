@@ -8,11 +8,13 @@ export default function TextField({
 	placeholder,
 	type,
 	className,
+	autoComplete,
 }: {
 	label?: string;
 	placeholder: string;
 	type?: "text" | "password";
 	className?: string;
+	autoComplete?: string;
 }) {
 	const field = useFieldContext<string>();
 
@@ -32,6 +34,7 @@ export default function TextField({
 				placeholder={placeholder}
 				className={className}
 				type={type}
+				autoComplete={autoComplete}
 				aria-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
 			/>
 			{field.state.meta.isTouched && !field.state.meta.isValid && (

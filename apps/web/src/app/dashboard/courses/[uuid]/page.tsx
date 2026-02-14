@@ -112,16 +112,17 @@ export default function DashboardCourseDetailPage({
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ duration: 0.4 }}
 				>
+				<Button
+					variant="ghost"
+					size="sm"
+					className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
+					asChild
+				>
 					<Link href="/dashboard">
-						<Button
-							variant="ghost"
-							size="sm"
-							className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
-						>
-							<ArrowLeft />
-							Back to Dashboard
-						</Button>
+						<ArrowLeft />
+						Back to Dashboard
 					</Link>
+				</Button>
 				</motion.div>
 
 				{courseLoading ? (
@@ -162,15 +163,15 @@ export default function DashboardCourseDetailPage({
 										<h1 className="font-bold text-primary text-xl sm:text-2xl">
 											{course.name}
 										</h1>
-										<CourseFormDialog
-											mode="edit"
-											course={course}
-											trigger={
-												<Button variant="ghost" size="sm" className="ml-2">
-													<Edit2 />
-												</Button>
-											}
-										/>
+								<CourseFormDialog
+									mode="edit"
+									course={course}
+									trigger={
+										<Button variant="ghost" size="sm" className="ml-2" aria-label="Edit course">
+											<Edit2 />
+										</Button>
+									}
+								/>
 									</div>
 									<p className="mt-1 truncate text-muted-foreground text-sm">
 										{course.description || (
@@ -454,6 +455,7 @@ function DashboardMaterialCard({
 								variant="ghost"
 								size="icon-sm"
 								className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+								aria-label="Edit material"
 							>
 								<Edit2 />
 							</Button>
@@ -467,6 +469,7 @@ function DashboardMaterialCard({
 								variant="ghost"
 								size="icon-sm"
 								className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+								aria-label="Delete material"
 							>
 								<Trash2 />
 							</Button>
@@ -529,6 +532,7 @@ function DashboardQuizCard({
 							variant="ghost"
 							size="icon-sm"
 							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+							aria-label="View quiz statistics"
 						>
 							<ChartColumnDecreasing />
 						</Button>
@@ -543,6 +547,7 @@ function DashboardQuizCard({
 							variant="ghost"
 							size="icon-sm"
 							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+							aria-label="Edit quiz"
 						>
 							<Edit2 />
 						</Button>
@@ -556,6 +561,7 @@ function DashboardQuizCard({
 							variant="ghost"
 							size="icon-sm"
 							className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+							aria-label="Delete quiz"
 						>
 							<Trash2 />
 						</Button>

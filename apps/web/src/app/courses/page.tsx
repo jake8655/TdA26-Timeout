@@ -47,7 +47,7 @@ export default function CoursesPage() {
 						<SearchInput
 							value={searchQuery}
 							onChange={setSearchQuery}
-							placeholder="Search by title or description..."
+							placeholder="Search by title or description"
 						/>
 					</div>
 				</motion.div>

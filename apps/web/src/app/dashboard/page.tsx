@@ -336,27 +336,30 @@ function CourseCard({
 							{course.name}
 						</CardTitle>
 						<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							className="size-8 text-muted-foreground"
+							aria-label="Edit course"
+							asChild
+						>
 							<Link href={`/dashboard/courses/${course.uuid}`}>
+								<Edit2 />
+							</Link>
+						</Button>
+						<DeleteCourseDialog
+							course={course}
+							trigger={
 								<Button
 									variant="ghost"
 									size="icon-sm"
-									className="size-8 text-muted-foreground"
+									className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+									aria-label="Delete course"
 								>
-									<Edit2 />
+									<Trash2 />
 								</Button>
-							</Link>
-							<DeleteCourseDialog
-								course={course}
-								trigger={
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
-									>
-										<Trash2 />
-									</Button>
-								}
-							/>
+							}
+						/>
 						</div>
 					</div>
 				</CardHeader>

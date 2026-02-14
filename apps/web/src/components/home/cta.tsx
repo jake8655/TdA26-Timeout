@@ -61,11 +61,9 @@ export default function CallToAction() {
 					viewport={{ once: true }}
 					transition={{ delay: 0.4 }}
 				>
-					<Link href="/courses">
-						<Button variant="accent" size="lg" className="h-14 px-12 text-lg">
-							Start Learning Today
-						</Button>
-					</Link>
+				<Button variant="accent" size="lg" className="h-14 px-12 text-lg" asChild>
+					<Link href="/courses">Start Learning Today</Link>
+				</Button>
 				</motion.div>
 
 				<motion.div

@@ -23,7 +23,7 @@ export default function SubscribeButton({
 					{isSubmitting ? (
 						<>
 							<Loader2 className="animate-spin" />
-							Loading...
+							Loading
 						</>
 					) : (
 						label

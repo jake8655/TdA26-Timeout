@@ -57,6 +57,10 @@ export function QuizStatsDialog({
 			const response = await fetch(
 				`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/quizzes/${quizId}/stats`,
 			);
+			if (response.status === 404) {
+				// Quiz was likely deleted, return null to show error state without toast
+				return null;
+			}
 			if (!response.ok) {
 				throw new Error("Failed to fetch quiz stats");
 			}

@@ -66,24 +66,22 @@ export default function Hero() {
 				</p>
 
 				<div className="flex flex-col items-center justify-center gap-6 sm:flex-row">
-					<Link href="/courses">
-						<Button
-							variant="accent"
-							size="lg"
-							className="h-14 min-w-[200px] border-none bg-accent text-accent-foreground text-lg hover:bg-accent/90"
-						>
-							Explore Courses
-						</Button>
-					</Link>
-					<Link href="#about">
-						<Button
-							variant="outline"
-							size="lg"
-							className="h-14 min-w-[200px] border-muted-foreground/20 text-lg hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
-						>
-							Learn More
-						</Button>
-					</Link>
+				<Button
+					variant="accent"
+					size="lg"
+					className="h-14 min-w-[200px] border-none bg-accent text-accent-foreground text-lg hover:bg-accent/90"
+					asChild
+				>
+					<Link href="/courses">Explore Courses</Link>
+				</Button>
+				<Button
+					variant="outline"
+					size="lg"
+					className="h-14 min-w-[200px] border-muted-foreground/20 text-lg hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+					asChild
+				>
+					<Link href="#about">Learn More</Link>
+				</Button>
 				</div>
 			</div>
 		</section>

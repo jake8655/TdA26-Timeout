@@ -126,26 +126,28 @@ export default function Login() {
 						}}
 						className="space-y-6"
 					>
-						<form.AppField name="username">
-							{(field) => (
-								<field.TextField
-									label="Username"
-									placeholder="Enter your username"
-									className="h-11 focus-visible:border-primary focus-visible:ring-primary/20"
-								/>
-							)}
-						</form.AppField>
+					<form.AppField name="username">
+						{(field) => (
+							<field.TextField
+								label="Username"
+								placeholder="Enter your username"
+								autoComplete="username"
+								className="h-11 focus-visible:border-primary focus-visible:ring-primary/20"
+							/>
+						)}
+					</form.AppField>
 
-						<form.AppField name="password">
-							{(field) => (
-								<field.TextField
-									label="Password"
-									type="password"
-									placeholder="Enter your password"
-									className="h-11 focus-visible:border-primary focus-visible:ring-primary/20"
-								/>
-							)}
-						</form.AppField>
+					<form.AppField name="password">
+						{(field) => (
+							<field.TextField
+								label="Password"
+								type="password"
+								placeholder="Enter your password"
+								autoComplete="current-password"
+								className="h-11 focus-visible:border-primary focus-visible:ring-primary/20"
+							/>
+						)}
+					</form.AppField>
 
 						<form.AppForm>
 							<form.SubscribeButton

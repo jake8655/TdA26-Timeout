@@ -73,6 +73,7 @@ public class QuizPutController extends Controller {
         existingQuestion.delete();
       }
 
+      int position = 0;
       for (Object questionObj : request.getQuestions()) {
         JsonNode questionNode = objectMapper.valueToTree(questionObj);
         String type = questionNode.has("type") ? questionNode.get("type").asText() : null;
@@ -91,6 +92,7 @@ public class QuizPutController extends Controller {
             "singleChoice".equals(type)
                 ? Question.Type.singleChoice
                 : Question.Type.multipleChoice);
+        question.setPosition(position++);
 
         List<String> options = new ArrayList<>();
         optionsNode.forEach(node -> options.add(node.asText()));

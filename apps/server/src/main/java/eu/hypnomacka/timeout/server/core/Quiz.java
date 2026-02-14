@@ -36,6 +36,7 @@ public class Quiz extends Model {
 
   @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
   @JsonManagedReference
+  @OrderBy("position")
   private List<Question> questions = new ArrayList<>();
 
   @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)

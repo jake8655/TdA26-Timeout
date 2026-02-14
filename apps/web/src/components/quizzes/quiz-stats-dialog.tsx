@@ -93,7 +93,7 @@ export function QuizStatsDialog({
 	return (
 		<Dialog>
 			<DialogTrigger render={trigger} />
-			<DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogTitle className="sr-only">Quiz Results: {quizTitle}</DialogTitle>
 
 				<div className="mb-4 flex items-start justify-between gap-4">

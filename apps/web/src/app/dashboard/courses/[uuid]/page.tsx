@@ -15,14 +15,14 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import { notFound } from "next/navigation";
+import { use } from "react";
 import {
 	getCoursesByCourseIdMaterialsOptions,
 	getCoursesByCourseIdOptions,
 	getCoursesByCourseIdQuizzesOptions,
 } from "@/api-client/@tanstack/react-query.gen";
-import type { FileMaterial, Quiz, UrlMaterial } from "@/api-client/types.gen";
+import type { Quiz } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseFeed } from "@/components/courses/course-feed";
@@ -40,14 +40,13 @@ import {
 } from "@/components/dashboard/quiz-form-dialog";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { QuizStatsDialog } from "@/components/quizzes/quiz-stats-dialog";
-import { useAuth } from "@/hooks/use-auth";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import {
 	formatFileSize,
 	getFileTypeLabel,
 	getMaterialIcon,
+	type Material,
 } from "@/lib/material-utils";
-
-type Material = FileMaterial | UrlMaterial;
 
 export default function DashboardCourseDetailPage({
 	params,
@@ -55,8 +54,7 @@ export default function DashboardCourseDetailPage({
 	params: Promise<{ uuid: string }>;
 }) {
 	const { uuid } = use(params);
-	const router = useRouter();
-	const { data: authData, isPending: authLoading } = useAuth();
+	const { data: authData } = useRequireAuth();
 
 	const {
 		data: course,
@@ -88,12 +86,6 @@ export default function DashboardCourseDetailPage({
 		}),
 	});
 
-	useEffect(() => {
-		if (!authData && !authLoading) {
-			router.push("/login");
-		}
-	}, [authData, router, authLoading]);
-
 	if (!authData) {
 		return <LoadingPlaceholder />;
 	}
@@ -112,17 +104,17 @@ export default function DashboardCourseDetailPage({
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ duration: 0.4 }}
 				>
-				<Button
-					variant="ghost"
-					size="sm"
-					className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
-					asChild
-				>
-					<Link href="/dashboard">
-						<ArrowLeft />
-						Back to Dashboard
-					</Link>
-				</Button>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
+						asChild
+					>
+						<Link href="/dashboard">
+							<ArrowLeft />
+							Back to Dashboard
+						</Link>
+					</Button>
 				</motion.div>
 
 				{courseLoading ? (
@@ -163,15 +155,20 @@ export default function DashboardCourseDetailPage({
 										<h1 className="font-bold text-primary text-xl sm:text-2xl">
 											{course.name}
 										</h1>
-								<CourseFormDialog
-									mode="edit"
-									course={course}
-									trigger={
-										<Button variant="ghost" size="sm" className="ml-2" aria-label="Edit course">
-											<Edit2 />
-										</Button>
-									}
-								/>
+										<CourseFormDialog
+											mode="edit"
+											course={course}
+											trigger={
+												<Button
+													variant="ghost"
+													size="sm"
+													className="ml-2"
+													aria-label="Edit course"
+												>
+													<Edit2 />
+												</Button>
+											}
+										/>
 									</div>
 									<p className="mt-1 truncate text-muted-foreground text-sm">
 										{course.description || (

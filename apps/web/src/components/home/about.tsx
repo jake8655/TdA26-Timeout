@@ -86,7 +86,7 @@ export default function About() {
 									label: "Available",
 									color: "text-primary",
 								},
-							]							.map((stat, i) => (
+							].map((stat, i) => (
 								<motion.div
 									key={stat.label}
 									initial={{ opacity: 0, y: 20 }}
@@ -116,9 +116,7 @@ export default function About() {
 						<div className="relative">
 							<div className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20 blur-[100px]" />
 
-							<div
-								className="relative z-10 rounded-3xl border border-white/10 bg-card/30 p-8 backdrop-blur-sm md:p-16"
-							>
+							<div className="relative z-10 rounded-3xl border border-white/10 bg-card/30 p-8 backdrop-blur-sm md:p-16">
 								<Image
 									src="/logo/logo-official-dark.svg"
 									alt="Think different Academy"

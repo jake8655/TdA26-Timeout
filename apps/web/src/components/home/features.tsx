@@ -71,14 +71,14 @@ function FeatureCard({
 		>
 			<Card className="h-full border-white/5 bg-card/40 backdrop-blur-sm transition-colors duration-200">
 				<CardHeader>
-				<div
-					className={cn(
-						"mb-4 flex size-16 items-center justify-center rounded-xl shadow-inner",
-						color === "primary"
-							? "bg-primary/10 shadow-primary/10"
-							: "bg-accent/10 shadow-accent/10",
-					)}
-				>
+					<div
+						className={cn(
+							"mb-4 flex size-16 items-center justify-center rounded-xl shadow-inner",
+							color === "primary"
+								? "bg-primary/10 shadow-primary/10"
+								: "bg-accent/10 shadow-accent/10",
+						)}
+					>
 						<Image
 							src={icon}
 							alt={alt}

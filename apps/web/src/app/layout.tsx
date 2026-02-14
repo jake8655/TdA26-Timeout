@@ -23,7 +23,11 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className={fontSans.variable} style={{ colorScheme: "dark" }}>
+		<html
+			lang="en"
+			className={fontSans.variable}
+			style={{ colorScheme: "dark" }}
+		>
 			<body className="dark antialiased">
 				<Providers>
 					<Header />

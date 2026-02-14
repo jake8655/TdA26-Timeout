@@ -51,9 +51,9 @@ export default function NotFound() {
 				</p>
 
 				<div className="flex flex-col gap-4 sm:flex-row">
-				<Button variant="accent" size="lg" className="min-w-40" asChild>
-					<Link href="/">Go Home</Link>
-				</Button>
+					<Button variant="accent" size="lg" className="min-w-40" asChild>
+						<Link href="/">Go Home</Link>
+					</Button>
 					<Button
 						variant="outline"
 						size="lg"

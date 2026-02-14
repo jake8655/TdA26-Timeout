@@ -54,34 +54,28 @@ export default function Hero() {
 				<p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl md:text-2xl">
 					An educational platform that proves learning doesn't have to mean
 					endless reading. It can be{" "}
-					<span className="font-semibold text-accent">
-						engaging
-					</span>
-					,{" "}
-					<span className="font-semibold text-primary">
-						interactive
-					</span>
-					, and{" "}
+					<span className="font-semibold text-accent">engaging</span>,{" "}
+					<span className="font-semibold text-primary">interactive</span>, and{" "}
 					<span className="font-semibold text-foreground">fully online</span>.
 				</p>
 
 				<div className="flex flex-col items-center justify-center gap-6 sm:flex-row">
-				<Button
-					variant="accent"
-					size="lg"
-					className="h-14 min-w-[200px] border-none bg-accent text-accent-foreground text-lg hover:bg-accent/90"
-					asChild
-				>
-					<Link href="/courses">Explore Courses</Link>
-				</Button>
-				<Button
-					variant="outline"
-					size="lg"
-					className="h-14 min-w-[200px] border-muted-foreground/20 text-lg hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
-					asChild
-				>
-					<Link href="#about">Learn More</Link>
-				</Button>
+					<Button
+						variant="accent"
+						size="lg"
+						className="h-14 min-w-[200px] border-none bg-accent text-accent-foreground text-lg hover:bg-accent/90"
+						asChild
+					>
+						<Link href="/courses">Explore Courses</Link>
+					</Button>
+					<Button
+						variant="outline"
+						size="lg"
+						className="h-14 min-w-[200px] border-muted-foreground/20 text-lg hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+						asChild
+					>
+						<Link href="#about">Learn More</Link>
+					</Button>
 				</div>
 			</div>
 		</section>

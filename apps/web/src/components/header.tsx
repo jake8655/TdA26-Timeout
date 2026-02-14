@@ -117,19 +117,19 @@ export default function Header() {
 							</DropdownMenuContent>
 						</DropdownMenu>
 					) : (
-					<>
-						<Button
-							variant="outline"
-							size="sm"
-							className="hidden border-primary/20 text-primary hover:border-primary hover:bg-primary/10 hover:text-primary sm:inline-flex"
-							asChild
-						>
-							<Link href="/login">Lecturer Login</Link>
-						</Button>
-						<Button variant="accent" size="sm" asChild>
-							<Link href="/courses">Explore Courses</Link>
-						</Button>
-					</>
+						<>
+							<Button
+								variant="outline"
+								size="sm"
+								className="hidden border-primary/20 text-primary hover:border-primary hover:bg-primary/10 hover:text-primary sm:inline-flex"
+								asChild
+							>
+								<Link href="/login">Lecturer Login</Link>
+							</Button>
+							<Button variant="accent" size="sm" asChild>
+								<Link href="/courses">Explore Courses</Link>
+							</Button>
+						</>
 					)}
 				</div>
 			</div>

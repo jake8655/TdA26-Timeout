@@ -2,6 +2,7 @@ import { useStore } from "@tanstack/react-form";
 import { Upload, X } from "lucide-react";
 import { useRef } from "react";
 import { useFieldContext } from "@/hooks/form-context";
+import { formatFileSize, MAX_FILE_SIZE } from "@/lib/material-utils";
 import { Button } from "../ui/button";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 
@@ -13,15 +14,6 @@ const ACCEPTED_FILE_TYPES = {
 };
 
 const ALL_ACCEPTED_TYPES = Object.values(ACCEPTED_FILE_TYPES).join(",");
-const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30 MB
-
-function formatFileSize(bytes: number): string {
-	if (bytes === 0) return "0 Bytes";
-	const k = 1024;
-	const sizes = ["Bytes", "KB", "MB", "GB"];
-	const i = Math.floor(Math.log(bytes) / Math.log(k));
-	return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-}
 
 export default function FileUploadField({
 	label,

@@ -24,7 +24,7 @@ export function CourseCard({
 			<Link href={`/courses/${course.uuid}`}>
 				<div className="group h-full cursor-pointer border border-white/5 bg-card/40 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:shadow-xl">
 					<div className="mb-4 flex items-start justify-between">
-					<div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
+						<div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
 							<Image
 								src="/icons/Idea/zarivka_idea_blue.svg"
 								alt="Course icon"
@@ -35,7 +35,7 @@ export function CourseCard({
 						</div>
 					</div>
 
-					<h3 className="mb-2 font-bold text-lg text-foreground">
+					<h3 className="mb-2 font-bold text-foreground text-lg">
 						{course.name}
 					</h3>
 

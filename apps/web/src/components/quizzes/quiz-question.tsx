@@ -81,18 +81,8 @@ export function QuizQuestion({
 			: "border-white/10 hover:border-white/20";
 	};
 
-	const questionText =
-		isSingleChoice && "question" in question
-			? question.question
-			: isMultipleChoice && "question" in question
-				? question.question
-				: "";
-	const options =
-		isSingleChoice && "options" in question
-			? question.options
-			: isMultipleChoice && "options" in question
-				? question.options
-				: [];
+	const questionText = "question" in question ? question.question : "";
+	const options = "options" in question ? question.options : [];
 
 	return (
 		<motion.div

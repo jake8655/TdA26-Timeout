@@ -69,18 +69,16 @@ function FeatureCard({
 			viewport={{ once: true }}
 			whileHover={{ y: -5 }}
 		>
-			<Card className="h-full border-white/5 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-card/60 hover:shadow-xl">
+			<Card className="h-full border-white/5 bg-card/40 backdrop-blur-sm transition-colors duration-200">
 				<CardHeader>
-					<motion.div
-						whileHover={{ scale: 1.1, rotate: 5 }}
-						transition={{ type: "spring", stiffness: 300 }}
-						className={cn(
-							"mb-4 flex size-16 items-center justify-center rounded-xl shadow-inner",
-							color === "primary"
-								? "bg-primary/10 shadow-primary/10"
-								: "bg-accent/10 shadow-accent/10",
-						)}
-					>
+				<div
+					className={cn(
+						"mb-4 flex size-16 items-center justify-center rounded-xl shadow-inner",
+						color === "primary"
+							? "bg-primary/10 shadow-primary/10"
+							: "bg-accent/10 shadow-accent/10",
+					)}
+				>
 						<Image
 							src={icon}
 							alt={alt}
@@ -88,7 +86,7 @@ function FeatureCard({
 							height={36}
 							className="size-9"
 						/>
-					</motion.div>
+					</div>
 					<CardTitle
 						className={cn(
 							"font-bold text-xl",

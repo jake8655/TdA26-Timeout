@@ -81,7 +81,7 @@ export default function Footer() {
 						© {new Date().getFullYear()} Think different Academy. All rights
 						reserved.
 					</p>
-					<div className="flex items-center gap-1.5 rounded-full border border-white/5 bg-white/5 px-4 py-1.5 text-muted-foreground text-sm transition-colors hover:bg-white/10">
+					<div className="flex items-center gap-1.5 rounded-full border border-white/5 bg-white/5 px-4 py-1.5 text-muted-foreground text-sm">
 						<span>Made with</span>
 						<Heart className="size-3.5 fill-current text-red-500" />
 						<span>for education</span>

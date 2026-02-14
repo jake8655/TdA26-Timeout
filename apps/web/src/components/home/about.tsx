@@ -28,7 +28,7 @@ function FloatingIcon({
 			}}
 			className={className}
 		>
-			<div className="rounded-xl border border-white/10 bg-card/80 p-3 shadow-xl backdrop-blur-md transition-transform hover:scale-110">
+			<div className="rounded-xl border border-white/10 bg-card/80 p-3 shadow-xl backdrop-blur-md">
 				<Image src={src} alt={alt} width={32} height={32} />
 			</div>
 		</motion.div>
@@ -86,7 +86,7 @@ export default function About() {
 									label: "Available",
 									color: "text-primary",
 								},
-							].map((stat, i) => (
+							]							.map((stat, i) => (
 								<motion.div
 									key={stat.label}
 									initial={{ opacity: 0, y: 20 }}
@@ -116,9 +116,7 @@ export default function About() {
 						<div className="relative">
 							<div className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20 blur-[100px]" />
 
-							<motion.div
-								whileHover={{ scale: 1.02 }}
-								transition={{ type: "spring", stiffness: 300 }}
+							<div
 								className="relative z-10 rounded-3xl border border-white/10 bg-card/30 p-8 backdrop-blur-sm md:p-16"
 							>
 								<Image
@@ -128,7 +126,7 @@ export default function About() {
 									height={176}
 									className="h-auto w-48 drop-shadow-2xl md:w-64"
 								/>
-							</motion.div>
+							</div>
 
 							<FloatingIcon
 								src="/icons/Beginner/zarivka_beginner_blue.svg"

@@ -115,8 +115,8 @@ function FeedItemCard({
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, scale: 0.95 }}
 			transition={{ duration: 0.3, delay: index * 0.03 }}
-			className={`group flex gap-3 rounded-none border bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 ${
-				isSystem ? "border-white/5" : "border-white/5 hover:border-white/10"
+			className={`group flex gap-3 rounded-none border bg-card/40 p-4 backdrop-blur-sm transition-colors duration-200 ${
+				isSystem ? "border-white/5" : "border-white/5"
 			}`}
 		>
 			<div

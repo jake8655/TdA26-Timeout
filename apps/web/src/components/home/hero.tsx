@@ -54,11 +54,11 @@ export default function Hero() {
 				<p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl md:text-2xl">
 					An educational platform that proves learning doesn't have to mean
 					endless reading. It can be{" "}
-					<span className="font-semibold text-accent decoration-2 decoration-accent underline-offset-4 hover:underline">
+					<span className="font-semibold text-accent">
 						engaging
 					</span>
 					,{" "}
-					<span className="font-semibold text-primary decoration-2 decoration-primary underline-offset-4 hover:underline">
+					<span className="font-semibold text-primary">
 						interactive
 					</span>
 					, and{" "}

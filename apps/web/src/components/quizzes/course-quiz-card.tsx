@@ -106,7 +106,7 @@ export function CourseQuizCard({
 						</Button>
 					}
 				/>
-				<DialogContent showCloseButton={false} className="sm:max-w-2xl">
+				<DialogContent showCloseButton={false} className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
 					<DialogTitle className="sr-only">Quiz: {quiz.title}</DialogTitle>
 					<QuizPlayer
 						quizUuid={quiz.uuid ?? ""}

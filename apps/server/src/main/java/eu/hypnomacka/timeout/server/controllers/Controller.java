@@ -9,16 +9,6 @@ import java.util.UUID;
 
 public class Controller {
 
-  public static String cdn = getCDNUrl();
-
-  private static String getCDNUrl() {
-    String key = System.getenv("CDN_URL");
-    if (key == null || key.isEmpty()) {
-      key = System.getProperty("CDN_URL");
-    }
-    return key;
-  }
-
   public static Lecturer lecturer = new QLecturer().username.eq("lecturer").findOne();
 
   public boolean isCookieValid(String sessionId, String username) {

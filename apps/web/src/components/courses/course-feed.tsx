@@ -5,6 +5,7 @@ import { useState } from "react";
 import { getCoursesByCourseIdFeedOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { FeedItem } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
+import EmptyState from "@/components/empty-state";
 import {
 	Dialog,
 	DialogContent,
@@ -14,24 +15,27 @@ import {
 } from "@/components/ui/dialog";
 import { useCourseFeedStream } from "@/hooks/use-course-feed-stream";
 
-type CourseFeedProps = {
-	courseId: string;
-	showActions?: boolean;
-	editTrigger?: (item: FeedItem) => React.ReactNode;
-	deleteTrigger?: (item: FeedItem) => React.ReactNode;
-	viewTrigger?: (item: FeedItem) => React.ReactNode;
-};
-
 export function CourseFeed({
 	courseId,
 	showActions = false,
 	editTrigger,
 	deleteTrigger,
 	viewTrigger,
-}: CourseFeedProps) {
+}: {
+	courseId: string;
+	showActions?: boolean;
+	editTrigger?: (item: FeedItem) => React.ReactNode;
+	deleteTrigger?: (item: FeedItem) => React.ReactNode;
+	viewTrigger?: (item: FeedItem) => React.ReactNode;
+}) {
 	const { feedItems: streamItems, isConnected } = useCourseFeedStream(courseId);
 
-	const { data: initialItems, isPending } = useQuery({
+	const {
+		data: initialItems,
+		isPending,
+		isError,
+		refetch,
+	} = useQuery({
 		...getCoursesByCourseIdFeedOptions({
 			path: { courseId },
 		}),
@@ -67,6 +71,20 @@ export function CourseFeed({
 		);
 	}
 
+	if (isError && streamItems.length === 0) {
+		return (
+			<EmptyState
+				title="Unable to load the feed"
+				description="Please try again in a moment."
+				action={
+					<Button variant="outline" size="sm" onClick={() => refetch()}>
+						Retry
+					</Button>
+				}
+			/>
+		);
+	}
+
 	return (
 		<div className="flex flex-col gap-3">
 			{isConnected && (
@@ -77,15 +95,16 @@ export function CourseFeed({
 			)}
 
 			{allItems.length === 0 ? (
-				<motion.div
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
-					className="flex flex-col items-center justify-center rounded-none border border-white/10 border-dashed py-16 text-center"
-				>
-					<MessageSquare className="mb-4 size-12 text-muted-foreground/50" />
-					<p className="text-muted-foreground">No posts yet</p>
-				</motion.div>
+				<EmptyState
+					title="No posts yet"
+					description={
+						showActions
+							? "Share updates, announcements, or resources with your students."
+							: "There are no posts in this feed yet."
+					}
+					icon={<MessageSquare className="size-7 text-primary" />}
+					className="border-dashed"
+				/>
 			) : (
 				<AnimatePresence mode="popLayout">
 					{allItems.map((item, index) => (

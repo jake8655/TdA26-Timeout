@@ -115,12 +115,12 @@ export default function Features() {
 			</div>
 
 			<div className="relative z-10 mx-auto max-w-7xl px-6">
-				<div className="mb-20 text-center">
+				<div className="mb-16 text-center">
 					<motion.h2
 						initial={{ opacity: 0, y: 20 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
-						className="mb-6 font-bold text-3xl tracking-tight sm:text-4xl md:text-5xl"
+						className="mb-6 font-bold text-3xl tracking-tight sm:text-4xl"
 					>
 						Why <span className="text-primary">Think different</span> Academy?
 					</motion.h2>
@@ -129,7 +129,7 @@ export default function Features() {
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
 						transition={{ delay: 0.2 }}
-						className="mx-auto max-w-2xl text-lg text-muted-foreground"
+						className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg"
 					>
 						We're revolutionizing education by making learning an adventure, not
 						a chore.

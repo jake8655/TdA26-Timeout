@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Edit2, Loader2, Plus, Trash2 } from "lucide-react";
+import { Edit2, Loader2, Plus, Rocket, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -15,6 +15,7 @@ import {
 import type { CourseSummary } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
+import EmptyState from "@/components/empty-state";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import {
 	Card,
@@ -202,6 +203,7 @@ export default function Dashboard() {
 		data: courses,
 		isPending,
 		isError,
+		refetch,
 	} = useQuery({
 		...getCoursesOptions(),
 	});
@@ -228,7 +230,7 @@ export default function Dashboard() {
 							{data.username}
 						</span>
 					</h1>
-					<p className="text-lg text-muted-foreground">
+					<p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
 						Manage your courses and track student progress.
 					</p>
 				</motion.div>
@@ -256,7 +258,16 @@ export default function Dashboard() {
 				{isPending ? (
 					<Loader2 className="mx-auto size-16 animate-spin text-primary" />
 				) : isError ? (
-					<div className="text-destructive">Error loading courses.</div>
+					<EmptyState
+						title="Unable to load courses"
+						description="Please try again in a moment."
+						icon={<Rocket className="size-7 text-primary" />}
+						action={
+							<Button variant="outline" size="sm" onClick={() => refetch()}>
+								Retry
+							</Button>
+						}
+					/>
 				) : (
 					<>
 						<motion.div
@@ -273,31 +284,22 @@ export default function Dashboard() {
 						</motion.div>
 
 						{courses.length === 0 && (
-							<motion.div
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.5, delay: 0.3 }}
-								className="mt-12 text-center"
-							>
-								<div className="mx-auto mb-4 flex size-20 items-center justify-center rounded-full bg-primary/10">
-									<Plus className="size-10 text-primary" />
-								</div>
-								<h3 className="mb-2 font-semibold text-foreground text-lg">
-									No courses yet
-								</h3>
-								<p className="mb-6 text-muted-foreground">
-									Create your first course to get started.
-								</p>
-								<CourseFormDialog
-									mode="add"
-									trigger={
-										<Button variant="accent" className="gap-2">
-											<Plus className="size-4" />
-											Create Your First Course
-										</Button>
-									}
-								/>
-							</motion.div>
+							<EmptyState
+								title="No courses yet"
+								description="Create your first course to get started."
+								icon={<Plus className="size-7 text-primary" />}
+								action={
+									<CourseFormDialog
+										mode="add"
+										trigger={
+											<Button variant="accent" className="gap-2">
+												<Plus className="size-4" />
+												Create Your First Course
+											</Button>
+										}
+									/>
+								}
+							/>
 						)}
 					</>
 				)}
@@ -320,6 +322,7 @@ function CourseCard({
 			animate={{ opacity: 1, scale: 1 }}
 			exit={{ opacity: 0, scale: 0.9 }}
 			transition={{ duration: 0.3, delay: index * 0.05 }}
+			className="h-full"
 		>
 			<Card className="group h-full border-white/5 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:shadow-xl">
 				<CardHeader className="pb-2">
@@ -356,7 +359,7 @@ function CourseCard({
 					</div>
 				</CardHeader>
 				<CardContent>
-					<CardDescription className="text-muted-foreground text-sm leading-relaxed">
+					<CardDescription className="line-clamp-2 min-h-[3rem] text-muted-foreground text-sm leading-relaxed">
 						{course.description || (
 							<span className="italic">No description available</span>
 						)}

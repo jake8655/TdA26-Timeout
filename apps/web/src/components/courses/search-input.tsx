@@ -5,19 +5,17 @@ import { motion } from "motion/react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-interface SearchInputProps {
-	value: string;
-	onChange: (value: string) => void;
-	placeholder?: string;
-	className?: string;
-}
-
 export function SearchInput({
 	value,
 	onChange,
 	placeholder = "Search courses",
 	className,
-}: SearchInputProps) {
+}: {
+	value: string;
+	onChange: (value: string) => void;
+	placeholder?: string;
+	className?: string;
+}) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: -10 }}
@@ -35,7 +33,7 @@ export function SearchInput({
 				value={value}
 				onChange={(e) => onChange(e.target.value)}
 				placeholder={placeholder}
-				className="h-11 pl-10 text-sm focus-visible:border-primary focus-visible:ring-primary/20"
+				className="h-11 border-white/10 bg-card/50 pl-10 text-sm focus-visible:border-primary focus-visible:ring-primary/20"
 			/>
 		</motion.div>
 	);

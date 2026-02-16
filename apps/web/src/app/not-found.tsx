@@ -41,11 +41,11 @@ export default function NotFound() {
 					</span>
 				</h1>
 
-				<h2 className="mb-6 font-semibold text-2xl text-foreground sm:text-3xl">
+				<h2 className="mb-4 font-semibold text-2xl text-foreground sm:text-3xl">
 					Lost in thought?
 				</h2>
 
-				<p className="mb-10 max-w-md text-lg text-muted-foreground">
+				<p className="mb-10 max-w-md text-base text-muted-foreground sm:text-lg">
 					The page you're looking for seems to have wandered off. It might be
 					learning something new elsewhere.
 				</p>

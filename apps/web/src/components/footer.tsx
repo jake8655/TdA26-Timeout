@@ -57,6 +57,31 @@ export default function Footer() {
 					</div>
 
 					<div>
+						<h4 className="mb-6 font-bold text-foreground">Legal</h4>
+						<ul className="space-y-4 text-muted-foreground text-sm">
+							<li>
+								<Link
+									href="/privacy"
+									className="transition-colors hover:text-primary"
+								>
+									Privacy Policy
+								</Link>
+							</li>
+							<li>
+								<Link
+									href="/terms"
+									className="transition-colors hover:text-primary"
+								>
+									Terms of Use
+								</Link>
+							</li>
+							<li>
+								<span>GDPR Support</span>
+							</li>
+						</ul>
+					</div>
+
+					<div>
 						<h4 className="mb-6 font-bold text-foreground">Get in Touch</h4>
 						<div className="space-y-4 text-muted-foreground text-sm">
 							<p>

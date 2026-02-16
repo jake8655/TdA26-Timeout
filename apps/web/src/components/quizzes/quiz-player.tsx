@@ -1,24 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader2, Medal, Target, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { QuizAnswer, QuizSubmitResponse } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
-import { cn } from "@/lib/utils";
 import { QuizQuestion } from "./quiz-question";
-
-interface QuizPlayerProps {
-	initialSubmittedResult?: QuizSubmitResponse | null;
-	initialAnswers?: QuizAnswer[] | null;
-	quizUuid: string;
-	courseId: string;
-	onCancel: () => void;
-	onSubmitComplete: (result: QuizSubmitResponse) => void;
-	onSubmitAnswers: (answers: QuizAnswer[]) => Promise<QuizSubmitResponse>;
-}
 
 const convertAnswersToRecord = (answers: QuizAnswer[] | null) => {
 	if (!answers) return {};
@@ -42,7 +31,15 @@ export function QuizPlayer({
 	onCancel,
 	onSubmitComplete,
 	onSubmitAnswers,
-}: QuizPlayerProps) {
+}: {
+	initialSubmittedResult?: QuizSubmitResponse | null;
+	initialAnswers?: QuizAnswer[] | null;
+	quizUuid: string;
+	courseId: string;
+	onCancel: () => void;
+	onSubmitComplete: (result: QuizSubmitResponse) => void;
+	onSubmitAnswers: (answers: QuizAnswer[]) => Promise<QuizSubmitResponse>;
+}) {
 	const [answers, setAnswers] = useState<Record<number, number | number[]>>(
 		initialSubmittedResult ? convertAnswersToRecord(initialAnswers) : {},
 	);
@@ -195,31 +192,30 @@ export function QuizPlayer({
 						animate={{ opacity: 1, y: 0 }}
 						className="space-y-4"
 					>
-						<div
-							className={cn(
-								"rounded-md border p-4 text-center",
-								submittedResult.score <= submittedResult.maxScore / 2
-									? "border-red-500/50 bg-red-500/10"
-									: "border-green-500/50 bg-green-500/10",
-							)}
-						>
-							<p
-								className={cn(
-									"font-semibold text-lg",
-									submittedResult.score <= submittedResult.maxScore / 2
-										? "text-red-400"
-										: "text-green-400",
-								)}
-							>
-								{initialSubmittedResult
-									? "Your previous quiz results"
-									: "Quiz submitted successfully!"}
-							</p>
-							<p className="mt-2 text-foreground">
-								Your score:{" "}
-								<span className="font-bold">
-									{submittedResult.score} / {submittedResult.maxScore}
-								</span>
+						<div className="rounded-none border border-white/10 bg-card/50 p-5">
+							<div className="flex flex-wrap items-center gap-3">
+								<div
+									className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs ${
+										submittedResult.score <= submittedResult.maxScore / 2
+											? "bg-red-500/10 text-red-300"
+											: "bg-green-500/10 text-green-300"
+									}`}
+								>
+									<Medal className="size-3.5" />
+									<span>
+										{initialSubmittedResult ? "Quiz result" : "Quiz submitted"}
+									</span>
+								</div>
+								<div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-muted-foreground text-xs">
+									<Target className="size-3.5 text-primary" />
+									<span>
+										Score {submittedResult.score}/{submittedResult.maxScore}
+									</span>
+								</div>
+							</div>
+							<p className="mt-4 text-muted-foreground text-sm">
+								Review the correct answers below to see what you nailed and what
+								to revisit.
 							</p>
 						</div>
 

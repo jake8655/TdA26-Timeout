@@ -1,0 +1,329 @@
+{
+  "formats": "$undefined",
+  "locale": "en",
+  "messages": {
+    "dashboard": {
+      "welcome": "This is your very cool dashboard!",
+      "containerStatus": "Container Status",
+      "noContainers": "No containers found in this deployment.",
+      "containerImage": "Container Image",
+      "statusDetails": "Status Details",
+      "environmentVariables": "Environment Variables",
+      "allSystemsOperational": "All systems operational",
+      "partiallyOperational": "Partially operational",
+      "serviceUnavailable": "Service unavailable",
+      "deployment": "Deployment",
+      "containersRunning": "containers running",
+      "healthy": "Healthy",
+      "servicesOperational": "services operational",
+      "issues": "Issues",
+      "servicesWithIssues": "services with issues",
+      "previewNotAvailable": "Preview not available",
+      "visitSite": "Visit Site",
+      "configuration": "Configuration",
+      "containers": "Containers",
+      "logs": "Logs",
+      "logsTitle": "Application Logs",
+      "logsDescription": "View real-time logs and monitoring information for your containers.",
+      "noLogsTitle": "No logs available",
+      "noLogsDescription": "Logs will appear here when containers are running and generating output.",
+      "noApplicationUrl": "No application URL available",
+      "connecting": "Connecting to log stream...",
+      "tokenGeneration": "Access Token Generation",
+      "tokenGenerationDescription": "Generate access tokens for your GitHub Actions workflows",
+      "tokeneGenerationSuccessful": "Access token generated successfully!",
+      "tokenGenerationFailed": "Failed to generate access token:",
+      "clipboardCopySuccess": "Copied to clipboard",
+      "tokenGenerationFormDescription": "You will only see this token once! Make sure to save it somewhere safe.",
+      "certificateGenerationTitle": "Certificate Generation",
+      "certificateGenerationDescription": "Generate your competition certificate for participating in the Nomination Round",
+      "certificatePaymentRequired": "You need to pay the entry fee in order to generate certificates."
+    },
+    "common": {
+      "language": "Language"
+    },
+    "sidebar": {
+      "activeDeployment": "Active deployment",
+      "configuration": "Configuration",
+      "tests": "Tests",
+      "todoList": "To-do list",
+      "ctf": "CTF",
+      "tokenGeneration": "Access Tokens",
+      "certificateGeneration": "Certificates",
+      "teamResults": "Team results"
+    },
+    "user": {
+      "defaultName": "User",
+      "language": "Language",
+      "english": "English",
+      "czech": "Čeština",
+      "logout": "Log out"
+    },
+    "error": {
+      "title": "Something went wrong!",
+      "description": "We encountered an unexpected error. Please try again or go back to the homepage.",
+      "errorDetails": "Error Details",
+      "tryAgain": "Try Again",
+      "goHome": "Go Home",
+      "errorId": "Error ID"
+    },
+    "tests": {
+      "title": "Tests",
+      "description": "Test your application against our suite of automated tests.",
+      "noTests": "No tests available.",
+      "noDescription": "No description available.",
+      "viewDetails": "View details",
+      "submissionsClosed": "Test submissions closed",
+      "lateSubmissionWarning": "Late submission: 20% penalty",
+      "paymentRequired": "Payment required",
+      "status": {
+        "locked": "Locked",
+        "open": "Open",
+        "closingSoon": "Closing Soon",
+        "pastDue": "Past Due",
+        "completed": "Completed"
+      },
+      "timing": {
+        "unlocksAt": "Unlocks at {date}",
+        "opensIn": "Opens in {time}",
+        "closesAt": "Closes at {date}",
+        "timeLeft": "{time} left",
+        "closedAt": "Closed at {date}",
+        "overdueBy": "Overdue by {time}"
+      },
+      "timeFormat": {
+        "daysHours": "{days}d {hours}h",
+        "hoursMinutes": "{hours}h {minutes}m",
+        "minutes": "{minutes}m"
+      },
+      "score": {
+        "noRuns": "No runs",
+        "percentage": "{score}%"
+      },
+      "actions": {
+        "runTest": "Run Test",
+        "running": "Running...",
+        "viewLogs": "View logs",
+        "downloadTestCases": "Download test cases"
+      },
+      "toast": {
+        "starting": "Starting test run...",
+        "running": "Test is running...",
+        "completed": "Test completed!",
+        "initiated": "Test run initiated...",
+        "failed": "Failed to start test run: {error}",
+        "unknownError": "Unknown error"
+      },
+      "details": {
+        "bestRunScore": "Best run score",
+        "completedSuccessfully": "completed successfully",
+        "testRuns": "Test Runs",
+        "loadingRuns": "Loading test runs...",
+        "noRunsFound": "No test runs found. Click \"Run Test\" to execute the test.",
+        "runId": "Run ID: {id}",
+        "allTestsPassed": "All tests passed",
+        "testsFailed": "{failed}/{total} tests failed",
+        "test": "Test: {name}",
+        "expected": "Expected",
+        "actual": "Actual",
+        "retentionNotice": "Test information can be viewed only for a few hours after execution. This is done for performance and cost optimization reasons."
+      },
+      "dialogs": {
+        "logsFor": "Logs for {name}",
+        "testData": "Test data"
+      },
+      "common": {
+        "loading": "Loading...",
+        "na": "N/A",
+        "noDataAvailable": "No data available."
+      }
+    },
+    "teamResults": {
+      "title": "Team Results",
+      "description": "View your team's evaluation scores and performance breakdown across all categories.",
+      "noData": "No data available",
+      "errors": {
+        "tooEarly": {
+          "title": "Results Not Available Yet",
+          "message": "The team results are not available yet. Please check back later."
+        },
+        "unauthorized": {
+          "title": "Authentication Required",
+          "message": "You need to be logged in to view team results."
+        },
+        "forbidden": {
+          "title": "Access Denied",
+          "message": "You don't have permission to view these team results."
+        },
+        "dataError": {
+          "title": "Data Error",
+          "message": "There was a problem with the team results data. Please contact support if this issue persists."
+        }
+      },
+      "noGroups": "No evaluation groups found.",
+      "noEvaluations": "No evaluations found.",
+      "totalPoints": "total points",
+      "total": "Total",
+      "ofTotal": "of total",
+      "showing": "Showing",
+      "legend": {
+        "fx": "Functional (absolute points)",
+        "ux": "User Experience (relative points)",
+        "at": "Automated Tests"
+      },
+      "kpi": {
+        "total": "Total Score",
+        "fx": "FX Points",
+        "ux": "UX Points",
+        "at": "AT Points",
+        "groups": "Groups",
+        "evaluations": "Evaluations"
+      },
+      "charts": {
+        "composition": "Score Composition",
+        "byGroup": "Points by Group"
+      },
+      "details": {
+        "titles": {
+          "ux": "UX Breakdown",
+          "fx": "FX Breakdown"
+        },
+        "boolStates": {
+          "working": "WORKING",
+          "notWorking": "MISSING"
+        },
+        "groups": {
+          "UxC": {
+            "name": "Appearance and design",
+            "frpwtr0qvwdqhstyy5xa5uhk": "Element layout",
+            "eowt3g541fhbrkaz8lgf8eeo": "Graphic sophistication and used elements",
+            "l77mwp70e34uszl0mpvqo6jy": "Font quality (typography)"
+          },
+          "UxD": {
+            "name": "Brand and identity",
+            "og24h9qms89cs33ag3k4gff3": "Working with logo from brand manual",
+            "sf49tttjfxcnclas31mo5hyg": "Working with colors from brand manual",
+            "cx3sdynbw5n3gwfwrovenbo8": "Correct use of fonts according to manual",
+            "we54ghf4ktv81m4if2djleu5": "Respect for overall visual identity, Táda"
+          },
+          "UxF": {
+            "name": "Quizzes and interactive activities",
+            "uuq3m78d544e4w1dqyemtgki": "Correct and incorrect answers are visually distinguished",
+            "zugp8a4wzwxfxlcy2lniy9qc": "User immediately knows if their choice was recorded",
+            "pel9k6dpe5jixdnjoui0g49o": "Quiz control elements (Transition between questions)",
+            "poln3v569zwr0ktt3sp182nk": "Distinction and specifics of individual question types",
+            "u88uwmbvwsm2xdzgulsljdqb": "Simplicity of filling out the quiz"
+          },
+          "UxE": {
+            "name": "Navigation and structure",
+            "vvb8ag0zojox8f2vd814yk41": "Clear control elements and CTA buttons",
+            "dk9yu0v9g2ymyb4kisb13lit": "Clear navigation axis"
+          },
+          "UxA": {
+            "name": "Overall design and clarity",
+            "bz8qymt1fhb332o7yhneckes": "Overall fulfillment of assignment - IT perspective on solution",
+            "qsqkml2is0hc7ctrm0j4uk9n": "Overall fulfillment of assignment - how satisfied the client is"
+          },
+          "UxB": {
+            "name": "Consistency and standards",
+            "mognro3alsd0jk4ns4r4eux1": "WebDev \"SEO\" basics (404, favicon, dynamic title)",
+            "ksq0reaa454vblxid7m2knjk": "Legislative requirements (Copyright, Contact, ToU, GDPR...)",
+            "yrdqfn3yu4un3784ayuq4u1k": "User feedback",
+            "rngr3th3et0zap6o9ox1wu1e": "Adherence to basic design patterns",
+            "nehvx2y5pc1nnctbtgl9uhmo": "Consistent language, style and control elements",
+            "flcmuzh4j1asqczu1ep3f44d": "Spacing, contrast and readability"
+          },
+          "FxA": {
+            "name": "Basic functionality and deployment",
+            "bw42ii5zwfx4wgtzmirqo720": "Application availability"
+          },
+          "FxB": {
+            "name": "Student browsing course content",
+            "i0zt012kg9rkp5sc6j4wtj65": "Course list",
+            "eqfzz7wbgotjqerzm66x0xuc": "Opening link (description)",
+            "lz8tf8x2dzoxeswl62a7ouyp": "Course detail display",
+            "u60ey94ysij533veddz7bhfb": "Materials display",
+            "vm03ohwiia6khn1h10njevf3": "Opening link (functionality)",
+            "rma5q2vwxdst7on2t869b1po": "Opening link (favicon)",
+            "c2de31abhg7lgeg657l9up11": "Opening/downloading file",
+            "hqhqccb7sx2xcxhknkuzly8y": "Quiz display and walkthrough",
+            "ngmdlyfj37v3qyikf3gqs1nk": "Quiz evaluation",
+            "d42p66zi9s8hykpztbvnkqjc": "Counter and persistence"
+          },
+          "FxE": {
+            "name": "Course management by instructor",
+            "ibtvs2au5d7am96fxb9mx6na": "Course editing",
+            "w86x9yqpvirrjk07y2s2d841": "Course deletion",
+            "lkbfknlkohw62jffhpfrs08d": "Course creation"
+          },
+          "FxF": {
+            "name": "Materials management by instructor",
+            "qokqg5qx9x38qzuwkmlshr16": "Existence of materials management",
+            "g9zn4w09ul05vy9nayctfuo6": "Materials sorting",
+            "f54hih4tq85jajvt8xiwv4qx": "PDF creation (incomplete - validation)",
+            "su5hlh8bnthf1mdwx41gwd68": "PDF creation (complete)",
+            "ltvwqxcbhjl8znqtvcijtt87": "File editing",
+            "fuiq0gsd18dm62wotizxb76e": "File deletion",
+            "apha5mskk1j4iq2aoyjjyvux": "Link creation (incomplete - validation)",
+            "ua3q29838ef0k4on5737vk17": "Link creation (complete)"
+          },
+          "FxC": {
+            "name": "Course search",
+            "plic9jutw8pcy6h8rvikvpyy": "Basic search",
+            "x7fz8kwuu0xo20unrc98u0e4": "Non-existent course (Empty state)",
+            "x1e16yqf5qg7eqsigpylh90d": "Case insensitive search"
+          },
+          "FxD": {
+            "name": "Instructor login and account",
+            "elpzdqh6kfrsth7gn92244h1": "Login page availability",
+            "x6mu4rx4rxjzteeauofxdyxr": "Dashboard inaccessibility (Guard)",
+            "w6lj668zm671anhtnffc6qud": "Login – valid",
+            "ycw8rsggtjnzqj9i5vkg7e5o": "Login – invalid",
+            "ec1edi7dqkqjyuvkmex5ua9d": "Logout and redirect",
+            "vkdhv6md1g8gb2tkzcc3oodt": "Dashboard button hiding"
+          },
+          "FxG": {
+            "name": "Quiz and results management by instructor",
+            "s3fykyztb7v321kinajz2eon": "Existence of quiz management",
+            "zx6d0uccqutt6yv5tqiya0s2": "Quiz creation (incomplete - validation)",
+            "bo69394hvkcwpi5db1b65hli": "Quiz creation (complete)",
+            "utkfkm8k0hxjih3d7cv5t5pw": "Quiz editing",
+            "pfzmfhr1vy204xpfz13cp9fz": "Quiz deletion",
+            "r2gj3691f8q44rhghwf6hp98": "Display of results"
+          },
+          "FxH": {
+            "name": "Information channel and realtime news",
+            "fapchojwzpezf3sgsnxayvyj": "Existence of information channel",
+            "t4wsfxfw2kmoawoing5r3ai9": "News creation (incomplete - validation)",
+            "j4t807gxt4m8z5qaucr5dgc5": "News creation (complete)",
+            "rcj8t0g2zayfwze3azts03s7": "News editing",
+            "mcoe0pqzhp5q70ox3sahspkt": "News deletion",
+            "g62z6ljcylmrd5gxpmesjjit": "Real-time news updates",
+            "uwhlg3uvam4c2t5alrbqvmgf": "News list display",
+            "ikcja5kqu95udtbpqd581wgu": "News detail display",
+            "mpvo7m6bkf2p7d9wi2ts7iq1": "Realtime refresh"
+          }
+        },
+        "progressLabels": {
+          "critical": "Critical +",
+          "major": "Major +",
+          "medium": "Medium +",
+          "minor": "Minor +",
+          "veryMinor": "Very minor +",
+          "nothing": "Nothing"
+        },
+        "progressDescriptions": {
+          "critical": "Experience exceeded my expectations (e.g. everything is as it should be + smooth effect/something extra)",
+          "major": "Meets expectations",
+          "medium": "Fulfills function, but could be better",
+          "minor": "Fulfills function, but could be substantially better",
+          "veryMinor": "Very small insignificant plus, there was an attempt",
+          "nothing": "Not fulfilled, no points, too many errors"
+        }
+      }
+    }
+  },
+  "now": "$undefined",
+  "timeZone": "UTC",
+  "children": "$L11"
+}

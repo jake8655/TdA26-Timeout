@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { BarChart3, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
+import EmptyState from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -13,45 +15,33 @@ import {
 import { env } from "@/env";
 import { QuizStatsQuestion } from "./quiz-stats-question";
 
-interface QuizStatsDialogProps {
-	quizId: string;
-	courseId: string;
-	quizTitle: string;
-	trigger: React.ReactElement;
-}
-
-interface QuizStatsResponse {
-	quizUuid: string;
-	quizTitle: string;
-	totalSubmissions: number;
-	questions: Array<{
-		questionUuid: string;
-		type: "singleChoice" | "multipleChoice";
-		question: string;
-		options: string[];
-		correctIndex?: number;
-		correctIndices?: number[];
-		optionCounts: Record<string, number>;
-	}>;
-}
-
 export function QuizStatsDialog({
 	quizId,
 	courseId,
 	quizTitle,
 	trigger,
-}: QuizStatsDialogProps) {
+}: {
+	quizId: string;
+	courseId: string;
+	quizTitle: string;
+	trigger: React.ReactElement;
+}) {
 	const {
 		data: quiz,
 		isPending,
 		isError,
+		refetch: refetchQuiz,
 	} = useQuery({
 		...getCoursesByCourseIdQuizzesByQuizIdOptions({
 			path: { courseId, quizId },
 		}),
 	});
 
-	const { data: stats, isPending: statsPending } = useQuery({
+	const {
+		data: stats,
+		isPending: statsPending,
+		refetch: refetchStats,
+	} = useQuery({
 		queryKey: ["quiz-stats", courseId, quizId],
 		queryFn: async () => {
 			const response = await fetch(
@@ -64,9 +54,29 @@ export function QuizStatsDialog({
 			if (!response.ok) {
 				throw new Error("Failed to fetch quiz stats");
 			}
-			return response.json() as Promise<QuizStatsResponse>;
+			return response.json() as Promise<{
+				quizUuid: string;
+				quizTitle: string;
+				totalSubmissions: number;
+				questions: Array<{
+					questionUuid: string;
+					type: "singleChoice" | "multipleChoice";
+					question: string;
+					options: string[];
+					correctIndex?: number;
+					correctIndices?: number[];
+					optionCounts: Record<string, number>;
+				}>;
+			}>;
 		},
 	});
+
+	const questionStatsByUuid = new Map(
+		(stats?.questions ?? []).map((questionStats) => [
+			questionStats.questionUuid,
+			questionStats,
+		]),
+	);
 
 	if (isPending || statsPending) {
 		return (
@@ -86,9 +96,22 @@ export function QuizStatsDialog({
 			<Dialog>
 				<DialogTrigger render={trigger} />
 				<DialogContent showCloseButton={false} className="sm:max-w-2xl">
-					<div className="py-8 text-center text-muted-foreground">
-						<p>Failed to load quiz. Please try again later.</p>
-					</div>
+					<EmptyState
+						title="Unable to load quiz stats"
+						description="Please try again in a moment."
+						action={
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => {
+									refetchQuiz();
+									refetchStats();
+								}}
+							>
+								Retry
+							</Button>
+						}
+					/>
 				</DialogContent>
 			</Dialog>
 		);
@@ -118,7 +141,13 @@ export function QuizStatsDialog({
 					</div>
 				</div>
 
-				{stats && (
+				{stats.totalSubmissions === 0 ? (
+					<EmptyState
+						title="No submissions yet"
+						description="Once students submit answers, you'll see response statistics here."
+						className="border-dashed"
+					/>
+				) : (
 					<motion.div
 						initial={{ opacity: 0, y: 10 }}
 						animate={{ opacity: 1, y: 0 }}
@@ -126,7 +155,9 @@ export function QuizStatsDialog({
 					>
 						<div className="space-y-3">
 							{quiz.questions.map((question, index) => {
-								const questionStats = stats.questions[index];
+								const questionStats = question.uuid
+									? questionStatsByUuid.get(question.uuid)
+									: stats.questions[index];
 								if (!questionStats) return null;
 
 								return (
@@ -139,19 +170,6 @@ export function QuizStatsDialog({
 								);
 							})}
 						</div>
-					</motion.div>
-				)}
-
-				{stats && stats.totalSubmissions === 0 && (
-					<motion.div
-						initial={{ opacity: 0, y: 10 }}
-						animate={{ opacity: 1, y: 0 }}
-						className="border border-white/10 bg-card/40 p-6 text-center backdrop-blur-sm"
-					>
-						<p className="text-muted-foreground text-sm">
-							No submissions yet. Once students submit their answers, you'll see
-							their response statistics here.
-						</p>
 					</motion.div>
 				)}
 			</DialogContent>

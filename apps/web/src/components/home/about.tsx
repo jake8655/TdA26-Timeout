@@ -46,10 +46,10 @@ export default function About() {
 						viewport={{ once: true }}
 						transition={{ duration: 0.6 }}
 					>
-						<h2 className="mb-6 font-bold text-3xl sm:text-4xl md:text-5xl">
+						<h2 className="mb-6 font-bold text-3xl sm:text-4xl">
 							Our <span className="text-accent">Mission</span>
 						</h2>
-						<div className="space-y-6 text-lg text-muted-foreground">
+						<div className="space-y-6 text-base text-muted-foreground sm:text-lg">
 							<p>
 								Think different Academy is a{" "}
 								<span className="font-semibold text-foreground">
@@ -95,7 +95,7 @@ export default function About() {
 									transition={{ delay: 0.2 + i * 0.1 }}
 									className="text-center"
 								>
-									<div className={`font-bold text-3xl ${stat.color} mb-1`}>
+									<div className={`mb-1 font-bold text-3xl ${stat.color}`}>
 										{stat.value}
 									</div>
 									<div className="font-medium text-muted-foreground text-sm uppercase tracking-wider">

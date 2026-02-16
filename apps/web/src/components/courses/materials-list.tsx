@@ -5,16 +5,14 @@ import { Loader2, PackageOpen } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { getCoursesByCourseIdMaterialsOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
+import { Button } from "@/components/animate-ui/components/buttons/button";
+import EmptyState from "../empty-state";
 import { MaterialCard } from "./material-card";
 
 type Material = FileMaterial | UrlMaterial;
 
-interface MaterialsListProps {
-	courseId: string;
-}
-
-export function MaterialsList({ courseId }: MaterialsListProps) {
-	const { data, isPending, isError } = useQuery({
+export function MaterialsList({ courseId }: { courseId: string }) {
+	const { data, isPending, isError, refetch } = useQuery({
 		...getCoursesByCourseIdMaterialsOptions({
 			path: { courseId },
 		}),
@@ -34,13 +32,15 @@ export function MaterialsList({ courseId }: MaterialsListProps) {
 
 	if (isError) {
 		return (
-			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				className="py-8 text-center text-muted-foreground"
-			>
-				<p>Failed to load materials. Please try again later.</p>
-			</motion.div>
+			<EmptyState
+				title="Unable to load materials"
+				description="Please try again in a moment."
+				action={
+					<Button variant="outline" size="sm" onClick={() => refetch()}>
+						Retry
+					</Button>
+				}
+			/>
 		);
 	}
 
@@ -48,19 +48,11 @@ export function MaterialsList({ courseId }: MaterialsListProps) {
 
 	if (!materials || materials.length === 0) {
 		return (
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				className="flex flex-col items-center justify-center py-12 text-center"
-			>
-				<div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted/20">
-					<PackageOpen className="size-8 text-muted-foreground" />
-				</div>
-				<h3 className="font-medium text-foreground">No materials yet</h3>
-				<p className="mt-1 text-muted-foreground text-sm">
-					Course materials will appear here once added.
-				</p>
-			</motion.div>
+			<EmptyState
+				title="No materials yet"
+				description="Course materials will appear here once added."
+				icon={<PackageOpen className="size-7 text-primary" />}
+			/>
 		);
 	}
 

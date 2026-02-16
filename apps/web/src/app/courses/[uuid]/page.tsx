@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2, MessageSquareText } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseFeed } from "@/components/courses/course-feed";
 import { MaterialsList } from "@/components/courses/materials-list";
+import EmptyState from "@/components/empty-state";
 import { CourseQuizCard } from "@/components/quizzes/course-quiz-card";
 
 export default function CourseDetailPage({
@@ -20,7 +21,7 @@ export default function CourseDetailPage({
 	params: Promise<{ uuid: string }>;
 }) {
 	const { uuid } = use(params);
-	const { data, isPending, isError } = useQuery({
+	const { data, isPending, isError, refetch } = useQuery({
 		...getCoursesByCourseIdOptions({
 			path: { courseId: uuid },
 		}),
@@ -64,14 +65,16 @@ export default function CourseDetailPage({
 						<Loader2 className="size-16 animate-spin text-primary" />
 					</motion.div>
 				) : isError ? (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ duration: 0.5 }}
-						className="text-center text-muted-foreground"
-					>
-						<p>Failed to load course details. Please try again later.</p>
-					</motion.div>
+					<EmptyState
+						title="Unable to load course"
+						description="Please try again in a moment."
+						icon={<MessageSquareText className="size-7 text-primary" />}
+						action={
+							<Button variant="outline" size="sm" onClick={() => refetch()}>
+								Retry
+							</Button>
+						}
+					/>
 				) : (
 					<section className="border border-white/5 bg-card/40 p-8 backdrop-blur-sm md:p-12">
 						<div className="mb-8 flex items-center gap-6">
@@ -93,14 +96,34 @@ export default function CourseDetailPage({
 							<h2 className="mb-4 font-semibold text-foreground text-lg">
 								About this course
 							</h2>
-							<p className="text-muted-foreground leading-relaxed">
-								{data.description ?? (
+							<p className="max-w-2xl text-muted-foreground leading-relaxed">
+								{data.description || (
 									<span className="italic">No description available</span>
 								)}
 							</p>
 						</div>
 
 						<div className="mt-8">
+							<div className="mb-6 flex items-center gap-3">
+								<BookOpen className="size-5 text-primary" />
+								<h2 className="font-semibold text-foreground text-lg">
+									Course Feed
+								</h2>
+							</div>
+							<CourseFeed courseId={uuid} />
+						</div>
+
+						<div className="mt-8 border-white/5 border-t pt-8">
+							<div className="mb-6 flex items-center gap-3">
+								<BookOpen className="size-5 text-primary" />
+								<h2 className="font-semibold text-foreground text-lg">
+									Course Materials
+								</h2>
+							</div>
+							<MaterialsList courseId={uuid} />
+						</div>
+
+						<div className="mt-8 border-white/5 border-t pt-8">
 							<div className="mb-6 flex items-center gap-3">
 								<BookOpen className="size-5 text-primary" />
 								<h2 className="font-semibold text-foreground text-lg">
@@ -119,30 +142,12 @@ export default function CourseDetailPage({
 									))}
 								</div>
 							) : (
-								<p className="text-muted-foreground">
-									No quizzes available for this course.
-								</p>
+								<EmptyState
+									title="No quizzes yet"
+									description="Check back soon for interactive quizzes."
+									icon={<BookOpen className="size-7 text-primary" />}
+								/>
 							)}
-						</div>
-
-						<div className="mt-8 border-white/5 border-t pt-8">
-							<div className="mb-6 flex items-center gap-3">
-								<BookOpen className="size-5 text-primary" />
-								<h2 className="font-semibold text-foreground text-lg">
-									Course Feed
-								</h2>
-							</div>
-							<CourseFeed courseId={uuid} />
-						</div>
-
-						<div className="mt-8 border-white/5 border-t pt-8">
-							<div className="mb-6 flex items-center gap-3">
-								<BookOpen className="size-5 text-primary" />
-								<h2 className="font-semibold text-foreground text-lg">
-									Course Materials
-								</h2>
-							</div>
-							<MaterialsList courseId={uuid} />
 						</div>
 					</section>
 				)}

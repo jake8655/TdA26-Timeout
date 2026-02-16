@@ -38,7 +38,7 @@ export default function CallToAction() {
 					initial={{ opacity: 0, y: 20 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
-					className="mb-6 font-bold text-4xl sm:text-5xl md:text-6xl"
+					className="mb-6 font-bold text-4xl sm:text-5xl"
 				>
 					Ready to <span className="text-primary">think</span>{" "}
 					<span className="text-accent">different</span>?
@@ -49,7 +49,7 @@ export default function CallToAction() {
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ delay: 0.2 }}
-					className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl"
+					className="mx-auto mb-12 max-w-2xl text-base text-muted-foreground sm:text-lg"
 				>
 					Join our community of learners and discover a new way of education.
 					It's free, it's online, and it's designed for you.

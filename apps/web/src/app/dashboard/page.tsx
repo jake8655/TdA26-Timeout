@@ -324,7 +324,7 @@ function CourseCard({
 			transition={{ duration: 0.3, delay: index * 0.05 }}
 			className="h-full"
 		>
-				<Card className="group h-full border-white/5 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:shadow-xl">
+			<Card className="group h-full border-white/5 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:shadow-xl">
 				<CardHeader className="pb-2">
 					<div className="flex items-start justify-between gap-2">
 						<CardTitle className="font-bold text-lg text-primary">

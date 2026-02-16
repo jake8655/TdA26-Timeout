@@ -11,6 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -22,10 +24,15 @@ public class FileStorageService {
   private static final long MAX_FILE_SIZE = 30L * 1024 * 1024;
   private static final int MAX_FILENAME_LENGTH = 200;
   private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
+  private static final String DEV_UPLOADS_URL = "http://localhost:3000/uploads/";
+  private static final String PROD_UPLOADS_URL = "/api/uploads/";
 
   private final Path uploadsDir;
+  private final Environment environment;
 
-  public FileStorageService() {
+  @Autowired
+  public FileStorageService(Environment environment) {
+    this.environment = environment;
     String uploadsPath = getUploadsDir();
     this.uploadsDir = Paths.get(uploadsPath).toAbsolutePath().normalize();
     log.info("File storage initialized with uploads directory: {}", uploadsDir);
@@ -75,7 +82,17 @@ public class FileStorageService {
 
     log.info("Stored file: {} bytes at {}", content.length, targetPath);
 
-    return "/uploads/" + relativePath;
+    return getUploadsBaseUrl() + relativePath;
+  }
+
+  private String getUploadsBaseUrl() {
+    String[] activeProfiles = environment.getActiveProfiles();
+    for (String profile : activeProfiles) {
+      if ("dev".equals(profile)) {
+        return DEV_UPLOADS_URL;
+      }
+    }
+    return PROD_UPLOADS_URL;
   }
 
   public void delete(String fileUrl) throws IOException {
@@ -151,6 +168,12 @@ public class FileStorageService {
   }
 
   private String extractRelativePath(String fileUrl) {
+    if (fileUrl.startsWith(DEV_UPLOADS_URL)) {
+      return fileUrl.substring(DEV_UPLOADS_URL.length());
+    }
+    if (fileUrl.startsWith(PROD_UPLOADS_URL)) {
+      return fileUrl.substring(PROD_UPLOADS_URL.length());
+    }
     if (fileUrl.startsWith("/uploads/")) {
       return fileUrl.substring("/uploads/".length());
     }

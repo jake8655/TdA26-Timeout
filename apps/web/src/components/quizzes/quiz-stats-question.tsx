@@ -9,27 +9,23 @@ import type {
 } from "@/api-client/types.gen";
 import { cn } from "@/lib/utils";
 
-interface QuestionStatsLocal {
-	questionUuid: string;
-	type: "singleChoice" | "multipleChoice";
-	question: string;
-	options: string[];
-	correctIndex?: number;
-	correctIndices?: number[];
-	optionCounts: Record<string, number>;
-}
-
-interface QuizStatsQuestionProps {
-	question: Question;
-	questionIndex: number;
-	questionStats: QuestionStatsLocal;
-}
-
 export function QuizStatsQuestion({
 	question,
 	questionIndex,
 	questionStats,
-}: QuizStatsQuestionProps) {
+}: {
+	question: Question;
+	questionIndex: number;
+	questionStats: {
+		questionUuid: string;
+		type: "singleChoice" | "multipleChoice";
+		question: string;
+		options: string[];
+		correctIndex?: number;
+		correctIndices?: number[];
+		optionCounts: Record<string, number>;
+	};
+}) {
 	const isSingleChoice = question.type === "singleChoice";
 	const isMultipleChoice = question.type === "multipleChoice";
 
@@ -108,7 +104,9 @@ export function QuizStatsQuestion({
 							/>
 							<div className="relative flex items-center justify-between gap-3">
 								<div className="flex items-center gap-3">
-									<span className="text-foreground text-sm">{option}</span>
+									<span className="text-foreground text-sm leading-relaxed">
+										{option}
+									</span>
 									{correct && <CheckCircle className="size-4 text-green-500" />}
 								</div>
 								<div className="flex items-center gap-2">
@@ -124,12 +122,6 @@ export function QuizStatsQuestion({
 					);
 				})}
 			</div>
-
-			{totalSubmissions === 0 && (
-				<p className="mt-4 text-center text-muted-foreground text-sm">
-					No submissions yet
-				</p>
-			)}
 		</motion.div>
 	);
 }

@@ -20,17 +20,15 @@ import {
 } from "@/components/ui/dialog";
 import { QuizPlayer } from "./quiz-player";
 
-interface CourseQuizCardProps {
-	quiz: Quiz;
-	courseId: string;
-	onSaveResult: (result: QuizSubmitResponse) => void;
-}
-
 export function CourseQuizCard({
 	quiz,
 	courseId,
 	onSaveResult,
-}: CourseQuizCardProps) {
+}: {
+	quiz: Quiz;
+	courseId: string;
+	onSaveResult: (result: QuizSubmitResponse) => void;
+}) {
 	const [isPlaying, setIsPlaying] = useState(false);
 
 	const existingResult =

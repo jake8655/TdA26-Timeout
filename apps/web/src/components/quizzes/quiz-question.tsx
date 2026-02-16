@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "motion/react";
 import type {
 	MultipleChoiceQuestion,
@@ -11,15 +12,6 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 
-interface QuizQuestionProps {
-	question: Question;
-	questionIndex: number;
-	selectedAnswer?: number | number[];
-	onAnswerChange: (answer: number | number[]) => void;
-	isReadOnly?: boolean;
-	isCorrect?: boolean | null;
-}
-
 export function QuizQuestion({
 	question,
 	questionIndex,
@@ -27,7 +19,14 @@ export function QuizQuestion({
 	onAnswerChange,
 	isReadOnly = false,
 	isCorrect = null,
-}: QuizQuestionProps) {
+}: {
+	question: Question;
+	questionIndex: number;
+	selectedAnswer?: number | number[];
+	onAnswerChange: (answer: number | number[]) => void;
+	isReadOnly?: boolean;
+	isCorrect?: boolean | null;
+}) {
 	const isSingleChoice = question.type === "singleChoice";
 	const isMultipleChoice = question.type === "multipleChoice";
 
@@ -69,15 +68,15 @@ export function QuizQuestion({
 
 		if (isReadOnly) {
 			if (correct === true) {
-				return "border-green-500/50 bg-green-500/10";
+				return "border-green-500/40 bg-green-500/10";
 			}
 			if (correct === false && checked) {
-				return "border-red-500/50 bg-red-500/10";
+				return "border-red-500/40 bg-red-500/10";
 			}
 		}
 
 		return checked
-			? "border-primary/50 bg-primary/10"
+			? "border-primary/40 bg-primary/10"
 			: "border-white/10 hover:border-white/20";
 	};
 
@@ -101,7 +100,7 @@ export function QuizQuestion({
 							{isMultipleChoice ? "Multiple choice" : "Single choice"}
 						</span>
 					</div>
-					<p className="text-foreground text-sm leading-relaxed">
+					<p className="max-w-2xl text-foreground text-sm leading-relaxed">
 						{questionText}
 					</p>
 				</div>
@@ -115,6 +114,7 @@ export function QuizQuestion({
 				{options.map((option, index) => {
 					const inputId = `q${questionIndex}-opt${index}`;
 					const checked = isChecked(index);
+					const correct = isOptionCorrect(index);
 
 					return (
 						<Label
@@ -149,14 +149,18 @@ export function QuizQuestion({
 										disabled={isReadOnly}
 									/>
 								)}
-								<span className="text-foreground text-sm">{option}</span>
-								{isReadOnly && isOptionCorrect(index) === true && (
-									<span className="ml-auto text-green-500 text-xs">
+								<span className="text-foreground text-sm leading-relaxed">
+									{option}
+								</span>
+								{isReadOnly && correct === true && (
+									<span className="ml-auto inline-flex items-center gap-1 text-green-400 text-xs">
+										<CheckCircle2 className="size-3.5" />
 										Correct
 									</span>
 								)}
-								{isReadOnly && isOptionCorrect(index) === false && checked && (
-									<span className="ml-auto text-red-500 text-xs">
+								{isReadOnly && correct === false && checked && (
+									<span className="ml-auto inline-flex items-center gap-1 text-red-400 text-xs">
+										<XCircle className="size-3.5" />
 										Incorrect
 									</span>
 								)}

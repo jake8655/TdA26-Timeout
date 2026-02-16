@@ -1,7 +1,9 @@
 package eu.hypnomacka.timeout.server.controllers.course.materials;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
@@ -27,6 +29,11 @@ public class MaterialPostController extends Controller {
 
   private static final String URL = cdn + "/upload";
   private final WebClient webClient = WebClient.builder().build();
+  private final CourseFeedService feedService;
+
+  public MaterialPostController(CourseFeedService feedService) {
+    this.feedService = feedService;
+  }
 
   private static final List<String> SUPPORTED_MIME_TYPES =
       Arrays.asList(
@@ -90,6 +97,16 @@ public class MaterialPostController extends Controller {
                 + url.replace("https://", "").split("/")[0]
                 + ".ico");
     attachment.save();
+
+    Event event = new Event();
+    event.setUuid(java.util.UUID.randomUUID());
+    event.setCourse(course);
+    event.setType(Event.Type.SYSTEM);
+    event.setMessage("New material added: " + name);
+    event.setEdited(false);
+    event.save();
+
+    feedService.broadcastEvent(event);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
   }
@@ -167,6 +184,16 @@ public class MaterialPostController extends Controller {
         new FileAttachment(
             course, name, description, FileAttachment.Type.file, sizeBytes, mimeType, fileUrl);
     attachment.save();
+
+    Event event = new Event();
+    event.setUuid(java.util.UUID.randomUUID());
+    event.setCourse(course);
+    event.setType(Event.Type.SYSTEM);
+    event.setMessage("New material added: " + name);
+    event.setEdited(false);
+    event.save();
+
+    feedService.broadcastEvent(event);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
   }

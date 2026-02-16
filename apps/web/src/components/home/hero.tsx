@@ -51,7 +51,7 @@ export default function Hero() {
 					</h1>
 				</div>
 
-				<p className="mx-auto mb-12 max-w-2xl text-lg text-muted-foreground sm:text-xl md:text-2xl">
+				<p className="mx-auto mb-12 max-w-2xl text-base text-muted-foreground sm:text-lg md:text-xl">
 					An educational platform that proves learning doesn't have to mean
 					endless reading. It can be{" "}
 					<span className="font-semibold text-accent">engaging</span>,{" "}

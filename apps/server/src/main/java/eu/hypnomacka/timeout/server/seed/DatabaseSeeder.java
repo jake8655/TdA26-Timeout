@@ -77,10 +77,10 @@ public class DatabaseSeeder {
         new UrlAttachment(
             course,
             "Official Documentation",
-            "https://docs.example.com/intro",
+            "https://vercel.com",
             "Official language documentation and tutorials",
             UrlAttachment.Type.url,
-            "https://docs.example.com/favicon.ico");
+            "https://vercel.com/favicon.ico");
     url1.save();
   }
 
@@ -163,20 +163,20 @@ public class DatabaseSeeder {
         new UrlAttachment(
             course,
             "Visualizer Tool",
-            "https://visualizer.example.com",
+            "https://sort.dominiktoth.com",
             "Interactive data structure visualization tool",
             UrlAttachment.Type.url,
-            "https://visualizer.example.com/favicon.png");
+            "https://sort.dominiktoth.com/favicon.ico");
     url1.save();
 
     UrlAttachment url2 =
         new UrlAttachment(
             course,
             "Practice Problems",
-            "https://practice.example.com/ds",
+            "https://github.com",
             "Online practice platform with instant feedback",
             UrlAttachment.Type.url,
-            "https://practice.example.com/favicon.ico");
+            "https://github.com/favicon.ico");
     url2.save();
   }
 

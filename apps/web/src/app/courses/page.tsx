@@ -1,28 +1,34 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, SearchX } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
 import { getCoursesOptions } from "@/api-client/@tanstack/react-query.gen";
+import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseCard } from "@/components/courses/course-card";
 import { SearchInput } from "@/components/courses/search-input";
+import EmptyState from "@/components/empty-state";
 
 export default function CoursesPage() {
 	const [searchQuery, setSearchQuery] = useState("");
-	const { data, isPending, isError } = useQuery({
+	const { data, isPending, isError, refetch } = useQuery({
 		...getCoursesOptions(),
 	});
 
-	const filteredCourses = !searchQuery.trim()
+	const trimmedQuery = searchQuery.trim();
+	const filteredCourses = !trimmedQuery
 		? (data ?? [])
 		: (data ?? []).filter(
 				(course) =>
-					course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					course.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+					course.name.toLowerCase().includes(trimmedQuery.toLowerCase()) ||
+					course.description
+						?.toLowerCase()
+						.includes(trimmedQuery.toLowerCase()),
 			);
+	const isFiltering = trimmedQuery.length > 0;
 
 	return (
 		<div className="relative min-h-screen overflow-hidden">
@@ -35,10 +41,10 @@ export default function CoursesPage() {
 					transition={{ duration: 0.5 }}
 					className="mb-12 text-center"
 				>
-					<h1 className="mb-6 font-bold text-4xl sm:text-5xl">
+					<h1 className="mb-4 font-bold text-4xl sm:text-5xl">
 						<span className="text-primary">Courses</span>
 					</h1>
-					<p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
+					<p className="mx-auto mb-8 max-w-2xl text-base text-muted-foreground sm:text-lg">
 						Explore our collection of interactive courses designed to develop
 						critical and creative thinking.
 					</p>
@@ -62,52 +68,50 @@ export default function CoursesPage() {
 						<Loader2 className="mx-auto size-16 animate-spin text-primary" />
 					</motion.div>
 				) : isError ? (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ duration: 0.5 }}
-						className="text-center text-muted-foreground"
-					>
-						<p className="text-lg">
-							Failed to load courses. Please try again later.
-						</p>
-					</motion.div>
+					<EmptyState
+						title="Unable to load courses"
+						description="Please try again in a moment."
+						icon={<SearchX className="size-7 text-primary" />}
+						action={
+							<Button variant="outline" size="sm" onClick={() => refetch()}>
+								Retry
+							</Button>
+						}
+					/>
 				) : filteredCourses.length > 0 ? (
 					<motion.div
-						initial={{ opacity: 0 }}
+						initial={{ opacity: isFiltering ? 1 : 0 }}
 						animate={{ opacity: 1 }}
-						transition={{ duration: 0.5, delay: 0.3 }}
+						transition={{
+							duration: isFiltering ? 0.15 : 0.5,
+							delay: isFiltering ? 0 : 0.3,
+						}}
 						className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
 					>
-						<AnimatePresence mode="popLayout">
+						<AnimatePresence mode={isFiltering ? "sync" : "popLayout"}>
 							{filteredCourses.map((course, index) => (
-								<CourseCard key={course.uuid} course={course} index={index} />
+								<CourseCard
+									key={course.uuid}
+									course={course}
+									index={isFiltering ? 0 : index}
+								/>
 							))}
 						</AnimatePresence>
 					</motion.div>
 				) : (
-					<motion.div
-						initial={{ opacity: 0, scale: 0.95 }}
-						animate={{ opacity: 1, scale: 1 }}
-						transition={{ duration: 0.4 }}
-						className="border border-white/5 bg-card/50 p-12 text-center"
-					>
-						<div className="mb-6 flex justify-center">
+					<EmptyState
+						title="No courses found"
+						description="Try adjusting your search query to find what you're looking for."
+						icon={
 							<Image
 								src="/icons/Thinking/zarivka_thinking_blue.svg"
 								alt="No results"
-								width={80}
-								height={80}
-								className="size-20 opacity-50"
+								width={56}
+								height={56}
+								className="opacity-70"
 							/>
-						</div>
-						<h2 className="mb-2 font-semibold text-muted-foreground text-xl">
-							No courses found
-						</h2>
-						<p className="text-muted-foreground text-sm">
-							Try adjusting your search query to find what you're looking for.
-						</p>
-					</motion.div>
+						}
+					/>
 				)}
 			</main>
 		</div>

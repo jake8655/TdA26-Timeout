@@ -1,23 +1,33 @@
 # Tour de App - Timeout Backend
 
-## Getting Started
+## Prerequisites
+- [OpenJDK 17](https://bell-sw.com/pages/downloads/#jdk-17-lts)
+- [just](https://github.com/casey/just#installation)
 
-1. Install [OpenJDK 17](https://bell-sw.com/pages/downloads/#jdk-17-lts).
-1. Install [just](https://github.com/casey/just#installation).
-1. Run `just build` to build the app.
-1. Run `just run` to start the server.
-1. Open [http://localhost:3000](http://localhost:3000) to see the result.
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `just build` | Build the app |
+| `just run` | Start the server (requires DB running) |
+| `just db` | Start MySQL container on localhost:3306 |
+| `just db-stop` | Stop and remove MySQL container |
+
+## Development Workflow
+
+```bash
+just db           # Start database
+just build        # Build the app
+just run          # Run the server
+```
+
+Open [http://localhost:3000](http://localhost:3000).
 
 ## Tech Stack
+- Java 17, Spring Boot, eBean ORM, MySQL 8.0
 
-- [Java](https://dev.java/learn/)
-- [Spring](https://spring.io/quickstart)
-- [MySQL](https://dev.mysql.com/doc/mysql-tutorial-excerpt/8.0/en/)
-
-## Editor Setup
-
-Probably [IntelliJ IDEA](https://www.jetbrains.com/idea/download/).
+## Editor
+[IntelliJ IDEA](https://www.jetbrains.com/idea/download/)
 
 ## Deployment
-
-The application is deployed using [Docker](https://docker.com) to [TdA Cloud](https://tourde.cloud). Pushes to the `main` branch trigger (semi-)automatic deployments.
+Deployed via Docker to [TdA Cloud](https://tourde.cloud). Pushes to `main` trigger deployments.

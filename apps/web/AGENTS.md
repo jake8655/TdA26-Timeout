@@ -6,7 +6,6 @@
   - bun check:unsafe to fix formatting with unsafe rules
   - bun types to typecheck
 - DO NOT manually format code/sort imports/remove unused imports, use the scripts above
-- DO NOT stage, commit, push code or open PRs, I will handle that
 - DO NOT run the dev server or any interactive commands, I will handle that
 - Use kebab-case for file and folder names
 - Prefer implicit return types over explicit ones
@@ -16,7 +15,7 @@
 ## UI
 - Use Tailwind CSS for styling
 - Dark mode only (no light mode needed)
-- Prefer using components from src/components/ui or add new ones using the shadcn tool over creating custom components
+- Prefer using components from src/components/ui or add new ones using the shadcn cli over creating custom components
 - Almost never use vanilla inputs/buttons/selects/modals/toasts/accordions/tabs, always use the shadcn equivalents
 - Make sure your designs are responsive and work well on different screen sizes
 - Make the UIs fancy and visually appealing and use motion.dev for animations

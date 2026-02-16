@@ -1,8 +1,20 @@
 alias b := build
 alias r := run
 
+db_name := "timeout-mysql"
+db_pass := "TGCQeIKeCYpAeyiPTG37gpzy"
+
 build:
   ./gradlew build
 
 run:
   java -jar build/libs/*.jar --spring.profiles.active=dev
+
+db-start:
+  docker run -d --name {{db_name}} -e MYSQL_DATABASE=timeoutdb -e MYSQL_ROOT_PASSWORD={{db_pass}} -p 3306:3306 mysql:8.0
+
+db-stop:
+  docker stop {{db_name}} && docker rm {{db_name}}
+
+db:
+  @just db-start

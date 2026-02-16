@@ -10,12 +10,14 @@ export default function EmptyState({
 	icon,
 	action,
 	className,
+	iconClassName,
 }: {
 	title: string;
 	description?: string;
 	icon?: React.ReactNode;
 	action?: React.ReactNode;
 	className?: string;
+	iconClassName?: string;
 }) {
 	return (
 		<motion.div
@@ -28,7 +30,12 @@ export default function EmptyState({
 			)}
 		>
 			{icon && (
-				<div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
+				<div
+					className={cn(
+						"mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10",
+						iconClassName,
+					)}
+				>
 					{icon}
 				</div>
 			)}

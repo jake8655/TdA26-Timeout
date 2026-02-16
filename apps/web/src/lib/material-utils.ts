@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
 
+export type Material = FileMaterial | UrlMaterial;
+
 export const SUPPORTED_FILE_TYPES = {
 	documents: [".pdf", ".docx", ".txt"],
 	images: [".png", ".jpg", ".jpeg", ".gif"],

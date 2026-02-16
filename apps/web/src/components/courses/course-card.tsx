@@ -24,11 +24,7 @@ export function CourseCard({
 			<Link href={`/courses/${course.uuid}`}>
 				<div className="group h-full cursor-pointer border border-white/5 bg-card/40 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:shadow-xl">
 					<div className="mb-4 flex items-start justify-between">
-						<motion.div
-							whileHover={{ scale: 1.1, rotate: 5 }}
-							transition={{ type: "spring", stiffness: 300 }}
-							className="flex size-12 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10"
-						>
+						<div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
 							<Image
 								src="/icons/Idea/zarivka_idea_blue.svg"
 								alt="Course icon"
@@ -36,10 +32,10 @@ export function CourseCard({
 								height={28}
 								className="size-7"
 							/>
-						</motion.div>
+						</div>
 					</div>
 
-					<h3 className="mb-2 font-bold text-lg text-primary transition-colors group-hover:text-primary/90">
+					<h3 className="mb-2 font-bold text-foreground text-lg">
 						{course.name}
 					</h3>
 

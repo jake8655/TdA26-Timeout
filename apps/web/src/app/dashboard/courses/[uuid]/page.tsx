@@ -15,14 +15,14 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import { notFound } from "next/navigation";
+import { use } from "react";
 import {
 	getCoursesByCourseIdMaterialsOptions,
 	getCoursesByCourseIdOptions,
 	getCoursesByCourseIdQuizzesOptions,
 } from "@/api-client/@tanstack/react-query.gen";
-import type { FileMaterial, Quiz, UrlMaterial } from "@/api-client/types.gen";
+import type { Quiz } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseFeed } from "@/components/courses/course-feed";
@@ -40,14 +40,13 @@ import {
 } from "@/components/dashboard/quiz-form-dialog";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { QuizStatsDialog } from "@/components/quizzes/quiz-stats-dialog";
-import { useAuth } from "@/hooks/use-auth";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import {
 	formatFileSize,
 	getFileTypeLabel,
 	getMaterialIcon,
+	type Material,
 } from "@/lib/material-utils";
-
-type Material = FileMaterial | UrlMaterial;
 
 export default function DashboardCourseDetailPage({
 	params,
@@ -55,8 +54,7 @@ export default function DashboardCourseDetailPage({
 	params: Promise<{ uuid: string }>;
 }) {
 	const { uuid } = use(params);
-	const router = useRouter();
-	const { data: authData, isPending: authLoading } = useAuth();
+	const { data: authData } = useRequireAuth();
 
 	const {
 		data: course,
@@ -88,12 +86,6 @@ export default function DashboardCourseDetailPage({
 		}),
 	});
 
-	useEffect(() => {
-		if (!authData && !authLoading) {
-			router.push("/login");
-		}
-	}, [authData, router, authLoading]);
-
 	if (!authData) {
 		return <LoadingPlaceholder />;
 	}
@@ -112,16 +104,17 @@ export default function DashboardCourseDetailPage({
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ duration: 0.4 }}
 				>
-					<Link href="/dashboard">
-						<Button
-							variant="ghost"
-							size="sm"
-							className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
-						>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
+						asChild
+					>
+						<Link href="/dashboard">
 							<ArrowLeft />
 							Back to Dashboard
-						</Button>
-					</Link>
+						</Link>
+					</Button>
 				</motion.div>
 
 				{courseLoading ? (
@@ -166,7 +159,12 @@ export default function DashboardCourseDetailPage({
 											mode="edit"
 											course={course}
 											trigger={
-												<Button variant="ghost" size="sm" className="ml-2">
+												<Button
+													variant="ghost"
+													size="sm"
+													className="ml-2"
+													aria-label="Edit course"
+												>
 													<Edit2 />
 												</Button>
 											}
@@ -454,6 +452,7 @@ function DashboardMaterialCard({
 								variant="ghost"
 								size="icon-sm"
 								className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+								aria-label="Edit material"
 							>
 								<Edit2 />
 							</Button>
@@ -467,6 +466,7 @@ function DashboardMaterialCard({
 								variant="ghost"
 								size="icon-sm"
 								className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+								aria-label="Delete material"
 							>
 								<Trash2 />
 							</Button>
@@ -529,6 +529,7 @@ function DashboardQuizCard({
 							variant="ghost"
 							size="icon-sm"
 							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+							aria-label="View quiz statistics"
 						>
 							<ChartColumnDecreasing />
 						</Button>
@@ -543,6 +544,7 @@ function DashboardQuizCard({
 							variant="ghost"
 							size="icon-sm"
 							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+							aria-label="Edit quiz"
 						>
 							<Edit2 />
 						</Button>
@@ -556,6 +558,7 @@ function DashboardQuizCard({
 							variant="ghost"
 							size="icon-sm"
 							className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+							aria-label="Delete quiz"
 						>
 							<Trash2 />
 						</Button>

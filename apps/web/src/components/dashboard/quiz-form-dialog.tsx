@@ -15,7 +15,7 @@ import type {
 	Quiz,
 	SingleChoiceQuestion,
 } from "@/api-client/types.gen";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/animate-ui/components/buttons/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -272,7 +272,7 @@ function QuizFormDialog({
 																		<Button
 																			type="button"
 																			variant="ghost"
-																			size="icon-xs"
+																			size="icon-sm"
 																			onClick={() => {
 																				form.setFieldValue(
 																					"questions",
@@ -372,7 +372,7 @@ function QuizFormDialog({
 															<Button
 																type="button"
 																variant="ghost"
-																size="xs"
+																size="sm"
 																disabled={
 																	(qValues[index]?.options.length ?? 0) >= 6
 																}

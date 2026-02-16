@@ -41,16 +41,17 @@ export default function CourseDetailPage({
 					transition={{ duration: 0.4 }}
 					className="mb-8"
 				>
-					<Link href="/courses">
-						<Button
-							variant="ghost"
-							size="sm"
-							className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
-						>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
+						asChild
+					>
+						<Link href="/courses">
 							<ArrowLeft />
 							Back to Courses
-						</Button>
-					</Link>
+						</Link>
+					</Button>
 				</motion.div>
 
 				{isPending ? (

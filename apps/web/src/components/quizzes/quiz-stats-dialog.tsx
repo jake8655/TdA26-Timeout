@@ -57,6 +57,10 @@ export function QuizStatsDialog({
 			const response = await fetch(
 				`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/quizzes/${quizId}/stats`,
 			);
+			if (response.status === 404) {
+				// Quiz was likely deleted, return null to show error state without toast
+				return null;
+			}
 			if (!response.ok) {
 				throw new Error("Failed to fetch quiz stats");
 			}
@@ -93,7 +97,7 @@ export function QuizStatsDialog({
 	return (
 		<Dialog>
 			<DialogTrigger render={trigger} />
-			<DialogContent className="sm:max-w-2xl">
+			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogTitle className="sr-only">Quiz Results: {quizTitle}</DialogTitle>
 
 				<div className="mb-4 flex items-start justify-between gap-4">

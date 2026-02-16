@@ -4,8 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Edit2, Loader2, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import z from "zod";
 import {
 	deleteCoursesByCourseIdMutation,
@@ -35,7 +34,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/hooks/form";
-import { useAuth } from "@/hooks/use-auth";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 
 const formSchema = z.object({
 	name: z.string().min(3, "Course name must be at least 3 characters"),
@@ -199,7 +198,6 @@ function DeleteCourseDialog({
 }
 
 export default function Dashboard() {
-	const router = useRouter();
 	const {
 		data: courses,
 		isPending,
@@ -207,13 +205,7 @@ export default function Dashboard() {
 	} = useQuery({
 		...getCoursesOptions(),
 	});
-	const { data, isPending: authLoading } = useAuth();
-
-	useEffect(() => {
-		if (!data && !authLoading) {
-			router.push("/login");
-		}
-	}, [data, router, authLoading]);
+	const { data } = useRequireAuth();
 
 	if (!data) {
 		return <LoadingPlaceholder />;
@@ -336,15 +328,17 @@ function CourseCard({
 							{course.name}
 						</CardTitle>
 						<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
-							<Link href={`/dashboard/courses/${course.uuid}`}>
-								<Button
-									variant="ghost"
-									size="icon-sm"
-									className="size-8 text-muted-foreground"
-								>
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								className="size-8 text-muted-foreground"
+								aria-label="Edit course"
+								asChild
+							>
+								<Link href={`/dashboard/courses/${course.uuid}`}>
 									<Edit2 />
-								</Button>
-							</Link>
+								</Link>
+							</Button>
 							<DeleteCourseDialog
 								course={course}
 								trigger={
@@ -352,6 +346,7 @@ function CourseCard({
 										variant="ghost"
 										size="icon-sm"
 										className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+										aria-label="Delete course"
 									>
 										<Trash2 />
 									</Button>

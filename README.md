@@ -6,20 +6,23 @@ An online course platform for educators and learners alike.
 - [Filip Konc (hypnomacka)](https://github.com/hypnomacka) - backend
 - [Jakub Cagáň](https://github.com/koobisko) - financial support
 
-## Getting Started
+## Quick Start (Docker Compose)
 
-1. Install [Docker](https://www.docker.com/get-started/).
-1. Install [Docker Compose](https://docs.docker.com/compose/install/).
-1. Create the necessary `.env` files in the apps/* directories and set the necessary environment variables.
-1. Run the application using Docker Compose:
-   ```bash
-   docker compose up --build
-   ```
-1. Open [http://localhost](http://localhost) to see the result.
+```bash
+docker compose up --build          # Start all services
+docker compose down                # Stop all services
+docker compose down -v             # Stop and delete DB data
+```
+
+Open [http://localhost](http://localhost).
+
+## Individual Services
+
+See `apps/server/README.md` and `apps/web/README.md` for running services independently.
 
 ## Tech Stack
 - Frontend: Next.js, TypeScript, React, Tailwind CSS, Tanstack
 - Backend: Java, Spring Boot, eBean ORM
-- Database: MySQL
+- Database: MySQL 8.0
 - Infra: Docker, TdA Cloud
 - Deploy time: 3mins

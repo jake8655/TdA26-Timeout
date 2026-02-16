@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Loader2, MessageSquare } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo } from "react";
+
 import { getCoursesByCourseIdFeedOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { FeedItem } from "@/api-client/types.gen";
 import { useCourseFeedStream } from "@/hooks/use-course-feed-stream";
@@ -27,7 +27,7 @@ export function CourseFeed({
 		}),
 	});
 
-	const allItems = useMemo(() => {
+	const allItems = (() => {
 		if (!initialItems) return streamItems;
 
 		const combined = [...initialItems];
@@ -47,7 +47,7 @@ export function CourseFeed({
 				new Date(b.updatedAt ?? b.createdAt).getTime() -
 				new Date(a.updatedAt ?? a.createdAt).getTime(),
 		);
-	}, [initialItems, streamItems]);
+	})();
 
 	if (isPending) {
 		return (

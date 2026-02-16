@@ -203,9 +203,7 @@ export function QuizPlayer({
 								>
 									<Medal className="size-3.5" />
 									<span>
-										{initialSubmittedResult
-											? "Previous result"
-											: "Quiz submitted"}
+										{initialSubmittedResult ? "Quiz result" : "Quiz submitted"}
 									</span>
 								</div>
 								<div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-muted-foreground text-xs">

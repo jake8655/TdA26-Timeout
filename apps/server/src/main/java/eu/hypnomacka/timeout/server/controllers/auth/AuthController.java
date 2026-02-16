@@ -80,6 +80,11 @@ public class AuthController extends Controller {
     if (sessionId != null && !sessionId.isEmpty()) {
       Session session = new QSession().token.eq(sessionId).findOne();
 
+      if (session == null || session.getExpiresAt().isBefore(Instant.now())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(Map.of("status", "bad", "message", "session expired"));
+      }
+
       return ResponseEntity.ok(
           Map.of(
               "status",

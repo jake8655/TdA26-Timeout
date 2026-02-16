@@ -6,12 +6,30 @@ services:
         - NEXT_PUBLIC_API_BASE=/api
     ports:
       - "3001:3001"
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: timeoutdb
+      MYSQL_ROOT_PASSWORD: TGCQeIKeCYpAeyiPTG37gpzy
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysql", "-u", "root", "-pTGCQeIKeCYpAeyiPTG37gpzy", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
   server:
     build: apps/server
     ports:
       - "3000:3000"
+    environment:
+      DBURL: "jdbc:mysql://mysql:3306/timeoutdb"
     env_file:
       - apps/server/.env
+    depends_on:
+      mysql:
+        condition: service_healthy
   caddy:
     build: apps/caddy
     environment:

@@ -33,7 +33,7 @@ export default function Header() {
 
 	return (
 		<header className="fixed top-0 right-0 left-0 z-50 border-white/5 border-b bg-background/80 backdrop-blur-md transition-all duration-300">
-			<div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+			<div className="relative mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
 				<Link
 					href="/"
 					className="group relative z-50 flex items-center gap-4 transition-opacity duration-300 hover:opacity-90"
@@ -50,7 +50,7 @@ export default function Header() {
 					</span>
 				</Link>
 
-				<div className="hidden items-center gap-8 md:flex">
+				<nav className="-translate-x-1/2 absolute left-1/2 hidden items-center gap-8 md:flex">
 					<Link
 						href="/courses"
 						className="font-medium text-muted-foreground text-sm transition-colors hover:text-primary"
@@ -60,7 +60,7 @@ export default function Header() {
 					<AboutLink className="font-medium text-muted-foreground text-sm transition-colors hover:text-primary">
 						About
 					</AboutLink>
-				</div>
+				</nav>
 
 				<div className="flex items-center gap-4">
 					{data ? (
@@ -72,7 +72,7 @@ export default function Header() {
 									</AvatarFallback>
 								</Avatar>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-32">
+							<DropdownMenuContent align="end" className="w-40">
 								<DropdownMenuGroup>
 									<DropdownMenuLabel className="flex items-center gap-2">
 										<User className="size-4 shrink-0 text-muted-foreground" />

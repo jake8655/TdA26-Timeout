@@ -74,6 +74,7 @@ public class QuizPostController extends Controller {
           .body(Map.of("message", "questions are required"));
     }
 
+    int position = 0;
     for (Object questionObj : request.getQuestions()) {
       JsonNode questionNode = objectMapper.valueToTree(questionObj);
       String type = questionNode.has("type") ? questionNode.get("type").asText() : null;
@@ -90,6 +91,7 @@ public class QuizPostController extends Controller {
       question.setQuestion(questionText);
       question.setType(
           type.equals("singleChoice") ? Question.Type.singleChoice : Question.Type.multipleChoice);
+      question.setPosition(position++);
 
       List<String> options = new ArrayList<>();
       optionsNode.forEach(node -> options.add(node.asText()));

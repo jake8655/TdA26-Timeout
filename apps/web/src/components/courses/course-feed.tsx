@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Loader2, MessageSquare } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-
 import { getCoursesByCourseIdFeedOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { FeedItem } from "@/api-client/types.gen";
 import { useCourseFeedStream } from "@/hooks/use-course-feed-stream";

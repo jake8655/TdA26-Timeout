@@ -2,6 +2,7 @@ package eu.hypnomacka.timeout.server.core;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.ebean.Model;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
@@ -46,6 +47,10 @@ public class Question extends Model {
   @DbJson
   @Column(columnDefinition = "json")
   private List<Integer> correctIndices;
+
+  @Column(nullable = false)
+  @DbDefault("0")
+  private Integer position = 0;
 
   @WhenCreated private Instant createdAt;
 

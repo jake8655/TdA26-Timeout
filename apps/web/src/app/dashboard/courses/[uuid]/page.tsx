@@ -38,6 +38,7 @@ import {
 	DeleteQuizDialog,
 	QuizFormDialog,
 } from "@/components/dashboard/quiz-form-dialog";
+import EmptyState from "@/components/empty-state";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { QuizStatsDialog } from "@/components/quizzes/quiz-stats-dialog";
 import { useRequireAuth } from "@/hooks/use-require-auth";
@@ -60,6 +61,7 @@ export default function DashboardCourseDetailPage({
 		data: course,
 		isPending: courseLoading,
 		isError: courseError,
+		refetch: refetchCourse,
 	} = useQuery({
 		...getCoursesByCourseIdOptions({
 			path: { courseId: uuid },
@@ -70,6 +72,7 @@ export default function DashboardCourseDetailPage({
 		data: materials,
 		isPending: materialsLoading,
 		isError: materialsError,
+		refetch: refetchMaterials,
 	} = useQuery({
 		...getCoursesByCourseIdMaterialsOptions({
 			path: { courseId: uuid },
@@ -80,6 +83,7 @@ export default function DashboardCourseDetailPage({
 		data: quizzes,
 		isPending: quizzesLoading,
 		isError: quizzesError,
+		refetch: refetchQuizzes,
 	} = useQuery({
 		...getCoursesByCourseIdQuizzesOptions({
 			path: { courseId: uuid },
@@ -126,13 +130,20 @@ export default function DashboardCourseDetailPage({
 						<Loader2 className="size-16 animate-spin text-primary" />
 					</motion.div>
 				) : courseError ? (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						className="py-12 text-center text-muted-foreground"
-					>
-						<p>Failed to load course. Please try again later.</p>
-					</motion.div>
+					<EmptyState
+						title="Unable to load course"
+						description="Please try again in a moment."
+						icon={<HelpCircle className="size-7 text-primary" />}
+						action={
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => refetchCourse()}
+							>
+								Retry
+							</Button>
+						}
+					/>
 				) : (
 					<>
 						<motion.div
@@ -170,7 +181,7 @@ export default function DashboardCourseDetailPage({
 											}
 										/>
 									</div>
-									<p className="mt-1 truncate text-muted-foreground text-sm">
+									<p className="mt-1 line-clamp-2 text-muted-foreground text-sm leading-relaxed">
 										{course.description || (
 											<span className="italic">No description available</span>
 										)}
@@ -228,36 +239,39 @@ export default function DashboardCourseDetailPage({
 								<Loader2 className="size-8 animate-spin text-primary" />
 							</div>
 						) : materialsError ? (
-							<div className="py-12 text-center text-muted-foreground">
-								<p>Failed to load materials. Please try again later.</p>
-							</div>
+							<EmptyState
+								title="Unable to load materials"
+								description="Please try again in a moment."
+								icon={<Download className="size-7 text-primary" />}
+								action={
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => refetchMaterials()}
+									>
+										Retry
+									</Button>
+								}
+							/>
 						) : materials.length === 0 ? (
-							<motion.div
-								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.5, delay: 0.3 }}
-								className="flex flex-col items-center justify-center rounded-none border border-white/10 border-dashed py-16 text-center"
-							>
-								<div className="mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
-									<Plus className="size-8 text-primary" />
-								</div>
-								<h3 className="mb-2 font-medium text-foreground">
-									No materials yet
-								</h3>
-								<p className="mb-6 text-muted-foreground text-sm">
-									Add files or links for your students.
-								</p>
-								<MaterialFormDialog
-									mode="add"
-									courseId={uuid}
-									trigger={
-										<Button variant="accent" size="sm">
-											<Plus />
-											Add First Material
-										</Button>
-									}
-								/>
-							</motion.div>
+							<EmptyState
+								title="No materials yet"
+								description="Add files or links for your students."
+								icon={<Plus className="size-7 text-primary" />}
+								action={
+									<MaterialFormDialog
+										mode="add"
+										courseId={uuid}
+										trigger={
+											<Button variant="accent" size="sm">
+												<Plus />
+												Add First Material
+											</Button>
+										}
+									/>
+								}
+								className="border-dashed"
+							/>
 						) : (
 							<div className="flex flex-col gap-3">
 								<AnimatePresence mode="popLayout">
@@ -299,36 +313,39 @@ export default function DashboardCourseDetailPage({
 								<Loader2 className="size-8 animate-spin text-primary" />
 							</div>
 						) : quizzesError ? (
-							<div className="py-12 text-center text-muted-foreground">
-								<p>Failed to load quizzes. Please try again later.</p>
-							</div>
+							<EmptyState
+								title="Unable to load quizzes"
+								description="Please try again in a moment."
+								icon={<HelpCircle className="size-7 text-primary" />}
+								action={
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => refetchQuizzes()}
+									>
+										Retry
+									</Button>
+								}
+							/>
 						) : quizzes.length === 0 ? (
-							<motion.div
-								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.5, delay: 0.3 }}
-								className="flex flex-col items-center justify-center rounded-none border border-white/10 border-dashed py-16 text-center"
-							>
-								<div className="mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
-									<Plus className="size-8 text-primary" />
-								</div>
-								<h3 className="mb-2 font-semibold text-foreground text-lg">
-									No quizzes yet
-								</h3>
-								<p className="mb-6 text-muted-foreground text-sm">
-									Create your first quiz to test student knowledge.
-								</p>
-								<QuizFormDialog
-									mode="create"
-									courseId={uuid}
-									trigger={
-										<Button variant="accent" className="gap-2">
-											<Plus className="size-4" />
-											Create Your First Quiz
-										</Button>
-									}
-								/>
-							</motion.div>
+							<EmptyState
+								title="No quizzes yet"
+								description="Create your first quiz to test student knowledge."
+								icon={<Plus className="size-7 text-primary" />}
+								action={
+									<QuizFormDialog
+										mode="create"
+										courseId={uuid}
+										trigger={
+											<Button variant="accent" className="gap-2">
+												<Plus className="size-4" />
+												Create Your First Quiz
+											</Button>
+										}
+									/>
+								}
+								className="border-dashed"
+							/>
 						) : (
 							<div className="flex flex-col gap-3">
 								<AnimatePresence mode="popLayout">

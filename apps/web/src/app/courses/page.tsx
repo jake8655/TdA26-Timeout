@@ -111,6 +111,7 @@ export default function CoursesPage() {
 								className="opacity-70"
 							/>
 						}
+						iconClassName="bg-transparent"
 					/>
 				)}
 			</main>

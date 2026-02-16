@@ -19,6 +19,9 @@ RUN addgroup --system --gid 1001 java && \
 
 COPY --from=builder --chown=spring:java /app/build/libs/*.jar ./app.jar
 
+RUN mkdir -p /app/uploads && chown spring:java /app/uploads
+ENV UPLOADS_DIR=/app/uploads
+
 USER spring
 
 EXPOSE 3000

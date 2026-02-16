@@ -18,3 +18,7 @@ db-stop:
 
 db:
   @just db-start
+
+clear-uploads:
+  rm -rf ./uploads/*
+  @echo "Uploads directory cleared"

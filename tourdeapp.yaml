@@ -13,8 +13,6 @@ containers:
       DBUSERNAME: "root"
       DBPASSWORD: "TGCQeIKeCYpAeyiPTG37gpzy"
       DBURL: "jdbc:mysql://localhost:3306/timeoutdb"
-      API_KEY: "gOS1ncPt09q++cSyyOAdGIuR5qeKEqvWkcj9uX4ygNM="
-      CDN_URL: "https://timeout-cdn.nyaverlose.cc"
   - name: mysql
     image: mysql
     tag: "8.0"

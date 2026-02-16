@@ -25,8 +25,11 @@ services:
       - "3000:3000"
     environment:
       DBURL: "jdbc:mysql://mysql:3306/timeoutdb"
+      UPLOADS_DIR: /app/uploads
     env_file:
       - apps/server/.env
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -40,11 +43,6 @@ services:
     depends_on:
       - web
       - server
-  # file-storage:
-  #   build: apps/file-storage
-  #   ports:
-  #     - "8080:8080"
-  #   env_file:
-  #     - apps/file-storage/.env
-  #   volumes:
-  #     - ./apps/file-storage/uploads:/uploads
+
+volumes:
+  uploads:

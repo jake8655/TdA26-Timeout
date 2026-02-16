@@ -7,31 +7,27 @@ import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import eu.hypnomacka.timeout.server.storage.FileStorageService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @RestController
 @RequestMapping("/courses/{courseId}/materials")
 public class MaterialPostController extends Controller {
 
-  private static final String URL = cdn + "/upload";
-  private final WebClient webClient = WebClient.builder().build();
+  private final FileStorageService fileStorageService;
   private final CourseFeedService feedService;
 
-  public MaterialPostController(CourseFeedService feedService) {
+  public MaterialPostController(
+      FileStorageService fileStorageService, CourseFeedService feedService) {
+    this.fileStorageService = fileStorageService;
     this.feedService = feedService;
   }
 
@@ -47,14 +43,6 @@ public class MaterialPostController extends Controller {
           "video/mp4",
           "audio/mpeg",
           "audio/mp3");
-
-  private String getApiKey() {
-    String key = System.getenv("API_KEY");
-    if (key == null || key.isEmpty()) {
-      key = System.getProperty("API_KEY");
-    }
-    return key;
-  }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> uploadMaterialJson(
@@ -117,10 +105,8 @@ public class MaterialPostController extends Controller {
       @RequestPart(value = "file") MultipartFile file,
       @RequestPart("type") String type,
       @RequestPart("name") String name,
-      @RequestPart(value = "description", required = false) String description)
-      throws Exception {
+      @RequestPart(value = "description", required = false) String description) {
 
-    // Validate MIME type
     String mimeType = file.getContentType();
     if (mimeType == null || !SUPPORTED_MIME_TYPES.contains(mimeType)) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -133,53 +119,27 @@ public class MaterialPostController extends Controller {
                       + String.join(", ", SUPPORTED_MIME_TYPES)));
     }
 
-    MultipartBodyBuilder builder = new MultipartBodyBuilder();
-    builder.part(
-        "file",
-        new ByteArrayResource(file.getBytes()) {
-          @Override
-          public String getFilename() {
-            return file.getOriginalFilename();
-          }
-        });
+    Course course = new QCourse().uuid.eq(UUID.fromString(courseId)).findOne();
+    if (course == null) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
 
-    Map<String, Object> response;
-
+    String fileUrl;
     try {
-      response =
-          webClient
-              .post()
-              .uri(URL)
-              .header("Authorization", "Bearer " + getApiKey())
-              .header("Xfilename", file.getOriginalFilename())
-              .contentType(MediaType.MULTIPART_FORM_DATA)
-              .body(BodyInserters.fromMultipartData(builder.build()))
-              .retrieve()
-              .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-              .block();
-    } catch (WebClientResponseException e) {
-      System.err.println("Error: " + e.getRawStatusCode() + " - " + e.getResponseBodyAsString());
+      fileUrl =
+          fileStorageService.store(course.getUuid(), file.getOriginalFilename(), file.getBytes());
+    } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Map.of("status", "bad", "message", "file upload to cdn server failed"));
+          .body(Map.of("status", "bad", "message", "file storage failed: " + e.getMessage()));
     }
 
-    if (response == null || !Boolean.parseBoolean(response.get("success").toString())) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Map.of("status", "bad", "message", "cdn server error"));
-    }
-
-    String fileUrl = cdn + response.get("url").toString();
     long sizeBytes = file.getSize();
 
     if (description == null) {
       description = "";
     }
 
-    Course course = new QCourse().uuid.eq(UUID.fromString(courseId)).findOne();
-    if (course == null) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Map.of("status", "bad", "message", "course not found"));
-    }
     FileAttachment attachment =
         new FileAttachment(
             course, name, description, FileAttachment.Type.file, sizeBytes, mimeType, fileUrl);

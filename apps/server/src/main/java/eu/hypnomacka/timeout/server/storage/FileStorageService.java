@@ -78,7 +78,8 @@ public class FileStorageService {
     validatePath(targetPath);
 
     Files.createDirectories(targetPath.getParent());
-    Files.write(targetPath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    Files.write(
+        targetPath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
     log.info("Stored file: {} bytes at {}", content.length, targetPath);
 

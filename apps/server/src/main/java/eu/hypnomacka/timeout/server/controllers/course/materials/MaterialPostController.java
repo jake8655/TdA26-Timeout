@@ -25,7 +25,8 @@ public class MaterialPostController extends Controller {
   private final FileStorageService fileStorageService;
   private final CourseFeedService feedService;
 
-  public MaterialPostController(FileStorageService fileStorageService, CourseFeedService feedService) {
+  public MaterialPostController(
+      FileStorageService fileStorageService, CourseFeedService feedService) {
     this.fileStorageService = fileStorageService;
     this.feedService = feedService;
   }
@@ -126,7 +127,8 @@ public class MaterialPostController extends Controller {
 
     String fileUrl;
     try {
-      fileUrl = fileStorageService.store(course.getUuid(), file.getOriginalFilename(), file.getBytes());
+      fileUrl =
+          fileStorageService.store(course.getUuid(), file.getOriginalFilename(), file.getBytes());
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(Map.of("status", "bad", "message", "file storage failed: " + e.getMessage()));

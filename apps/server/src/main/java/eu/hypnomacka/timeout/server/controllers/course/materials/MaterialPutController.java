@@ -151,7 +151,8 @@ public class MaterialPutController extends Controller {
 
       String newFileUrl;
       try {
-        newFileUrl = fileStorageService.store(courseUuid, file.getOriginalFilename(), file.getBytes());
+        newFileUrl =
+            fileStorageService.store(courseUuid, file.getOriginalFilename(), file.getBytes());
       } catch (IOException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(Map.of("status", "bad", "message", "failed to store file: " + e.getMessage()));

@@ -1,17 +1,20 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, CalendarClock } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import type { CourseDetail } from "@/api-client";
+import type { CourseSummary } from "@/api-client";
+import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
+
+const COURSE_TIMEZONE = "Europe/Bratislava";
 
 export function CourseCard({
 	course,
 	index,
 }: {
-	course: CourseDetail;
+	course: CourseSummary;
 	index: number;
 }) {
 	return (
@@ -35,6 +38,11 @@ export function CourseCard({
 							className="size-7"
 						/>
 					</div>
+					{course.status && (
+						<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-semibold text-[11px] text-muted-foreground uppercase tracking-wide">
+							{course.status}
+						</span>
+					)}
 				</div>
 				<h3 className="mb-2 font-bold text-foreground text-lg">
 					{course.name}
@@ -44,6 +52,19 @@ export function CourseCard({
 						<span className="italic">No description available</span>
 					)}
 				</p>
+				{course.status === CourseStatus.SCHEDULED &&
+					course.scheduledStartAt && (
+						<div className="mt-4 flex items-center gap-2 text-muted-foreground text-xs">
+							<CalendarClock className="size-4" />
+							<span>Starts {formatCourseTime(course.scheduledStartAt)}</span>
+						</div>
+					)}
+				{course.status === CourseStatus.PAUSED && (
+					<div className="mt-4 flex items-center gap-2 text-muted-foreground text-xs">
+						<CalendarClock className="size-4" />
+						<span>Paused until next live window</span>
+					</div>
+				)}
 				<div className="mt-auto flex items-center justify-end pt-6">
 					<Button
 						variant="outline"
@@ -60,4 +81,16 @@ export function CourseCard({
 			</div>
 		</motion.div>
 	);
+}
+
+function formatCourseTime(value: string) {
+	const date = new Date(value);
+	return date.toLocaleString("en-GB", {
+		timeZone: COURSE_TIMEZONE,
+		weekday: "short",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
 }

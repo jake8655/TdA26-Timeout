@@ -35,7 +35,9 @@ public class QuizPostController extends Controller {
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> createQuiz(
-      @PathVariable String courseId, @RequestBody QuizCreateRequest request) {
+      @PathVariable String courseId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @RequestBody QuizCreateRequest request) {
 
     UUID courseUuid;
     try {
@@ -49,6 +51,11 @@ public class QuizPostController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("message", "course not editable"));
     }
 
     if (request.getTitle() == null || request.getTitle().isBlank()) {

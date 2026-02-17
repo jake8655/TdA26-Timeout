@@ -69,6 +69,16 @@ public class CoursePutController extends Controller {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("not allowed to change course");
     }*/
 
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
+    }
+
     if (name != null && !name.isBlank()) {
       course.setName(name);
     }

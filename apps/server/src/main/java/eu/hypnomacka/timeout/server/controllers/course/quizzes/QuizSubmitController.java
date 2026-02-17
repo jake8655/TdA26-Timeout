@@ -29,6 +29,7 @@ public class QuizSubmitController extends Controller {
   public ResponseEntity<?> submitQuiz(
       @PathVariable String courseId,
       @PathVariable String quizId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestBody QuizSubmitRequest request) {
 
     UUID courseUuid;
@@ -51,6 +52,11 @@ public class QuizSubmitController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("message", "course not found"));
+    }
+
+    if (course.getStatus() != Course.Status.LIVE) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("message", "course not live"));
     }
 
     Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();
@@ -121,6 +127,19 @@ public class QuizSubmitController extends Controller {
 
     QuizResult result = new QuizResult(quiz, score, maxScore, correctPerQuestion, Instant.now());
     result.save();
+
+    if (sessionId != null && !sessionId.isBlank()) {
+      eu.hypnomacka.timeout.server.core.CourseJoin join =
+          new eu.hypnomacka.timeout.server.core.query.QCourseJoin()
+              .course.eq(course)
+              .sessionToken.eq(sessionId)
+              .findOne();
+      if (join != null) {
+        join.setActive(true);
+        join.setLastSeenAt(Instant.now());
+        join.save();
+      }
+    }
 
     for (QuizAnswer answer : answers) {
       List<Integer> selectedIndices = new ArrayList<>();

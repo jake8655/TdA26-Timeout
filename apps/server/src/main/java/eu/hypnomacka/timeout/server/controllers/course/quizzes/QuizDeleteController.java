@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.*;
 public class QuizDeleteController extends Controller {
 
   @DeleteMapping(value = "/{quizId}")
-  public ResponseEntity<?> deleteQuiz(@PathVariable String courseId, @PathVariable String quizId) {
+  public ResponseEntity<?> deleteQuiz(
+      @PathVariable String courseId,
+      @PathVariable String quizId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
 
     UUID courseUuid;
     try {
@@ -38,6 +41,11 @@ public class QuizDeleteController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("message", "course not editable"));
     }
 
     Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();

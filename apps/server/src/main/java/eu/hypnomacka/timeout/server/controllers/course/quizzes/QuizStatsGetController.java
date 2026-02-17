@@ -48,6 +48,11 @@ public class QuizStatsGetController extends Controller {
           .body(Map.of("message", "course not found"));
     }
 
+    if (course.getStatus() != Course.Status.LIVE) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("message", "course not live"));
+    }
+
     Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();
 
     if (quiz == null) {
@@ -95,4 +100,5 @@ public class QuizStatsGetController extends Controller {
 
     return ResponseEntity.ok(response);
   }
+
 }

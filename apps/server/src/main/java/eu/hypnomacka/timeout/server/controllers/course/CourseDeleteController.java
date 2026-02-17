@@ -1,8 +1,10 @@
 package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -14,29 +16,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/courses")
 public class CourseDeleteController extends Controller {
 
+  private final CourseFeedService feedService;
+
+  public CourseDeleteController(CourseFeedService feedService) {
+    this.feedService = feedService;
+  }
+
   @DeleteMapping(value = "/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> delete(
       @PathVariable("UUID") String uuidStr,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
-    /*if (sessionId == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "no session found")
-        );
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "unauthorized"));
     }
-
-    Session session = new QSession().token.eq(sessionId).findOne();
-    if (session == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "session not found in database")
-        );
-    }
-
-    Lecturer lecturer = new QLecturer().id.eq(session.getLecturer().getId()).findOne();
-    if (lecturer == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "session not linked to an account")
-        );
-    }*/
 
     UUID uuid;
     try {
@@ -52,9 +45,12 @@ public class CourseDeleteController extends Controller {
           .body("The requested resource was not found.");
     }
 
-    /*if (!lecturer.getId().equals(course.getLecturer().getId())) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("not allowed to change course");
-    }*/
+    feedService.broadcastMessage(
+        course.getUuid(),
+        "course_kick",
+        String.format(
+            "{\"reason\":\"Course deleted by lecturer\",\"status\":\"DELETED\",\"effectiveAt\":\"%s\"}",
+            Instant.now()));
 
     if (course.delete()) {
       return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

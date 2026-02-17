@@ -46,12 +46,13 @@ public class CoursePostController extends Controller {
     }
 
     Lecturer lecturer = new QLecturer().username.eq(session.getLecturer().getUsername()).findOne();*/
-    if (lecturer == null) {
+    if (lecturer == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "session not linked to an account"));
     }
 
     Course course = new Course(lecturer, name, description);
+    course.setStatus(Course.Status.DRAFT);
     course.save();
 
     return ResponseEntity.status(HttpStatus.CREATED).body(course);

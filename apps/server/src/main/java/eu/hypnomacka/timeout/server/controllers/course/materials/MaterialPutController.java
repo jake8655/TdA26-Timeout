@@ -40,6 +40,7 @@ public class MaterialPutController extends Controller {
   public ResponseEntity<?> updateMaterialJson(
       @PathVariable String courseId,
       @PathVariable String materialId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestBody Map<String, String> request) {
 
     UUID courseUuid;
@@ -56,6 +57,11 @@ public class MaterialPutController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
     UrlAttachment urlAttachment = new QUrlAttachment().uuid.eq(materialUuid).findOne();
@@ -106,6 +112,7 @@ public class MaterialPutController extends Controller {
   public ResponseEntity<?> updateMaterialFile(
       @PathVariable String courseId,
       @PathVariable String materialId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestPart(value = "file", required = false) MultipartFile file,
       @RequestPart(value = "name", required = false) String name,
       @RequestPart(value = "description", required = false) String description) {
@@ -124,6 +131,11 @@ public class MaterialPutController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
     FileAttachment fileAttachment = new QFileAttachment().uuid.eq(materialUuid).findOne();

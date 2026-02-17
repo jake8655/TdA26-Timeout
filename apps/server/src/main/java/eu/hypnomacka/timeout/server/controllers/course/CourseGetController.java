@@ -20,8 +20,18 @@ import org.springframework.web.bind.annotation.*;
 public class CourseGetController extends Controller {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Map<String, Object>> root() {
-    List<Course> courses = new QCourse().orderBy().updatedAt.desc().findList();
+  public List<Map<String, Object>> root(
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+    boolean isLecturer = isLecturerSession(sessionId);
+
+    List<Course> courses =
+        isLecturer
+            ? new QCourse().orderBy().updatedAt.desc().findList()
+            : new QCourse()
+                .status.in(Course.Status.SCHEDULED, Course.Status.LIVE, Course.Status.PAUSED)
+                .orderBy()
+                .updatedAt.desc()
+                .findList();
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
       result.add(buildCourseResponse(course));
@@ -45,6 +55,21 @@ public class CourseGetController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    boolean isLecturer = isLecturerSession(sessionId);
+
+    if (!isLecturer
+        && (course.getStatus() == Course.Status.DRAFT
+            || course.getStatus() == Course.Status.ARCHIVED)) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturer
+        && (course.getStatus() == Course.Status.SCHEDULED
+            || course.getStatus() == Course.Status.PAUSED)) {
+      return ResponseEntity.status(HttpStatus.OK).body(buildLimitedCourseResponse(course));
     }
 
     List<Object> materials = new ArrayList<>();
@@ -90,6 +115,11 @@ public class CourseGetController extends Controller {
     response.put("materials", materials);
     response.put("quizzes", quizzes);
     response.put("feed", feed);
+    response.put("status", course.getStatus().name().toLowerCase());
+    response.put("scheduledStartAt", course.getScheduledStartAt());
+    response.put("scheduledEndAt", course.getScheduledEndAt());
+    response.put("pausedAt", course.getPausedAt());
+    response.put("archivedAt", course.getArchivedAt());
 
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
@@ -123,7 +153,25 @@ public class CourseGetController extends Controller {
     response.put("updatedAt", course.getUpdatedAt());
     response.put("materials", materials);
     response.put("quizzes", quizzes);
+    response.put("status", course.getStatus().name().toLowerCase());
+    response.put("scheduledStartAt", course.getScheduledStartAt());
+    response.put("scheduledEndAt", course.getScheduledEndAt());
 
+    return response;
+  }
+
+  private Map<String, Object> buildLimitedCourseResponse(Course course) {
+    Map<String, Object> response = new LinkedHashMap<>();
+    response.put("uuid", course.getUuid());
+    response.put("name", course.getName());
+    response.put("description", course.getDescription());
+    response.put("createdAt", course.getCreatedAt());
+    response.put("updatedAt", course.getUpdatedAt());
+    response.put("status", course.getStatus().name().toLowerCase());
+    response.put("scheduledStartAt", course.getScheduledStartAt());
+    response.put("scheduledEndAt", course.getScheduledEndAt());
+    response.put("pausedAt", course.getPausedAt());
+    response.put("archivedAt", course.getArchivedAt());
     return response;
   }
 }

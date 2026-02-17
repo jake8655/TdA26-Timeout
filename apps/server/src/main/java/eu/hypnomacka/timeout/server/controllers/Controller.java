@@ -40,4 +40,28 @@ public class Controller {
 
     return sessionLecturer.getUsername().equals(username);
   }
+
+  public boolean isLecturerSession(String sessionId) {
+    if (sessionId == null || sessionId.isBlank()) {
+      return false;
+    }
+
+    Session session = new QSession().token.eq(sessionId).findOne();
+    if (session == null || session.getExpiresAt() == null) {
+      return false;
+    }
+
+    return session.getExpiresAt().isAfter(Instant.now());
+  }
+
+  public String resolveSessionToken(String sessionId) {
+    if (sessionId == null || sessionId.isBlank()) {
+      return null;
+    }
+    return sessionId;
+  }
+
+  public String getOrCreateAnonymousToken(String sessionId) {
+    return sessionId == null || sessionId.isBlank() ? UUID.randomUUID().toString() : sessionId;
+  }
 }

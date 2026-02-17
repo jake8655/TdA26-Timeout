@@ -35,6 +35,11 @@ public class QuizGetController extends Controller {
           .body(Map.of("message", "course not found"));
     }
 
+    if (course.getStatus() != Course.Status.LIVE) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("message", "course not live"));
+    }
+
     List<Quiz> quizzes = new QQuiz().course.eq(course).orderBy().createdAt.desc().findList();
 
     List<QuizResponse> responses = new ArrayList<>();
@@ -68,6 +73,11 @@ public class QuizGetController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("message", "course not found"));
+    }
+
+    if (course.getStatus() != Course.Status.LIVE) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("message", "course not live"));
     }
 
     Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();

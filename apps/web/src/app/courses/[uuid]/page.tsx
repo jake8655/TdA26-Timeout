@@ -31,6 +31,7 @@ export default function CourseDetailPage({
 		open: boolean;
 		reason?: string;
 	}>({ open: false });
+	const [hasJoined, setHasJoined] = useState(false);
 	const { data, isPending, isError, refetch } = useQuery({
 		...getCoursesByCourseIdOptions({
 			path: { courseId: uuid },
@@ -153,9 +154,10 @@ export default function CourseDetailPage({
 											{ path: { courseId: uuid } },
 											{
 												onSuccess: () =>
-													joinMutation.mutate({
-														path: { courseId: uuid },
-													}),
+													joinMutation.mutate(
+														{ path: { courseId: uuid } },
+														{ onSuccess: () => setHasJoined(true) },
+													),
 											},
 										);
 									}}
@@ -167,71 +169,83 @@ export default function CourseDetailPage({
 							</div>
 						</div>
 
-						<div className="border-white/5 border-t pt-8">
-							<h2 className="mb-4 font-semibold text-foreground text-lg">
-								About this course
-							</h2>
-							<p className="max-w-2xl text-muted-foreground leading-relaxed">
-								{data.description || (
-									<span className="italic">No description available</span>
-								)}
-							</p>
-						</div>
-
-						<div className="mt-8">
-							<div className="mb-6 flex items-center gap-3">
-								<BookOpen className="size-5 text-primary" />
-								<h2 className="font-semibold text-foreground text-lg">
-									Course Feed
-								</h2>
-							</div>
-							<CourseFeed
-								courseId={uuid}
-								onKick={(payload) =>
-									setKickDialog({
-										open: true,
-										reason: payload.reason,
-									})
-								}
-							/>
-						</div>
-
-						<div className="mt-8 border-white/5 border-t pt-8">
-							<div className="mb-6 flex items-center gap-3">
-								<BookOpen className="size-5 text-primary" />
-								<h2 className="font-semibold text-foreground text-lg">
-									Course Materials
-								</h2>
-							</div>
-							<MaterialsList courseId={uuid} />
-						</div>
-
-						<div className="mt-8 border-white/5 border-t pt-8">
-							<div className="mb-6 flex items-center gap-3">
-								<BookOpen className="size-5 text-primary" />
-								<h2 className="font-semibold text-foreground text-lg">
-									Quizzes
-								</h2>
-							</div>
-							{data.quizzes && data.quizzes.length > 0 ? (
-								<div className="flex flex-col gap-3">
-									{data.quizzes.map((quiz) => (
-										<CourseQuizCard
-											key={quiz.uuid ?? quiz.title}
-											quiz={quiz}
-											courseId={uuid}
-											onSaveResult={() => {}}
-										/>
-									))}
+						{hasJoined ? (
+							<>
+								<div className="border-white/5 border-t pt-8">
+									<h2 className="mb-4 font-semibold text-foreground text-lg">
+										About this course
+									</h2>
+									<p className="max-w-2xl text-muted-foreground leading-relaxed">
+										{data.description || (
+											<span className="italic">No description available</span>
+										)}
+									</p>
 								</div>
-							) : (
+
+								<div className="mt-8">
+									<div className="mb-6 flex items-center gap-3">
+										<BookOpen className="size-5 text-primary" />
+										<h2 className="font-semibold text-foreground text-lg">
+											Course Feed
+										</h2>
+									</div>
+									<CourseFeed
+										courseId={uuid}
+										onKick={(payload) =>
+											setKickDialog({
+												open: true,
+												reason: payload.reason,
+											})
+										}
+									/>
+								</div>
+
+								<div className="mt-8 border-white/5 border-t pt-8">
+									<div className="mb-6 flex items-center gap-3">
+										<BookOpen className="size-5 text-primary" />
+										<h2 className="font-semibold text-foreground text-lg">
+											Course Materials
+										</h2>
+									</div>
+									<MaterialsList courseId={uuid} />
+								</div>
+
+								<div className="mt-8 border-white/5 border-t pt-8">
+									<div className="mb-6 flex items-center gap-3">
+										<BookOpen className="size-5 text-primary" />
+										<h2 className="font-semibold text-foreground text-lg">
+											Quizzes
+										</h2>
+									</div>
+									{data.quizzes && data.quizzes.length > 0 ? (
+										<div className="flex flex-col gap-3">
+											{data.quizzes.map((quiz) => (
+												<CourseQuizCard
+													key={quiz.uuid ?? quiz.title}
+													quiz={quiz}
+													courseId={uuid}
+													onSaveResult={() => {}}
+												/>
+											))}
+										</div>
+									) : (
+										<EmptyState
+											title="No quizzes yet"
+											description="Check back soon for interactive quizzes."
+											icon={<BookOpen className="size-7 text-primary" />}
+										/>
+									)}
+								</div>
+							</>
+						) : (
+							<div className="border-white/5 border-t pt-8">
 								<EmptyState
-									title="No quizzes yet"
-									description="Check back soon for interactive quizzes."
+									title="Join to view course content"
+									description="Once you join, the feed, materials, and quizzes will unlock."
 									icon={<BookOpen className="size-7 text-primary" />}
 								/>
-							)}
-						</div>
+							</div>
+						)}
 					</section>
 				)}
 			</main>

@@ -9,6 +9,7 @@ import { Toaster } from "./ui/sonner";
 
 client.setConfig({
 	baseUrl: env.NEXT_PUBLIC_API_BASE,
+	credentials: "include",
 });
 
 const queryClient = createQueryClient();

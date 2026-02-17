@@ -38,15 +38,7 @@ public class CoursePostController extends Controller {
           .body(Map.of("status", "bad", "message", "invalid name"));
     }
 
-    /*Session session = new QSession().token.eq(sessionId).findOne();
-    if (session == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "session not found in database")
-        );
-    }
-
-    Lecturer lecturer = new QLecturer().username.eq(session.getLecturer().getUsername()).findOne();*/
-    if (lecturer == null || !isLecturerSession(sessionId)) {
+    if (!isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "session not linked to an account"));
     }

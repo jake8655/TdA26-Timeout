@@ -3,6 +3,7 @@ package eu.hypnomacka.timeout.server.core;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.ebean.Model;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import jakarta.persistence.*;
@@ -19,6 +20,14 @@ import lombok.Setter;
 @Table(name = "courses")
 public class Course extends Model {
 
+  public enum Status {
+    DRAFT,
+    SCHEDULED,
+    LIVE,
+    PAUSED,
+    ARCHIVED
+  }
+
   @Id private UUID uuid;
 
   @ManyToOne(optional = false)
@@ -30,6 +39,21 @@ public class Course extends Model {
   private String name;
 
   @Column private String description;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  @DbDefault("DRAFT")
+  private Status status = Status.DRAFT;
+
+  @Column private Instant scheduledStartAt;
+
+  @Column private Instant scheduledEndAt;
+
+  @Column private Instant pausedAt;
+
+  @Column private Instant archivedAt;
+
+  @Column private Instant lastWentLiveAt;
 
   @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
   @JsonManagedReference
@@ -47,6 +71,10 @@ public class Course extends Model {
   @JsonManagedReference
   private List<Event> events = new ArrayList<>();
 
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  private List<CourseJoin> joins = new ArrayList<>();
+
   @WhenCreated private Instant createdAt;
 
   @WhenModified private Instant updatedAt;
@@ -57,5 +85,6 @@ public class Course extends Model {
     this.lecturer = lecturer;
     this.name = name;
     this.description = description;
+    this.status = Status.DRAFT;
   }
 }

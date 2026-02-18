@@ -44,7 +44,8 @@ public class CourseGetController extends Controller {
   @GetMapping(value = "/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> byUUID(
       @PathVariable("UUID") String uuidStr,
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
     UUID uuid;
     try {
       uuid = UUID.fromString(uuidStr);
@@ -72,7 +73,7 @@ public class CourseGetController extends Controller {
         && (course.getStatus() == Course.Status.SCHEDULED
             || course.getStatus() == Course.Status.PAUSED)) {
       return ResponseEntity.status(HttpStatus.OK)
-          .body(buildLimitedCourseResponse(course, sessionId));
+          .body(buildLimitedCourseResponse(course, studentSessionId));
     }
 
     List<Object> materials = new ArrayList<>();
@@ -123,7 +124,7 @@ public class CourseGetController extends Controller {
     response.put("scheduledEndAt", course.getScheduledEndAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
-    response.put("joined", isJoined(course, sessionId));
+    response.put("joined", isJoined(course, studentSessionId));
 
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
@@ -164,7 +165,7 @@ public class CourseGetController extends Controller {
     return response;
   }
 
-  private Map<String, Object> buildLimitedCourseResponse(Course course, String sessionId) {
+  private Map<String, Object> buildLimitedCourseResponse(Course course, String studentSessionId) {
     Map<String, Object> response = new LinkedHashMap<>();
     response.put("uuid", course.getUuid());
     response.put("name", course.getName());
@@ -176,7 +177,7 @@ public class CourseGetController extends Controller {
     response.put("scheduledEndAt", course.getScheduledEndAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
-    response.put("joined", isJoined(course, sessionId));
+    response.put("joined", isJoined(course, studentSessionId));
     return response;
   }
 

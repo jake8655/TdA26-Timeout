@@ -42,7 +42,7 @@ public class CourseSessionController extends Controller {
     }
 
     String sessionId = AuthController.generateNewToken();
-    Cookie cookie = new Cookie("SESSION_ID", sessionId);
+    Cookie cookie = new Cookie("STUDENT_SESSION_ID", sessionId);
     cookie.setHttpOnly(true);
     cookie.setPath("/");
     cookie.setMaxAge(60 * 60 * 24 * 7);

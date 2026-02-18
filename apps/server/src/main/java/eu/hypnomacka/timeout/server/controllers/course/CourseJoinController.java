@@ -21,7 +21,7 @@ public class CourseJoinController extends Controller {
   @PostMapping(value = "/join", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> joinCourse(
       @PathVariable("courseId") String courseIdStr,
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String sessionId) {
     Course course = findCourse(courseIdStr);
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -58,7 +58,7 @@ public class CourseJoinController extends Controller {
   @PostMapping(value = "/leave", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> leaveCourse(
       @PathVariable("courseId") String courseIdStr,
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String sessionId) {
     Course course = findCourse(courseIdStr);
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)

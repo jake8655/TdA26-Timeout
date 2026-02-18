@@ -28,8 +28,10 @@ public class CourseLifecycleService {
 
     List<Course> scheduledCourses =
         new QCourse()
-            .status.in(Status.SCHEDULED, Status.PAUSED)
-            .scheduledStartAt.isNotNull()
+            .status
+            .in(Status.SCHEDULED, Status.PAUSED)
+            .scheduledStartAt
+            .isNotNull()
             .findList();
     for (Course course : scheduledCourses) {
       Instant startAt = course.getScheduledStartAt();
@@ -39,10 +41,7 @@ public class CourseLifecycleService {
     }
 
     List<Course> endBoundCourses =
-        new QCourse()
-            .status.in(Status.LIVE, Status.PAUSED)
-            .scheduledEndAt.isNotNull()
-            .findList();
+        new QCourse().status.in(Status.LIVE, Status.PAUSED).scheduledEndAt.isNotNull().findList();
     for (Course course : endBoundCourses) {
       Instant endAt = course.getScheduledEndAt();
       if (endAt != null && !endAt.isAfter(now)) {
@@ -52,7 +51,8 @@ public class CourseLifecycleService {
             course.getUuid(),
             "course_kick",
             String.format(
-                "{\"reason\":\"Course ended automatically\",\"status\":\"%s\",\"effectiveAt\":\"%s\"}",
+                "{\"reason\":\"Course ended"
+                    + " automatically\",\"status\":\"%s\",\"effectiveAt\":\"%s\"}",
                 Status.ARCHIVED.name(), Instant.now()));
       }
     }

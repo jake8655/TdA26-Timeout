@@ -38,8 +38,7 @@ public class QuizGetController extends Controller {
     }
 
     if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN)
-          .body(Map.of("message", "course not live"));
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "course not live"));
     }
 
     List<Quiz> quizzes = new QQuiz().course.eq(course).orderBy().createdAt.desc().findList();
@@ -81,8 +80,7 @@ public class QuizGetController extends Controller {
     }
 
     if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN)
-          .body(Map.of("message", "course not live"));
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "course not live"));
     }
 
     Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();

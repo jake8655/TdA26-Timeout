@@ -31,9 +31,11 @@ public class CourseGetController extends Controller {
         isLecturer
             ? new QCourse().orderBy().updatedAt.desc().findList()
             : new QCourse()
-                .status.in(Course.Status.SCHEDULED, Course.Status.LIVE, Course.Status.PAUSED)
+                .status
+                .in(Course.Status.SCHEDULED, Course.Status.LIVE, Course.Status.PAUSED)
                 .orderBy()
-                .updatedAt.desc()
+                .updatedAt
+                .desc()
                 .findList();
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
@@ -131,8 +133,7 @@ public class CourseGetController extends Controller {
         .body(buildCourseDetailResponse(course, materials, quizzes, feed, studentSessionId));
   }
 
-  private Map<String, Object> buildCourseSummaryResponse(
-      Course course, String studentSessionId) {
+  private Map<String, Object> buildCourseSummaryResponse(Course course, String studentSessionId) {
     Map<String, Object> response = new LinkedHashMap<>();
     response.put("uuid", course.getUuid());
     response.put("name", course.getName());
@@ -255,8 +256,7 @@ public class CourseGetController extends Controller {
     if (sessionId == null || sessionId.isBlank()) {
       return false;
     }
-    CourseJoin join =
-        new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
+    CourseJoin join = new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
     return join != null && Boolean.TRUE.equals(join.getActive());
   }
 }

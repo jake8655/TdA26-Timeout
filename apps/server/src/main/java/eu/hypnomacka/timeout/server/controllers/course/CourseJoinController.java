@@ -92,5 +92,4 @@ public class CourseJoinController extends Controller {
     }
     return new QCourse().uuid.eq(courseId).findOne();
   }
-
 }

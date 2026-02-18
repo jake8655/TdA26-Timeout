@@ -49,7 +49,8 @@ public class CourseDeleteController extends Controller {
         course.getUuid(),
         "course_kick",
         String.format(
-            "{\"reason\":\"Course deleted by lecturer\",\"status\":\"DELETED\",\"effectiveAt\":\"%s\"}",
+            "{\"reason\":\"Course deleted by"
+                + " lecturer\",\"status\":\"DELETED\",\"effectiveAt\":\"%s\"}",
             Instant.now()));
 
     if (course.delete()) {

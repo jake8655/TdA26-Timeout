@@ -658,7 +658,7 @@ function CourseStatusPanel({
 					<p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
 						Course Actions
 					</p>
-					<div className="grid gap-2 sm:grid-cols-2">
+					<div className="grid gap-2 sm:grid-cols-3">
 						{course.status !== CourseStatus.LIVE &&
 							course.status !== CourseStatus.SCHEDULED && (
 								<Dialog>

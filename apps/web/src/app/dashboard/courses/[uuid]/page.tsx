@@ -40,7 +40,6 @@ import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseFeed } from "@/components/courses/course-feed";
-import { CourseKickDialog } from "@/components/courses/course-kick-dialog";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { DeleteFeedPostButton } from "@/components/courses/delete-feed-post-dialog";
 import {
@@ -91,10 +90,6 @@ export default function DashboardCourseDetailPage({
 	const { uuid } = use(params);
 	const { data: authData } = useRequireAuth();
 	const router = useRouter();
-	const [kickDialog, setKickDialog] = useState<{
-		open: boolean;
-		reason?: string;
-	}>({ open: false });
 
 	const {
 		data: course,
@@ -160,12 +155,6 @@ export default function DashboardCourseDetailPage({
 	return (
 		<section className="relative min-h-screen overflow-hidden pt-28 pb-16">
 			<BackgroundGrid />
-			<CourseKickDialog
-				open={kickDialog.open}
-				reason={kickDialog.reason}
-				redirectTo="/dashboard"
-				onClose={() => setKickDialog({ open: false })}
-			/>
 
 			<div className="relative z-10 mx-auto max-w-4xl space-y-8 px-6">
 				<motion.div
@@ -275,12 +264,6 @@ export default function DashboardCourseDetailPage({
 							deleteTrigger={(item) => (
 								<DeleteFeedPostButton post={item} courseId={uuid} />
 							)}
-							onKick={(payload) =>
-								setKickDialog({
-									open: true,
-									reason: payload.reason,
-								})
-							}
 						/>
 
 						<motion.div

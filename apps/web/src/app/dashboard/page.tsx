@@ -278,7 +278,7 @@ function CourseCard({
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<CardDescription className="line-clamp-2 min-h-[3rem] text-muted-foreground text-sm leading-relaxed">
+						<CardDescription className="line-clamp-2 min-h-12 text-muted-foreground text-sm leading-relaxed">
 							{course.description || (
 								<span className="italic">No description available</span>
 							)}

@@ -129,19 +129,19 @@ export default function About() {
 							<FloatingIcon
 								src="/icons/Beginner/zarivka_beginner_blue.svg"
 								alt="Beginner"
-								className="-left-2 -top-6 md:-left-8 md:-top-8 absolute z-20"
+								className="absolute -top-6 -left-2 z-20 md:-top-8 md:-left-8"
 								delay={0}
 							/>
 							<FloatingIcon
 								src="/icons/Medium/zarivka_medium_blue.svg"
 								alt="Medium"
-								className="-bottom-2 -right-4 md:-bottom-4 md:-right-12 absolute z-20"
+								className="absolute -right-4 -bottom-2 z-20 md:-right-12 md:-bottom-4"
 								delay={1}
 							/>
 							<FloatingIcon
 								src="/icons/Hard/zarivka_hard_blue.svg"
 								alt="Hard"
-								className="-right-2 md:-right-6 absolute top-1/3 z-20"
+								className="absolute top-1/3 -right-2 z-20 md:-right-6"
 								delay={2}
 							/>
 						</div>

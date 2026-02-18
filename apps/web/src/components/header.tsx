@@ -50,7 +50,7 @@ export default function Header() {
 					</span>
 				</Link>
 
-				<nav className="-translate-x-1/2 absolute left-1/2 hidden items-center gap-8 md:flex">
+				<nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
 					<Link
 						href="/courses"
 						className="font-medium text-muted-foreground text-sm transition-colors hover:text-primary"
@@ -89,7 +89,7 @@ export default function Header() {
 									<DropdownMenuItem className="p-0">
 										<Link
 											href="/dashboard"
-											className="flex w-full cursor-auto items-center gap-2 p-2"
+											className="flex w-full items-center gap-2 p-2"
 										>
 											<LayoutDashboard />
 											Dashboard

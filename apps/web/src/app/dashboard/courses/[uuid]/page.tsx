@@ -530,7 +530,7 @@ function CourseStatusPanel({
 			transition={{ duration: 0.4 }}
 			className="border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
 		>
-			<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+			<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_500px]">
 				<div className="space-y-4">
 					<div className="flex items-start gap-4">
 						<div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
@@ -590,14 +590,16 @@ function CourseStatusPanel({
 					<p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
 						Course Actions
 					</p>
-					<div className="flex flex-col gap-2">
+					<div className="grid grid-cols-3 gap-2">
 						<Dialog>
-							<DialogTrigger>
-								<Button variant="outline" className="justify-start gap-2">
-									<CalendarClock className="size-4" />
-									Schedule Course
-								</Button>
-							</DialogTrigger>
+							<DialogTrigger
+								render={
+									<Button variant="outline" className="justify-start gap-2">
+										<CalendarClock className="size-4" />
+										Schedule Course
+									</Button>
+								}
+							/>
 							<DialogContent className="sm:max-w-lg">
 								<DialogHeader>
 									<DialogTitle>Schedule course</DialogTitle>
@@ -657,12 +659,14 @@ function CourseStatusPanel({
 							</DialogContent>
 						</Dialog>
 						<Dialog>
-							<DialogTrigger>
-								<Button variant="accent" className="justify-start gap-2">
-									<Play className="size-4" />
-									Go Live Now
-								</Button>
-							</DialogTrigger>
+							<DialogTrigger
+								render={
+									<Button variant="accent" className="justify-start gap-2">
+										<Play className="size-4" />
+										Go Live Now
+									</Button>
+								}
+							/>
 							<DialogContent className="sm:max-w-md">
 								<DialogHeader>
 									<DialogTitle>Start the course</DialogTitle>
@@ -728,12 +732,14 @@ function CourseStatusPanel({
 							Archive Course
 						</Button>
 						<Dialog>
-							<DialogTrigger>
-								<Button variant="outline" className="justify-start gap-2">
-									<Copy className="size-4" />
-									Duplicate Course
-								</Button>
-							</DialogTrigger>
+							<DialogTrigger
+								render={
+									<Button variant="outline" className="justify-start gap-2">
+										<Copy className="size-4" />
+										Duplicate Course
+									</Button>
+								}
+							/>
 							<DialogContent className="sm:max-w-md">
 								<DialogHeader>
 									<DialogTitle>Duplicate course</DialogTitle>
@@ -760,12 +766,14 @@ function CourseStatusPanel({
 							</DialogContent>
 						</Dialog>
 						<Dialog>
-							<DialogTrigger>
-								<Button variant="destructive" className="justify-start gap-2">
-									<Trash2 className="size-4" />
-									Delete Course
-								</Button>
-							</DialogTrigger>
+							<DialogTrigger
+								render={
+									<Button variant="destructive" className="justify-start gap-2">
+										<Trash2 className="size-4" />
+										Delete Course
+									</Button>
+								}
+							/>
 							<DialogContent className="sm:max-w-md">
 								<DialogHeader>
 									<DialogTitle>Delete course</DialogTitle>

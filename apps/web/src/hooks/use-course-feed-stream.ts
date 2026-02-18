@@ -19,7 +19,7 @@ export function useCourseFeedStream(courseId: string) {
 
 		const baseUrl = client.getConfig().baseUrl;
 		const url = `${baseUrl}/courses/${courseId}/feed/stream`;
-		const eventSource = new EventSource(url);
+		const eventSource = new EventSource(url, { withCredentials: true });
 
 		eventSource.onopen = () => {
 			if (mounted) {

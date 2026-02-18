@@ -60,7 +60,7 @@ export function CourseFeed({
 	});
 
 	const allItems = (() => {
-		if (!initialItems) return streamItems;
+		if (!Array.isArray(initialItems)) return streamItems;
 
 		const combined = [...initialItems];
 		for (const streamItem of streamItems) {

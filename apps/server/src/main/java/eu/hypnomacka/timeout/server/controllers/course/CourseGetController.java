@@ -39,7 +39,7 @@ public class CourseGetController extends Controller {
                 .findList();
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
-      result.add(buildCourseSummaryResponse(course, isLecturer ? null : studentSessionId));
+      result.add(buildCourseSummaryResponse(course, studentSessionId));
     }
     return result;
   }

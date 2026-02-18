@@ -43,6 +43,13 @@ public class CoursePostController extends Controller {
           .body(Map.of("status", "bad", "message", "session not linked to an account"));
     }
 
+    Session session = new QSession().token.eq(sessionId).findOne();
+    if (session == null || session.getLecturer() == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "session not linked to an account"));
+    }
+
+    Lecturer lecturer = session.getLecturer();
     Course course = new Course(lecturer, name, description);
     course.setStatus(Course.Status.DRAFT);
     course.save();

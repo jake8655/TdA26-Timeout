@@ -31,7 +31,6 @@ export default function CourseDetailPage({
 		open: boolean;
 		reason?: string;
 	}>({ open: false });
-	const [hasJoined, setHasJoined] = useState(false);
 	const { data, isPending, isError, refetch } = useQuery({
 		...getCoursesByCourseIdOptions({
 			path: { courseId: uuid },
@@ -146,30 +145,36 @@ export default function CourseDetailPage({
 								{data.name}
 							</h1>
 							<div className="ml-auto">
-								<Button
-									variant="accent"
-									disabled={joinMutation.isPending || sessionMutation.isPending}
-									onClick={() => {
-										sessionMutation.mutate(
-											{ path: { courseId: uuid } },
-											{
-												onSuccess: () =>
-													joinMutation.mutate(
-														{ path: { courseId: uuid } },
-														{ onSuccess: () => setHasJoined(true) },
-													),
-											},
-										);
-									}}
-								>
-									{joinMutation.isPending || sessionMutation.isPending
-										? "Joining..."
-										: "Join course"}
-								</Button>
+								{!joinMutation.isSuccess && (
+									<Button
+										variant="accent"
+										disabled={
+											joinMutation.isPending || sessionMutation.isPending
+										}
+										onClick={() => {
+											sessionMutation.mutate(
+												{ path: { courseId: uuid } },
+												{
+													onSuccess: () =>
+														joinMutation.mutate({ path: { courseId: uuid } }),
+												},
+											);
+										}}
+									>
+										{joinMutation.isPending || sessionMutation.isPending
+											? "Joining..."
+											: "Join course"}
+									</Button>
+								)}
+								{joinMutation.isSuccess && (
+									<span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-semibold text-[11px] text-emerald-200 uppercase tracking-wide">
+										Joined
+									</span>
+								)}
 							</div>
 						</div>
 
-						{hasJoined ? (
+						{joinMutation.isSuccess ? (
 							<>
 								<div className="border-white/5 border-t pt-8">
 									<h2 className="mb-4 font-semibold text-foreground text-lg">

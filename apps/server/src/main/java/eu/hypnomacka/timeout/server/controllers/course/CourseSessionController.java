@@ -48,6 +48,11 @@ public class CourseSessionController extends Controller {
     cookie.setMaxAge(60 * 60 * 24 * 7);
     response.addCookie(cookie);
 
+    CourseJoin join = new CourseJoin(course, sessionId);
+    join.setUuid(UUID.randomUUID());
+    join.setLastSeenAt(Instant.now());
+    join.save();
+
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(Map.of("status", "ok", "sessionId", sessionId));
   }

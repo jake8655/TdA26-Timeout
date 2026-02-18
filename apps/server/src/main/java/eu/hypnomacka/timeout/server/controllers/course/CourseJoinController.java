@@ -33,12 +33,13 @@ public class CourseJoinController extends Controller {
           .body(Map.of("status", "bad", "message", "course not live"));
     }
 
-    if (sessionId == null || sessionId.isBlank()) {
+    String resolvedToken = resolveSessionToken(sessionId);
+    if (resolvedToken == null || resolvedToken.isBlank()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "session required"));
     }
     CourseJoin existing =
-        new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
+        new QCourseJoin().course.eq(course).sessionToken.eq(resolvedToken).findOne();
     if (existing != null) {
       existing.setActive(true);
       existing.setLastSeenAt(Instant.now());
@@ -46,7 +47,7 @@ public class CourseJoinController extends Controller {
       return ResponseEntity.ok(Map.of("status", "ok", "joinedAt", existing.getJoinedAt()));
     }
 
-    CourseJoin join = new CourseJoin(course, sessionId);
+    CourseJoin join = new CourseJoin(course, resolvedToken);
     join.setUuid(UUID.randomUUID());
     join.save();
 
@@ -64,12 +65,13 @@ public class CourseJoinController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (sessionId == null || sessionId.isBlank()) {
+    String resolvedToken = resolveSessionToken(sessionId);
+    if (resolvedToken == null || resolvedToken.isBlank()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "session required"));
     }
     CourseJoin existing =
-        new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
+        new QCourseJoin().course.eq(course).sessionToken.eq(resolvedToken).findOne();
     if (existing == null) {
       return ResponseEntity.ok(Map.of("status", "ok", "message", "not joined"));
     }

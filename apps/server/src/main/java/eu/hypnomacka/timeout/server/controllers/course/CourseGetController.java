@@ -23,7 +23,8 @@ public class CourseGetController extends Controller {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Map<String, Object>> root(
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
     boolean isLecturer = isLecturerSession(sessionId);
 
     List<Course> courses =
@@ -36,9 +37,25 @@ public class CourseGetController extends Controller {
                 .findList();
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
-      result.add(buildCourseResponse(course));
+      result.add(buildCourseSummaryResponse(course, isLecturer ? null : studentSessionId));
     }
     return result;
+  }
+
+  @GetMapping(value = "/lecturer", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> lecturerList(
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    List<Course> courses = new QCourse().orderBy().updatedAt.desc().findList();
+    List<Map<String, Object>> result = new ArrayList<>();
+    for (Course course : courses) {
+      result.add(buildCourseSummaryResponse(course, null));
+    }
+    return ResponseEntity.ok(result);
   }
 
   @GetMapping(value = "/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -110,6 +127,36 @@ public class CourseGetController extends Controller {
       feed.add(eventMap);
     }
 
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(buildCourseDetailResponse(course, materials, quizzes, feed, studentSessionId));
+  }
+
+  private Map<String, Object> buildCourseSummaryResponse(
+      Course course, String studentSessionId) {
+    Map<String, Object> response = new LinkedHashMap<>();
+    response.put("uuid", course.getUuid());
+    response.put("name", course.getName());
+    response.put("description", course.getDescription());
+    response.put("createdAt", course.getCreatedAt());
+    response.put("updatedAt", course.getUpdatedAt());
+    response.put("status", course.getStatus().name().toLowerCase());
+    response.put("scheduledStartAt", course.getScheduledStartAt());
+    response.put("scheduledEndAt", course.getScheduledEndAt());
+    response.put("pausedAt", course.getPausedAt());
+    response.put("archivedAt", course.getArchivedAt());
+    if (studentSessionId != null) {
+      response.put("joined", isJoined(course, studentSessionId));
+    }
+
+    return response;
+  }
+
+  private Map<String, Object> buildCourseDetailResponse(
+      Course course,
+      List<Object> materials,
+      List<Quiz> quizzes,
+      List<Map<String, Object>> feed,
+      String studentSessionId) {
     Map<String, Object> response = new LinkedHashMap<>();
     response.put("uuid", course.getUuid());
     response.put("name", course.getName());
@@ -125,11 +172,32 @@ public class CourseGetController extends Controller {
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
     response.put("joined", isJoined(course, studentSessionId));
-
-    return ResponseEntity.status(HttpStatus.OK).body(response);
+    return response;
   }
 
-  private Map<String, Object> buildCourseResponse(Course course) {
+  @GetMapping(value = "/lecturer/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> lecturerByUUID(
+      @PathVariable("UUID") String uuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    UUID uuid;
+    try {
+      uuid = UUID.fromString(uuidStr);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+    }
+
+    Course course = new QCourse().uuid.eq(uuid).findOne();
+    if (course == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
     List<Object> materials = new ArrayList<>();
     materials.addAll(course.getFileAttachments());
     materials.addAll(course.getUrlAttachments());
@@ -148,21 +216,23 @@ public class CourseGetController extends Controller {
         });
 
     List<Quiz> quizzes = new ArrayList<>(course.getQuizzes());
-    quizzes.sort(Comparator.comparing(Quiz::getCreatedAt).reversed());
+    quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
 
-    Map<String, Object> response = new LinkedHashMap<>();
-    response.put("uuid", course.getUuid());
-    response.put("name", course.getName());
-    response.put("description", course.getDescription());
-    response.put("createdAt", course.getCreatedAt());
-    response.put("updatedAt", course.getUpdatedAt());
-    response.put("materials", materials);
-    response.put("quizzes", quizzes);
-    response.put("status", course.getStatus().name().toLowerCase());
-    response.put("scheduledStartAt", course.getScheduledStartAt());
-    response.put("scheduledEndAt", course.getScheduledEndAt());
+    List<Event> events = new QEvent().course.eq(course).orderBy().createdAt.desc().findList();
 
-    return response;
+    List<Map<String, Object>> feed = new ArrayList<>();
+    for (Event event : events) {
+      Map<String, Object> eventMap = new LinkedHashMap<>();
+      eventMap.put("uuid", event.getUuid());
+      eventMap.put("type", event.getType().name().toLowerCase());
+      eventMap.put("message", event.getMessage());
+      eventMap.put("edited", event.getEdited());
+      eventMap.put("createdAt", event.getCreatedAt());
+      eventMap.put("updatedAt", event.getUpdatedAt());
+      feed.add(eventMap);
+    }
+
+    return ResponseEntity.ok(buildCourseDetailResponse(course, materials, quizzes, feed, null));
   }
 
   private Map<String, Object> buildLimitedCourseResponse(Course course, String studentSessionId) {

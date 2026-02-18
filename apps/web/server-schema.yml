@@ -61,6 +61,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/CourseSummary'
 
+  /courses/lecturer:
+    get:
+      summary: List lecturer courses
+      description: Returns all courses for lecturers, including all statuses.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseSummary'
+
+  /courses/lecturer/{courseId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      summary: Get lecturer course details
+      description: Returns full course details for lecturers in any state.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+
   /courses/{courseId}:
     parameters:
       - $ref: '#/components/parameters/CourseId'

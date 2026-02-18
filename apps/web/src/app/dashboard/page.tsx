@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useState } from "react";
 import z from "zod";
 import {
-	getCoursesOptions,
+	getCoursesLecturerOptions,
 	postCoursesMutation,
 	putCoursesByCourseIdMutation,
 } from "@/api-client/@tanstack/react-query.gen";
@@ -151,7 +151,7 @@ export default function Dashboard() {
 		isError,
 		refetch,
 	} = useQuery({
-		...getCoursesOptions(),
+		...getCoursesLecturerOptions(),
 	});
 	const { data } = useRequireAuth();
 

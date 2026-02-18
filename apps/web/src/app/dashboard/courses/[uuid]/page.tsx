@@ -7,6 +7,7 @@ import {
 	CalendarClock,
 	ChartColumnDecreasing,
 	Clock,
+	Clock2,
 	Copy,
 	Download,
 	Edit2,
@@ -67,6 +68,11 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import {
 	formatFileSize,
@@ -482,13 +488,18 @@ function CourseStatusPanel({
 	const [startTime, setStartTime] = useState(
 		course.scheduledStartAt
 			? (toLocalInput(course.scheduledStartAt).split("T")[1] ?? "")
-			: "",
+			: new Date().toString(),
 	);
 	const [endTime, setEndTime] = useState(
 		course.scheduledEndAt
 			? (toLocalInput(course.scheduledEndAt).split("T")[1] ?? "")
-			: "",
+			: new Date().setHours(new Date().getHours() + 1).toString(),
 	);
+
+	const pastDates = Array.from({ length: new Date().getDate() - 1 }).map(
+		(_, i) => new Date(new Date().getFullYear(), new Date().getMonth(), i + 1),
+	);
+
 	const [duplicateName, setDuplicateName] = useState(`${course.name} Copy`);
 	const [deleteConfirm, setDeleteConfirm] = useState("");
 
@@ -665,77 +676,98 @@ function CourseStatusPanel({
 						Course Actions
 					</p>
 					<div className="grid gap-2 sm:grid-cols-2">
-						{course.status !== CourseStatus.LIVE && (
-							<Dialog>
-								<DialogTrigger
-									render={
-										<Button variant="outline" className="justify-start gap-2">
-											<CalendarClock className="size-4" />
-											Schedule Course
-										</Button>
-									}
-								/>
-								<DialogContent className="sm:max-w-lg">
-									<DialogHeader>
-										<DialogTitle>Schedule course</DialogTitle>
-										<DialogDescription>
-											Pick start and end times (Bratislava timezone).
-										</DialogDescription>
-									</DialogHeader>
-									<div className="grid gap-4 sm:grid-cols-2">
-										<div className="space-y-2">
-											<p className="font-semibold text-foreground text-sm">
-												Start
-											</p>
-											<Calendar
-												mode="single"
-												selected={startDate}
-												onSelect={setStartDate}
-												className="rounded-none border border-white/10 bg-white/5"
-											/>
-											<Input
-												type="time"
-												value={startTime}
-												onChange={(event) => setStartTime(event.target.value)}
-												className="h-10"
-											/>
+						{course.status !== CourseStatus.LIVE &&
+							course.status !== CourseStatus.SCHEDULED && (
+								<Dialog>
+									<DialogTrigger
+										render={
+											<Button variant="outline" className="justify-start gap-2">
+												<CalendarClock className="size-4" />
+												Schedule Course
+											</Button>
+										}
+									/>
+									<DialogContent className="sm:max-w-lg">
+										<DialogHeader>
+											<DialogTitle>Schedule course</DialogTitle>
+											<DialogDescription>
+												Pick start and end times (Bratislava timezone).
+											</DialogDescription>
+										</DialogHeader>
+										<div className="grid gap-4 sm:grid-cols-2">
+											<div className="space-y-2">
+												<p className="font-semibold text-foreground text-sm">
+													Start
+												</p>
+												<Calendar
+													mode="single"
+													selected={startDate}
+													onSelect={setStartDate}
+													className="w-full rounded-none border border-white/10 bg-white/5"
+													weekStartsOn={1}
+													startMonth={new Date()}
+													disabled={pastDates}
+													fixedWeeks
+												/>
+												<InputGroup>
+													<InputGroupInput
+														type="time"
+														value={startTime}
+														onChange={(event) =>
+															setStartTime(event.target.value)
+														}
+														className="h-10"
+													/>
+													<InputGroupAddon>
+														<Clock2 className="text-muted-foreground" />
+													</InputGroupAddon>
+												</InputGroup>
+											</div>
+											<div className="space-y-2">
+												<p className="font-semibold text-foreground text-sm">
+													End
+												</p>
+												<Calendar
+													mode="single"
+													selected={endDate}
+													onSelect={setEndDate}
+													className="w-full rounded-none border border-white/10 bg-white/5"
+													weekStartsOn={1}
+													startMonth={new Date()}
+													disabled={pastDates}
+													fixedWeeks
+												/>
+												<InputGroup>
+													<InputGroupInput
+														type="time"
+														value={endTime}
+														onChange={(event) => setEndTime(event.target.value)}
+														className="h-10"
+													/>
+													<InputGroupAddon>
+														<Clock2 className="text-muted-foreground" />
+													</InputGroupAddon>
+												</InputGroup>
+											</div>
 										</div>
-										<div className="space-y-2">
-											<p className="font-semibold text-foreground text-sm">
-												End
-											</p>
-											<Calendar
-												mode="single"
-												selected={endDate}
-												onSelect={setEndDate}
-												className="rounded-none border border-white/10 bg-white/5"
-											/>
-											<Input
-												type="time"
-												value={endTime}
-												onChange={(event) => setEndTime(event.target.value)}
-												className="h-10"
-											/>
-										</div>
-									</div>
-									<DialogFooter>
-										<Button
-											variant="accent"
-											onClick={() =>
-												onUpdateStatus({
-													status: "scheduled",
-													scheduledStartAt: scheduleStartAt,
-													scheduledEndAt: scheduleEndAt,
-												})
-											}
-											disabled={!canSchedule}
-										>
-											Schedule
-										</Button>
-									</DialogFooter>
-								</DialogContent>
-							</Dialog>
-						)}
+										<DialogFooter>
+											<Button
+												variant="accent"
+												onClick={() =>
+													onUpdateStatus({
+														status: "scheduled",
+														scheduledStartAt: scheduleStartAt,
+														scheduledEndAt: scheduleEndAt,
+													})
+												}
+												disabled={!canSchedule}
+											>
+												Schedule
+											</Button>
+										</DialogFooter>
+									</DialogContent>
+								</Dialog>
+							)}
 						{course.status !== CourseStatus.LIVE && (
 							<Dialog>
 								<DialogTrigger
@@ -817,77 +849,6 @@ function CourseStatusPanel({
 								Archive Course
 							</Button>
 						)}
-						<Dialog>
-							<DialogTrigger
-								render={
-									<Button variant="outline" className="justify-start gap-2">
-										<Copy className="size-4" />
-										Duplicate Course
-									</Button>
-								}
-							/>
-							<DialogContent className="sm:max-w-md">
-								<DialogHeader>
-									<DialogTitle>Duplicate course</DialogTitle>
-									<DialogDescription>
-										Create a new draft course based on this one.
-									</DialogDescription>
-								</DialogHeader>
-								<div className="space-y-3">
-									<Input
-										value={duplicateName}
-										onChange={(event) => setDuplicateName(event.target.value)}
-										className="h-10"
-									/>
-								</div>
-								<DialogFooter>
-									<Button
-										variant="accent"
-										onClick={() => onDuplicate(duplicateName)}
-										disabled={!duplicateName}
-									>
-										Duplicate Course
-									</Button>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
-						<Dialog>
-							<DialogTrigger
-								render={
-									<Button variant="destructive" className="justify-start gap-2">
-										<Trash2 className="size-4" />
-										Delete Course
-									</Button>
-								}
-							/>
-							<DialogContent className="sm:max-w-md">
-								<DialogHeader>
-									<DialogTitle>Delete course</DialogTitle>
-									<DialogDescription>
-										This deletes the course and kicks all students.
-									</DialogDescription>
-								</DialogHeader>
-								<div className="space-y-2">
-									<p className="text-muted-foreground text-sm">
-										Type "{course.name}" to confirm.
-									</p>
-									<Input
-										value={deleteConfirm}
-										onChange={(event) => setDeleteConfirm(event.target.value)}
-										className="h-10"
-									/>
-								</div>
-								<DialogFooter>
-									<Button
-										variant="destructive"
-										onClick={() => onDelete()}
-										disabled={deleteConfirm !== course.name}
-									>
-										Delete permanently
-									</Button>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
 					</div>
 				</div>
 			</div>

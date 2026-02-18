@@ -2,6 +2,9 @@ package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Lecturer;
+import eu.hypnomacka.timeout.server.core.Session;
+import eu.hypnomacka.timeout.server.core.query.QSession;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

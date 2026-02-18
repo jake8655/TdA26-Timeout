@@ -283,9 +283,6 @@ function CourseCard({
 								<span className="italic">No description available</span>
 							)}
 						</CardDescription>
-						<div className="mt-4 inline-flex items-center gap-2 text-muted-foreground text-xs">
-							<span className="uppercase tracking-[0.2em]">Open course</span>
-						</div>
 					</CardContent>
 				</Card>
 			</Link>

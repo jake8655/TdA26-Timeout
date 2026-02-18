@@ -2,22 +2,29 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+	Archive,
 	ArrowLeft,
+	CalendarClock,
 	ChartColumnDecreasing,
+	Clock,
+	Copy,
 	Download,
 	Edit2,
 	ExternalLink,
 	HelpCircle,
 	Loader2,
+	PauseCircle,
+	Play,
 	Plus,
 	Trash2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { use, useState } from "react";
+import { notFound, useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import {
+	deleteCoursesByCourseIdMutation,
 	getCoursesByCourseIdMaterialsOptions,
 	getCoursesByCourseIdOptions,
 	getCoursesByCourseIdQuizzesOptions,
@@ -33,6 +40,7 @@ import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseFeed } from "@/components/courses/course-feed";
 import { CourseKickDialog } from "@/components/courses/course-kick-dialog";
+import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { DeleteFeedPostButton } from "@/components/courses/delete-feed-post-dialog";
 import {
 	CreateFeedPostButton,
@@ -48,6 +56,16 @@ import {
 import EmptyState from "@/components/empty-state";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { QuizStatsDialog } from "@/components/quizzes/quiz-stats-dialog";
+import { Calendar } from "@/components/ui/calendar";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import {
@@ -66,6 +84,7 @@ export default function DashboardCourseDetailPage({
 }) {
 	const { uuid } = use(params);
 	const { data: authData } = useRequireAuth();
+	const router = useRouter();
 	const [kickDialog, setKickDialog] = useState<{
 		open: boolean;
 		reason?: string;
@@ -118,6 +137,10 @@ export default function DashboardCourseDetailPage({
 	});
 	const duplicateMutation = useMutation({
 		...postCoursesByCourseIdDuplicateMutation(),
+	});
+	const deleteMutation = useMutation({
+		...deleteCoursesByCourseIdMutation(),
+		onSuccess: () => router.push("/dashboard"),
 	});
 
 	if (!authData) {
@@ -213,51 +236,14 @@ export default function DashboardCourseDetailPage({
 									body: { name },
 								})
 							}
+							onDelete={() =>
+								deleteMutation.mutate({
+									path: { courseId: uuid },
+									// @ts-expect-error server requires a JSON body
+									body: {},
+								})
+							}
 						/>
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5 }}
-							className="border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
-						>
-							<div className="flex items-center gap-4">
-								<div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
-									<Image
-										src="/icons/Idea/zarivka_idea_blue.svg"
-										alt="Course icon"
-										width={32}
-										height={32}
-									/>
-								</div>
-								<div className="flex-1 overflow-hidden">
-									<div className="flex items-start justify-between">
-										<h1 className="font-bold text-primary text-xl sm:text-2xl">
-											{course.name}
-										</h1>
-										<CourseFormDialog
-											mode="edit"
-											course={course}
-											trigger={
-												<Button
-													variant="ghost"
-													size="sm"
-													className="ml-2"
-													aria-label="Edit course"
-													disabled={course.status !== CourseStatus.DRAFT}
-												>
-													<Edit2 />
-												</Button>
-											}
-										/>
-									</div>
-									<p className="mt-1 line-clamp-2 text-muted-foreground text-sm leading-relaxed">
-										{course.description || (
-											<span className="italic">No description available</span>
-										)}
-									</p>
-								</div>
-							</div>
-						</motion.div>
 
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
@@ -470,6 +456,7 @@ function CourseStatusPanel({
 	onPause,
 	onArchive,
 	onDuplicate,
+	onDelete,
 }: {
 	course: CourseDetail;
 	onUpdateStatus: (payload: {
@@ -484,14 +471,57 @@ function CourseStatusPanel({
 	}) => void;
 	onArchive: () => void;
 	onDuplicate: (name: string) => void;
+	onDelete: () => void;
 }) {
-	const [startAt, setStartAt] = useState(
-		course.scheduledStartAt ? toLocalInput(course.scheduledStartAt) : "",
+	const [startDate, setStartDate] = useState<Date | undefined>(
+		course.scheduledStartAt ? new Date(course.scheduledStartAt) : undefined,
 	);
-	const [endAt, setEndAt] = useState(
-		course.scheduledEndAt ? toLocalInput(course.scheduledEndAt) : "",
+	const [endDate, setEndDate] = useState<Date | undefined>(
+		course.scheduledEndAt ? new Date(course.scheduledEndAt) : undefined,
 	);
-	const [duplicateName, setDuplicateName] = useState(course.name);
+	const [startTime, setStartTime] = useState(
+		course.scheduledStartAt
+			? (toLocalInput(course.scheduledStartAt).split("T")[1] ?? "")
+			: "",
+	);
+	const [endTime, setEndTime] = useState(
+		course.scheduledEndAt
+			? (toLocalInput(course.scheduledEndAt).split("T")[1] ?? "")
+			: "",
+	);
+
+	useEffect(() => {
+		setStartDate(
+			course.scheduledStartAt ? new Date(course.scheduledStartAt) : undefined,
+		);
+		setEndDate(
+			course.scheduledEndAt ? new Date(course.scheduledEndAt) : undefined,
+		);
+		setStartTime(
+			course.scheduledStartAt
+				? (toLocalInput(course.scheduledStartAt).split("T")[1] ?? "")
+				: "",
+		);
+		setEndTime(
+			course.scheduledEndAt
+				? (toLocalInput(course.scheduledEndAt).split("T")[1] ?? "")
+				: "",
+		);
+		setDuplicateName(`${course.name} Copy`);
+		setDeleteConfirm("");
+	}, [course.name, course.scheduledStartAt, course.scheduledEndAt]);
+	const [duplicateName, setDuplicateName] = useState(`${course.name} Copy`);
+	const [deleteConfirm, setDeleteConfirm] = useState("");
+
+	const scheduleStartAt = toUtcIso(
+		startDate && startTime ? mergeDateTime(startDate, startTime) : "",
+	);
+	const scheduleEndAt = toUtcIso(
+		endDate && endTime ? mergeDateTime(endDate, endTime) : "",
+	);
+	const canSchedule = Boolean(scheduleStartAt && scheduleEndAt);
+	const canStartNow = Boolean(scheduleEndAt);
+	const canPause = Boolean(scheduleStartAt || scheduleEndAt);
 
 	return (
 		<motion.div
@@ -500,105 +530,272 @@ function CourseStatusPanel({
 			transition={{ duration: 0.4 }}
 			className="border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
 		>
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<div>
+			<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+				<div className="space-y-4">
+					<div className="flex items-start gap-4">
+						<div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
+							<Image
+								src="/icons/Idea/zarivka_idea_blue.svg"
+								alt="Course icon"
+								width={32}
+								height={32}
+							/>
+						</div>
+						<div className="flex-1 space-y-2">
+							<div className="flex flex-wrap items-center gap-3">
+								<h1 className="font-bold text-2xl text-primary sm:text-3xl">
+									{course.name}
+								</h1>
+								<CourseFormDialog
+									mode="edit"
+									course={course}
+									trigger={
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-8"
+											aria-label="Edit course"
+											disabled={course.status !== CourseStatus.DRAFT}
+										>
+											<Edit2 className="size-4" />
+											Edit
+										</Button>
+									}
+								/>
+							</div>
+							<p className="text-muted-foreground text-sm leading-relaxed">
+								{course.description || (
+									<span className="italic">No description available</span>
+								)}
+							</p>
+							<div className="flex flex-wrap items-center gap-3">
+								<CourseStatusBadge status={course.status} />
+								{course.scheduledStartAt && (
+									<span className="inline-flex items-center gap-2 text-muted-foreground text-xs">
+										<CalendarClock className="size-3.5" />
+										Starts {formatCourseTime(course.scheduledStartAt)}
+									</span>
+								)}
+								{course.scheduledEndAt && (
+									<span className="inline-flex items-center gap-2 text-muted-foreground text-xs">
+										<Clock className="size-3.5" />
+										Ends {formatCourseTime(course.scheduledEndAt)}
+									</span>
+								)}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4">
 					<p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
-						Course Status
+						Course Actions
 					</p>
-					<p className="mt-2 font-semibold text-foreground text-lg">
-						{course.status ?? "draft"}
-					</p>
+					<div className="flex flex-col gap-2">
+						<Dialog>
+							<DialogTrigger>
+								<Button variant="outline" className="justify-start gap-2">
+									<CalendarClock className="size-4" />
+									Schedule Course
+								</Button>
+							</DialogTrigger>
+							<DialogContent className="sm:max-w-lg">
+								<DialogHeader>
+									<DialogTitle>Schedule course</DialogTitle>
+									<DialogDescription>
+										Pick start and end times (Bratislava timezone).
+									</DialogDescription>
+								</DialogHeader>
+								<div className="grid gap-4 sm:grid-cols-2">
+									<div className="space-y-2">
+										<p className="font-semibold text-foreground text-sm">
+											Start
+										</p>
+										<Calendar
+											mode="single"
+											selected={startDate}
+											onSelect={setStartDate}
+											className="rounded-none border border-white/10 bg-white/5"
+										/>
+										<Input
+											type="time"
+											value={startTime}
+											onChange={(event) => setStartTime(event.target.value)}
+											className="h-10"
+										/>
+									</div>
+									<div className="space-y-2">
+										<p className="font-semibold text-foreground text-sm">End</p>
+										<Calendar
+											mode="single"
+											selected={endDate}
+											onSelect={setEndDate}
+											className="rounded-none border border-white/10 bg-white/5"
+										/>
+										<Input
+											type="time"
+											value={endTime}
+											onChange={(event) => setEndTime(event.target.value)}
+											className="h-10"
+										/>
+									</div>
+								</div>
+								<DialogFooter>
+									<Button
+										variant="accent"
+										onClick={() =>
+											onUpdateStatus({
+												status: "scheduled",
+												scheduledStartAt: scheduleStartAt,
+												scheduledEndAt: scheduleEndAt,
+											})
+										}
+										disabled={!canSchedule}
+									>
+										Schedule
+									</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+						<Dialog>
+							<DialogTrigger>
+								<Button variant="accent" className="justify-start gap-2">
+									<Play className="size-4" />
+									Go Live Now
+								</Button>
+							</DialogTrigger>
+							<DialogContent className="sm:max-w-md">
+								<DialogHeader>
+									<DialogTitle>Start the course</DialogTitle>
+									<DialogDescription>
+										Set the end time before going live.
+									</DialogDescription>
+								</DialogHeader>
+								<div className="space-y-3">
+									<Calendar
+										mode="single"
+										selected={endDate}
+										onSelect={setEndDate}
+										className="rounded-none border border-white/10 bg-white/5"
+									/>
+									<Input
+										type="time"
+										value={endTime}
+										onChange={(event) => setEndTime(event.target.value)}
+										className="h-10"
+									/>
+								</div>
+								<DialogFooter>
+									<Button
+										variant="accent"
+										onClick={() => onStart(scheduleEndAt)}
+										disabled={!canStartNow}
+									>
+										Start Now
+									</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+						<Button
+							variant="outline"
+							className="justify-start gap-2"
+							onClick={() =>
+								onPause({
+									scheduledStartAt: scheduleStartAt,
+									scheduledEndAt: scheduleEndAt,
+								})
+							}
+							disabled={!canPause}
+						>
+							<PauseCircle className="size-4" />
+							Pause Course
+						</Button>
+						<Button
+							variant="outline"
+							className="justify-start gap-2"
+							onClick={() => onUpdateStatus({ status: "draft" })}
+							disabled={course.status === CourseStatus.DRAFT}
+						>
+							<Copy className="size-4" />
+							Move to Draft
+						</Button>
+						<Button
+							variant="outline"
+							className="justify-start gap-2"
+							onClick={() => onArchive()}
+							disabled={course.status === CourseStatus.ARCHIVED}
+						>
+							<Archive className="size-4" />
+							Archive Course
+						</Button>
+						<Dialog>
+							<DialogTrigger>
+								<Button variant="outline" className="justify-start gap-2">
+									<Copy className="size-4" />
+									Duplicate Course
+								</Button>
+							</DialogTrigger>
+							<DialogContent className="sm:max-w-md">
+								<DialogHeader>
+									<DialogTitle>Duplicate course</DialogTitle>
+									<DialogDescription>
+										Create a new draft course based on this one.
+									</DialogDescription>
+								</DialogHeader>
+								<div className="space-y-3">
+									<Input
+										value={duplicateName}
+										onChange={(event) => setDuplicateName(event.target.value)}
+										className="h-10"
+									/>
+								</div>
+								<DialogFooter>
+									<Button
+										variant="accent"
+										onClick={() => onDuplicate(duplicateName)}
+										disabled={!duplicateName}
+									>
+										Duplicate Course
+									</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+						<Dialog>
+							<DialogTrigger>
+								<Button variant="destructive" className="justify-start gap-2">
+									<Trash2 className="size-4" />
+									Delete Course
+								</Button>
+							</DialogTrigger>
+							<DialogContent className="sm:max-w-md">
+								<DialogHeader>
+									<DialogTitle>Delete course</DialogTitle>
+									<DialogDescription>
+										This deletes the course and kicks all students.
+									</DialogDescription>
+								</DialogHeader>
+								<div className="space-y-2">
+									<p className="text-muted-foreground text-sm">
+										Type "{course.name}" to confirm.
+									</p>
+									<Input
+										value={deleteConfirm}
+										onChange={(event) => setDeleteConfirm(event.target.value)}
+										className="h-10"
+									/>
+								</div>
+								<DialogFooter>
+									<Button
+										variant="destructive"
+										onClick={() => onDelete()}
+										disabled={deleteConfirm !== course.name}
+									>
+										Delete permanently
+									</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+					</div>
 				</div>
-				<div className="flex flex-wrap items-center gap-2">
-					<Button
-						variant="outline"
-						onClick={() => onUpdateStatus({ status: "draft" })}
-						disabled={course.status === CourseStatus.DRAFT}
-					>
-						Move to Draft
-					</Button>
-					<Button
-						variant="outline"
-						onClick={() => onArchive()}
-						disabled={course.status === CourseStatus.ARCHIVED}
-					>
-						Archive
-					</Button>
-				</div>
-			</div>
-			<div className="mt-6 grid gap-4 lg:grid-cols-3">
-				<div className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4">
-					<p className="font-semibold text-foreground text-sm">Schedule</p>
-					<Input
-						type="datetime-local"
-						value={startAt}
-						onChange={(event) => setStartAt(event.target.value)}
-						className="h-10"
-					/>
-					<Input
-						type="datetime-local"
-						value={endAt}
-						onChange={(event) => setEndAt(event.target.value)}
-						className="h-10"
-					/>
-					<Button
-						variant="accent"
-						onClick={() =>
-							onUpdateStatus({
-								status: "scheduled",
-								scheduledStartAt: toUtcIso(startAt),
-								scheduledEndAt: toUtcIso(endAt),
-							})
-						}
-						disabled={!startAt || !endAt}
-					>
-						Schedule
-					</Button>
-				</div>
-				<div className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4">
-					<p className="font-semibold text-foreground text-sm">Go Live</p>
-					<Input
-						type="datetime-local"
-						value={endAt}
-						onChange={(event) => setEndAt(event.target.value)}
-						className="h-10"
-					/>
-					<Button
-						variant="accent"
-						onClick={() => onStart(toUtcIso(endAt))}
-						disabled={!endAt}
-					>
-						Start Now
-					</Button>
-				</div>
-				<div className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4">
-					<p className="font-semibold text-foreground text-sm">Pause</p>
-					<Button
-						variant="outline"
-						onClick={() =>
-							onPause({
-								scheduledStartAt: toUtcIso(startAt),
-								scheduledEndAt: toUtcIso(endAt),
-							})
-						}
-					>
-						Pause Course
-					</Button>
-				</div>
-			</div>
-			<div className="mt-6 flex flex-wrap items-center gap-3">
-				<Input
-					value={duplicateName}
-					onChange={(event) => setDuplicateName(event.target.value)}
-					className="h-10 max-w-sm"
-				/>
-				<Button
-					variant="outline"
-					onClick={() => onDuplicate(duplicateName)}
-					disabled={!duplicateName}
-				>
-					Duplicate Course
-				</Button>
 			</div>
 		</motion.div>
 	);
@@ -620,6 +817,31 @@ function toUtcIso(value: string) {
 	const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
 	const offsetMinutes = getTimeZoneOffsetMinutes(utcDate, COURSE_TIMEZONE);
 	return new Date(utcDate.getTime() - offsetMinutes * 60000).toISOString();
+}
+
+function mergeDateTime(date: Date, time: string) {
+	const [hours, minutes] = time.split(":").map(Number);
+	if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+		return "";
+	}
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	const hour = String(hours).padStart(2, "0");
+	const minute = String(minutes).padStart(2, "0");
+	return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+function formatCourseTime(value: string) {
+	const date = new Date(value);
+	return date.toLocaleString("en-GB", {
+		timeZone: COURSE_TIMEZONE,
+		weekday: "short",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
 }
 
 function toLocalInput(value: string) {

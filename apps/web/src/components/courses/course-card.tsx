@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowUpRight, CalendarClock } from "lucide-react";
+import { ArrowUpRight, CalendarClock, CheckCircle2 } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import type { CourseSummary } from "@/api-client";
 import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
+import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 
 const COURSE_TIMEZONE = "Europe/Bratislava";
 
@@ -27,7 +28,7 @@ export function CourseCard({
 			transition={{ duration: 0.4, delay: index * 0.1 }}
 			className="h-full"
 		>
-			<div className="group flex h-full flex-col border border-white/5 bg-card/40 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:shadow-xl">
+			<div className="group flex h-full flex-col border border-white/5 bg-card/40 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl">
 				<div className="mb-4 flex items-start justify-between">
 					<div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
 						<Image
@@ -38,11 +39,15 @@ export function CourseCard({
 							className="size-7"
 						/>
 					</div>
-					{course.status && (
-						<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-semibold text-[11px] text-muted-foreground uppercase tracking-wide">
-							{course.status}
-						</span>
-					)}
+					<div className="flex flex-col items-end gap-2">
+						<CourseStatusBadge status={course.status} />
+						{course.joined && (
+							<span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-semibold text-[11px] text-emerald-200 uppercase tracking-wide">
+								<CheckCircle2 className="size-3.5" />
+								Joined
+							</span>
+						)}
+					</div>
 				</div>
 				<h3 className="mb-2 font-bold text-foreground text-lg">
 					{course.name}
@@ -67,14 +72,18 @@ export function CourseCard({
 				)}
 				<div className="mt-auto flex items-center justify-end pt-6">
 					<Button
-						variant="outline"
+						variant={course.joined ? "accent" : "outline"}
 						size="sm"
-						className="border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+						className={
+							course.joined
+								? ""
+								: "border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+						}
 						asChild
 					>
 						<Link href={`/courses/${course.uuid}`}>
 							<ArrowUpRight className="size-4" />
-							View
+							{course.joined ? "Continue" : "View"}
 						</Link>
 					</Button>
 				</div>

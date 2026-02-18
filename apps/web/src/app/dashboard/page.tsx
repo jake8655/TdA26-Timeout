@@ -1,13 +1,12 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Edit2, Loader2, Plus, Rocket, Trash2 } from "lucide-react";
+import { Loader2, Plus, Rocket } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
 import z from "zod";
 import {
-	deleteCoursesByCourseIdMutation,
 	getCoursesOptions,
 	postCoursesMutation,
 	putCoursesByCourseIdMutation,
@@ -145,59 +144,6 @@ function CourseFormDialog({
 	);
 }
 
-function DeleteCourseDialog({
-	course,
-	trigger,
-}: {
-	course: CourseSummary;
-	trigger: React.ReactElement;
-}) {
-	const [open, setOpen] = useState(false);
-
-	const deleteCourseMutation = useMutation({
-		...deleteCoursesByCourseIdMutation(),
-		onSuccess: () => {
-			setOpen(false);
-		},
-	});
-
-	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger render={trigger} />
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle>Delete Course</DialogTitle>
-					<DialogDescription>
-						Are you sure you want to delete "
-						<span className="text-accent">{course.name}</span>"? This action
-						cannot be undone.
-					</DialogDescription>
-				</DialogHeader>
-				<DialogFooter>
-					<DialogClose render={<Button variant="outline">Cancel</Button>} />
-					<Button
-						variant="destructive"
-						disabled={deleteCourseMutation.isPending}
-						onClick={() =>
-							deleteCourseMutation.mutate({
-								// @ts-expect-error TdA is incompetent and I need to send all requests as json
-								body: {},
-								path: { courseId: course.uuid },
-							})
-						}
-					>
-						{deleteCourseMutation.isPending ? (
-							<Loader2 className="animate-spin text-muted-foreground" />
-						) : (
-							"Delete"
-						)}
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
 export default function Dashboard() {
 	const {
 		data: courses,
@@ -324,48 +270,25 @@ function CourseCard({
 			transition={{ duration: 0.3, delay: index * 0.05 }}
 			className="h-full"
 		>
-			<Card className="group h-full border-white/5 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:shadow-xl">
-				<CardHeader className="pb-2">
-					<div className="flex items-start justify-between gap-2">
+			<Link href={`/dashboard/courses/${course.uuid}`} className="block h-full">
+				<Card className="group h-full border-white/5 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl">
+					<CardHeader className="pb-2">
 						<CardTitle className="font-bold text-lg text-primary">
 							{course.name}
 						</CardTitle>
-						<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								className="size-8 text-muted-foreground"
-								aria-label="Edit course"
-								asChild
-							>
-								<Link href={`/dashboard/courses/${course.uuid}`}>
-									<Edit2 />
-								</Link>
-							</Button>
-							<DeleteCourseDialog
-								course={course}
-								trigger={
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
-										aria-label="Delete course"
-									>
-										<Trash2 />
-									</Button>
-								}
-							/>
+					</CardHeader>
+					<CardContent>
+						<CardDescription className="line-clamp-2 min-h-[3rem] text-muted-foreground text-sm leading-relaxed">
+							{course.description || (
+								<span className="italic">No description available</span>
+							)}
+						</CardDescription>
+						<div className="mt-4 inline-flex items-center gap-2 text-muted-foreground text-xs">
+							<span className="uppercase tracking-[0.2em]">Open course</span>
 						</div>
-					</div>
-				</CardHeader>
-				<CardContent>
-					<CardDescription className="line-clamp-2 min-h-[3rem] text-muted-foreground text-sm leading-relaxed">
-						{course.description || (
-							<span className="italic">No description available</span>
-						)}
-					</CardDescription>
-				</CardContent>
-			</Card>
+					</CardContent>
+				</Card>
+			</Link>
 		</motion.div>
 	);
 }

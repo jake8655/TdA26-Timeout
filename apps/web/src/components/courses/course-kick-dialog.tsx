@@ -32,8 +32,12 @@ export function CourseKickDialog({
 					onClose();
 				}
 			}}
+			disablePointerDismissal
 		>
-			<DialogContent className="overflow-hidden sm:max-w-md">
+			<DialogContent
+				className="overflow-hidden sm:max-w-md"
+				showCloseButton={false}
+			>
 				<motion.div
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}

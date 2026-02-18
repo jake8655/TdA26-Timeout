@@ -145,7 +145,7 @@ export default function CourseDetailPage({
 								{data.name}
 							</h1>
 							<div className="ml-auto">
-								{!joinMutation.isSuccess && (
+								{!data.joined && !joinMutation.isSuccess && (
 									<Button
 										variant="accent"
 										disabled={
@@ -166,7 +166,7 @@ export default function CourseDetailPage({
 											: "Join course"}
 									</Button>
 								)}
-								{joinMutation.isSuccess && (
+								{(data.joined || joinMutation.isSuccess) && (
 									<span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-semibold text-[11px] text-emerald-200 uppercase tracking-wide">
 										Joined
 									</span>
@@ -174,7 +174,7 @@ export default function CourseDetailPage({
 							</div>
 						</div>
 
-						{joinMutation.isSuccess ? (
+						{data.joined || joinMutation.isSuccess ? (
 							<>
 								<div className="border-white/5 border-t pt-8">
 									<h2 className="mb-4 font-semibold text-foreground text-lg">

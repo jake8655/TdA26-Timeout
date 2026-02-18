@@ -572,6 +572,8 @@ components:
         archivedAt:
           type: string
           format: date-time
+        joined:
+          type: boolean
       required: [uuid, name]
 
     CourseCreateRequest:
@@ -626,6 +628,8 @@ components:
         archivedAt:
           type: string
           format: date-time
+        joined:
+          type: boolean
       required: [uuid, name]
 
     CourseStatus:

@@ -2,11 +2,13 @@ package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.CourseJoin;
 import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import eu.hypnomacka.timeout.server.core.query.QEvent;
 import java.time.Instant;
 import java.util.*;
@@ -69,7 +71,8 @@ public class CourseGetController extends Controller {
     if (!isLecturer
         && (course.getStatus() == Course.Status.SCHEDULED
             || course.getStatus() == Course.Status.PAUSED)) {
-      return ResponseEntity.status(HttpStatus.OK).body(buildLimitedCourseResponse(course));
+      return ResponseEntity.status(HttpStatus.OK)
+          .body(buildLimitedCourseResponse(course, sessionId));
     }
 
     List<Object> materials = new ArrayList<>();
@@ -120,6 +123,7 @@ public class CourseGetController extends Controller {
     response.put("scheduledEndAt", course.getScheduledEndAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
+    response.put("joined", isJoined(course, sessionId));
 
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
@@ -160,7 +164,7 @@ public class CourseGetController extends Controller {
     return response;
   }
 
-  private Map<String, Object> buildLimitedCourseResponse(Course course) {
+  private Map<String, Object> buildLimitedCourseResponse(Course course, String sessionId) {
     Map<String, Object> response = new LinkedHashMap<>();
     response.put("uuid", course.getUuid());
     response.put("name", course.getName());
@@ -172,6 +176,16 @@ public class CourseGetController extends Controller {
     response.put("scheduledEndAt", course.getScheduledEndAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
+    response.put("joined", isJoined(course, sessionId));
     return response;
+  }
+
+  private boolean isJoined(Course course, String sessionId) {
+    if (sessionId == null || sessionId.isBlank()) {
+      return false;
+    }
+    CourseJoin join =
+        new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
+    return join != null && Boolean.TRUE.equals(join.getActive());
   }
 }

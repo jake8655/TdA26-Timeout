@@ -145,6 +145,7 @@ export function MaterialFormDialog({
 					{
 						method: "POST",
 						body: formData,
+						credentials: "include",
 					},
 				);
 				await queryClient.invalidateQueries();

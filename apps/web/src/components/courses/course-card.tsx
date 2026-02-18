@@ -8,6 +8,7 @@ import type { CourseSummary } from "@/api-client";
 import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
+import { cn } from "@/lib/utils";
 
 const COURSE_TIMEZONE = "Europe/Bratislava";
 
@@ -57,28 +58,28 @@ export function CourseCard({
 						<span className="italic">No description available</span>
 					)}
 				</p>
-				{course.status === CourseStatus.SCHEDULED &&
-					course.scheduledStartAt && (
-						<div className="mt-4 flex items-center gap-2 text-muted-foreground text-xs">
+				<div className="mt-auto flex items-center justify-between pt-6">
+					{course.status === CourseStatus.SCHEDULED &&
+						course.scheduledStartAt && (
+							<div className="flex items-center gap-2 text-muted-foreground text-xs">
+								<CalendarClock className="size-4" />
+								<span>Starts {formatCourseTime(course.scheduledStartAt)}</span>
+							</div>
+						)}
+					{course.status === CourseStatus.PAUSED && (
+						<div className="flex items-center gap-2 text-muted-foreground text-xs">
 							<CalendarClock className="size-4" />
-							<span>Starts {formatCourseTime(course.scheduledStartAt)}</span>
+							<span>Paused until next live window</span>
 						</div>
 					)}
-				{course.status === CourseStatus.PAUSED && (
-					<div className="mt-4 flex items-center gap-2 text-muted-foreground text-xs">
-						<CalendarClock className="size-4" />
-						<span>Paused until next live window</span>
-					</div>
-				)}
-				<div className="mt-auto flex items-center justify-end pt-6">
 					<Button
 						variant={course.joined ? "accent" : "outline"}
 						size="sm"
-						className={
-							course.joined
-								? ""
-								: "border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
-						}
+						className={cn(
+							"ml-auto",
+							!course.joined &&
+								"border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary",
+						)}
 						asChild
 					>
 						<Link href={`/courses/${course.uuid}`}>

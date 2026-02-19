@@ -57,20 +57,33 @@ export function CourseCard({
 						<span className="italic">No description available</span>
 					)}
 				</p>
-				<div className="mt-auto flex items-center justify-between pt-6">
-					{course.status === CourseStatus.SCHEDULED &&
-						course.scheduledStartAt && (
-							<div className="flex items-center gap-2 text-muted-foreground text-xs">
+				<div className="mt-auto flex gap-2 pt-6">
+					<div className="flex flex-wrap items-center gap-3 text-muted-foreground text-xs">
+						{course.status === CourseStatus.PAUSED ? (
+							<div className="flex items-center gap-2">
 								<CalendarClock className="size-4" />
-								<span>Starts {formatCourseTime(course.scheduledStartAt)}</span>
+								<span>Paused until next live window</span>
 							</div>
-						)}
-					{course.status === CourseStatus.PAUSED && (
-						<div className="flex items-center gap-2 text-muted-foreground text-xs">
-							<CalendarClock className="size-4" />
-							<span>Paused until next live window</span>
-						</div>
-					)}
+						) : course.status !== CourseStatus.ARCHIVED ? (
+							<div className="flex flex-col gap-1">
+								{course.status === CourseStatus.SCHEDULED &&
+									course.scheduledStartAt && (
+										<div className="flex items-center gap-2">
+											<CalendarClock className="size-4" />
+											<span>
+												Starts {formatCourseTime(course.scheduledStartAt)}
+											</span>
+										</div>
+									)}
+								{course.scheduledEndAt && (
+									<div className="flex items-center gap-2">
+										<CalendarClock className="size-4" />
+										<span>Ends {formatCourseTime(course.scheduledEndAt)}</span>
+									</div>
+								)}
+							</div>
+						) : null}
+					</div>
 					<Button
 						variant={course.joined ? "accent" : "outline"}
 						size="sm"

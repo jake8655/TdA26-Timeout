@@ -1,7 +1,14 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, Loader2, MessageSquareText } from "lucide-react";
+import {
+	ArrowLeft,
+	BookOpen,
+	CalendarClock,
+	ClipboardCheck,
+	Loader2,
+	MessageSquareText,
+} from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,11 +22,13 @@ import {
 import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
+import { CourseArchivedResults } from "@/components/courses/course-archived-results";
 import { CourseFeed } from "@/components/courses/course-feed";
 import { CourseKickDialog } from "@/components/courses/course-kick-dialog";
 import { MaterialsList } from "@/components/courses/materials-list";
 import EmptyState from "@/components/empty-state";
 import { CourseQuizCard } from "@/components/quizzes/course-quiz-card";
+import { formatCourseTime } from "@/lib/course-date-utils";
 
 export default function CourseDetailPage({
 	params,
@@ -46,10 +55,7 @@ export default function CourseDetailPage({
 		notFound();
 	}
 
-	if (
-		data?.status === CourseStatus.DRAFT ||
-		data?.status === CourseStatus.ARCHIVED
-	) {
+	if (data?.status === CourseStatus.DRAFT) {
 		notFound();
 	}
 
@@ -123,10 +129,65 @@ export default function CourseDetailPage({
 									{data.description ||
 										"Course details will be available when it goes live."}
 								</p>
+								{data.status === CourseStatus.SCHEDULED &&
+									(data.scheduledStartAt || data.scheduledEndAt) && (
+										<div className="mt-3 flex flex-wrap items-center gap-3 text-muted-foreground text-xs">
+											{data.scheduledStartAt && (
+												<span className="inline-flex items-center gap-2">
+													<CalendarClock className="size-3.5" />
+													Starts {formatCourseTime(data.scheduledStartAt)}
+												</span>
+											)}
+											{data.scheduledEndAt && (
+												<span className="inline-flex items-center gap-2">
+													<CalendarClock className="size-3.5" />
+													Ends {formatCourseTime(data.scheduledEndAt)}
+												</span>
+											)}
+										</div>
+									)}
 							</div>
 						</div>
 						<div className="rounded-none border border-white/5 bg-card/50 p-6 text-muted-foreground">
 							This course is currently {data.status}.
+						</div>
+					</section>
+				) : data.status === CourseStatus.ARCHIVED ? (
+					<section className="border border-white/5 bg-card/40 p-8 backdrop-blur-sm md:p-12">
+						<div className="mb-8 flex items-center gap-6">
+							<div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10 md:size-20">
+								<Image
+									src="/icons/Idea/zarivka_idea_blue.svg"
+									alt="Course icon"
+									width={40}
+									height={40}
+									className="size-10 md:size-12"
+								/>
+							</div>
+							<div>
+								<h1 className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl">
+									{data.name}
+								</h1>
+								<p className="mt-2 text-muted-foreground">
+									{data.description || "This course has been archived."}
+								</p>
+							</div>
+						</div>
+						<div className="rounded-none border border-white/5 bg-card/50 p-6 text-muted-foreground">
+							This course is archived. You can review your submitted quiz
+							results.
+						</div>
+						<div className="mt-8 border-white/5 border-t pt-8">
+							<div className="mb-6 flex items-center gap-3">
+								<ClipboardCheck className="size-5 text-primary" />
+								<h2 className="font-semibold text-foreground text-lg">
+									Your Quiz Results
+								</h2>
+							</div>
+							<CourseArchivedResults
+								courseId={uuid}
+								quizzes={data.quizzes ?? []}
+							/>
 						</div>
 					</section>
 				) : (
@@ -141,36 +202,46 @@ export default function CourseDetailPage({
 									className="size-10 md:size-12"
 								/>
 							</div>
-							<h1 className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl">
-								{data.name}
-							</h1>
-							<div className="ml-auto">
-								{!data.joined && !joinMutation.isSuccess && (
-									<Button
-										variant="accent"
-										disabled={
-											joinMutation.isPending || sessionMutation.isPending
-										}
-										onClick={() => {
-											sessionMutation.mutate(
-												{ path: { courseId: uuid } },
-												{
-													onSuccess: () =>
-														joinMutation.mutate({ path: { courseId: uuid } }),
-												},
-											);
-										}}
-									>
-										{joinMutation.isPending || sessionMutation.isPending
-											? "Joining..."
-											: "Join course"}
-									</Button>
-								)}
-								{(data.joined || joinMutation.isSuccess) && (
-									<span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-semibold text-[11px] text-emerald-200 uppercase tracking-wide">
-										Joined
-									</span>
-								)}
+							<div className="flex flex-1 flex-wrap items-start justify-between gap-4">
+								<div className="space-y-2">
+									<h1 className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl">
+										{data.name}
+									</h1>
+									{data.scheduledEndAt && (
+										<span className="inline-flex items-center gap-2 text-muted-foreground text-xs">
+											<CalendarClock className="size-3.5" />
+											Ends {formatCourseTime(data.scheduledEndAt)}
+										</span>
+									)}
+								</div>
+								<div className="ml-auto">
+									{!data.joined && !joinMutation.isSuccess && (
+										<Button
+											variant="accent"
+											disabled={
+												joinMutation.isPending || sessionMutation.isPending
+											}
+											onClick={() => {
+												sessionMutation.mutate(
+													{ path: { courseId: uuid } },
+													{
+														onSuccess: () =>
+															joinMutation.mutate({ path: { courseId: uuid } }),
+													},
+												);
+											}}
+										>
+											{joinMutation.isPending || sessionMutation.isPending
+												? "Joining..."
+												: "Join course"}
+										</Button>
+									)}
+									{(data.joined || joinMutation.isSuccess) && (
+										<span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-semibold text-[11px] text-emerald-200 uppercase tracking-wide">
+											Joined
+										</span>
+									)}
+								</div>
 							</div>
 						</div>
 

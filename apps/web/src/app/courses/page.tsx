@@ -21,9 +21,7 @@ export default function CoursesPage() {
 
 	const trimmedQuery = searchQuery.trim();
 	const visibleCourses = (data ?? []).filter(
-		(course) =>
-			course.status !== CourseStatus.DRAFT &&
-			course.status !== CourseStatus.ARCHIVED,
+		(course) => course.status !== CourseStatus.DRAFT,
 	);
 	const filteredCourses = !trimmedQuery
 		? visibleCourses

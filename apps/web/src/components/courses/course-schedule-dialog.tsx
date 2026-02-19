@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -97,19 +97,16 @@ export function CourseScheduleDialog({
 		);
 	}, [open, initialStartAt, initialEndAt, showStart]);
 
-	const scheduleStartAt = useMemo(
-		() =>
-			showStart
-				? toUtcIso(
-						startDate && startTime ? mergeDateTime(startDate, startTime) : "",
-					)
-				: "",
-		[startDate, startTime, showStart],
+	const scheduleStartAt = showStart
+		? toUtcIso(
+				startDate && startTime ? mergeDateTime(startDate, startTime) : "",
+			)
+		: "";
+
+	const scheduleEndAt = toUtcIso(
+		endDate && endTime ? mergeDateTime(endDate, endTime) : "",
 	);
-	const scheduleEndAt = useMemo(
-		() => toUtcIso(endDate && endTime ? mergeDateTime(endDate, endTime) : ""),
-		[endDate, endTime],
-	);
+
 	const canSubmit = showStart
 		? Boolean(scheduleStartAt && scheduleEndAt)
 		: Boolean(scheduleEndAt);

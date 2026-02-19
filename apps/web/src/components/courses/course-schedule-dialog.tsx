@@ -142,7 +142,7 @@ export function CourseScheduleDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger render={trigger} />
-			<DialogContent className="w-auto sm:max-w-lg">
+			<DialogContent className="max-h-[90vh] overflow-y-auto sm:w-auto sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>

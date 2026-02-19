@@ -41,13 +41,13 @@ export function QuizStatsDialog({
 		data: statsResult,
 		isPending: statsPending,
 		refetch: refetchStats,
+		isError: statsFailed,
 	} = useQuery({
 		queryKey: ["quiz-stats", courseId, quizId],
 		queryFn: () =>
 			getCoursesByCourseIdQuizzesByQuizIdStats({
 				path: { courseId, quizId },
 				responseStyle: "fields",
-				throwOnError: false,
 			}),
 	});
 
@@ -64,12 +64,7 @@ export function QuizStatsDialog({
 		);
 	}
 
-	const statsResponse = statsResult?.response;
 	const statsData = statsResult?.data;
-	const statsNotAvailable = statsResponse?.status === 403;
-	const statsFailed = statsResponse
-		? !statsResponse.ok && !statsNotAvailable
-		: Boolean(statsResult);
 
 	const questionStatsByUuid = new Map(
 		(statsData?.questions ?? []).map((questionStats) => [
@@ -78,35 +73,27 @@ export function QuizStatsDialog({
 		]),
 	);
 
-	if (isError || statsFailed || !quiz || !statsData) {
+	if (isError || statsFailed || !quiz) {
 		return (
 			<Dialog>
 				<DialogTrigger render={trigger} />
 				<DialogContent showCloseButton={false} className="sm:max-w-2xl">
-					{statsNotAvailable ? (
-						<EmptyState
-							title="Stats available once live"
-							description="Quiz statistics will appear when the course is live."
-							className="border-dashed"
-						/>
-					) : (
-						<EmptyState
-							title="Unable to load quiz stats"
-							description="Please try again in a moment."
-							action={
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => {
-										refetchQuiz();
-										refetchStats();
-									}}
-								>
-									Retry
-								</Button>
-							}
-						/>
-					)}
+					<EmptyState
+						title="Unable to load quiz stats"
+						description="Please try again in a moment."
+						action={
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => {
+									refetchQuiz();
+									refetchStats();
+								}}
+							>
+								Retry
+							</Button>
+						}
+					/>
 				</DialogContent>
 			</Dialog>
 		);

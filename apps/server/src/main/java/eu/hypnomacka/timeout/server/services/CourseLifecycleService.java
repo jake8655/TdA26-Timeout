@@ -46,14 +46,7 @@ public class CourseLifecycleService {
       Instant endAt = course.getScheduledEndAt();
       if (endAt != null && !endAt.isAfter(now)) {
         transitionToArchived(course, "Course ended automatically");
-        deactivateJoins(course);
-        feedService.broadcastMessage(
-            course.getUuid(),
-            "course_kick",
-            String.format(
-                "{\"reason\":\"Course ended"
-                    + " automatically\",\"status\":\"%s\",\"effectiveAt\":\"%s\"}",
-                Status.ARCHIVED.name(), Instant.now()));
+        deactivateJoinsAndKick(course, "Course ended automatically", Status.ARCHIVED);
       }
     }
   }
@@ -98,6 +91,12 @@ public class CourseLifecycleService {
     }
   }
 
+  public void deactivateJoinsAndKick(Course course, String reason, Status status) {
+    deactivateJoins(course);
+    feedService.broadcastMessage(
+        course.getUuid(), "course_kick", createKickPayload(reason, status));
+  }
+
   public void transitionToDraft(Course course, String reason) {
     course.setStatus(Status.DRAFT);
     course.setScheduledStartAt(null);
@@ -116,5 +115,11 @@ public class CourseLifecycleService {
     event.setMessage(message);
     event.setEdited(false);
     event.save();
+  }
+
+  private String createKickPayload(String reason, Status status) {
+    return String.format(
+        "{\"reason\":\"%s\",\"status\":\"%s\",\"effectiveAt\":\"%s\"}",
+        reason, status.name(), Instant.now());
   }
 }

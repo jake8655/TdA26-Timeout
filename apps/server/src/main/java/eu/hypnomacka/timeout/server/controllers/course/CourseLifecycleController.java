@@ -1,7 +1,6 @@
 package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
-import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Course.Status;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
@@ -20,12 +19,8 @@ import org.springframework.web.bind.annotation.*;
 public class CourseLifecycleController extends Controller {
 
   private final CourseLifecycleService lifecycleService;
-  private final CourseFeedService feedService;
-
-  public CourseLifecycleController(
-      CourseLifecycleService lifecycleService, CourseFeedService feedService) {
+  public CourseLifecycleController(CourseLifecycleService lifecycleService) {
     this.lifecycleService = lifecycleService;
-    this.feedService = feedService;
   }
 
   @PutMapping(value = "/status", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -77,19 +72,13 @@ public class CourseLifecycleController extends Controller {
       }
       case PAUSED -> {
         lifecycleService.transitionToPaused(course, "Course paused by lecturer");
-        lifecycleService.deactivateJoins(course);
-        feedService.broadcastMessage(
-            course.getUuid(),
-            "course_kick",
-            createKickPayload("Course paused by lecturer", Status.PAUSED.name()));
+        lifecycleService.deactivateJoinsAndKick(
+            course, "Course paused by lecturer", Status.PAUSED);
       }
       case ARCHIVED -> {
         lifecycleService.transitionToArchived(course, "Course archived by lecturer");
-        lifecycleService.deactivateJoins(course);
-        feedService.broadcastMessage(
-            course.getUuid(),
-            "course_kick",
-            createKickPayload("Course archived by lecturer", Status.ARCHIVED.name()));
+        lifecycleService.deactivateJoinsAndKick(
+            course, "Course archived by lecturer", Status.ARCHIVED);
       }
     }
 
@@ -140,7 +129,8 @@ public class CourseLifecycleController extends Controller {
     }
 
     lifecycleService.transitionToPaused(course, "Course paused by lecturer");
-    lifecycleService.deactivateJoins(course);
+    lifecycleService.deactivateJoinsAndKick(
+        course, "Course paused by lecturer", Status.PAUSED);
     if (request.getScheduledStartAt() != null) {
       course.setScheduledStartAt(Instant.parse(request.getScheduledStartAt()));
       course.save();
@@ -149,11 +139,6 @@ public class CourseLifecycleController extends Controller {
       course.setScheduledEndAt(Instant.parse(request.getScheduledEndAt()));
       course.save();
     }
-
-    feedService.broadcastMessage(
-        course.getUuid(),
-        "course_kick",
-        createKickPayload("Course paused by lecturer", Status.PAUSED.name()));
 
     return ResponseEntity.ok(course);
   }
@@ -174,11 +159,8 @@ public class CourseLifecycleController extends Controller {
     }
 
     lifecycleService.transitionToArchived(course, "Course archived by lecturer");
-    lifecycleService.deactivateJoins(course);
-    feedService.broadcastMessage(
-        course.getUuid(),
-        "course_kick",
-        createKickPayload("Course archived by lecturer", Status.ARCHIVED.name()));
+    lifecycleService.deactivateJoinsAndKick(
+        course, "Course archived by lecturer", Status.ARCHIVED);
 
     return ResponseEntity.ok(course);
   }
@@ -191,12 +173,6 @@ public class CourseLifecycleController extends Controller {
       return null;
     }
     return new QCourse().uuid.eq(courseId).findOne();
-  }
-
-  private String createKickPayload(String reason, String status) {
-    return String.format(
-        "{\"reason\":\"%s\",\"status\":\"%s\",\"effectiveAt\":\"%s\"}",
-        reason, status, Instant.now());
   }
 
   @Data

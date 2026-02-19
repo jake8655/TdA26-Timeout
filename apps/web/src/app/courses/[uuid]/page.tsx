@@ -231,9 +231,14 @@ export default function CourseDetailPage({
 												);
 											}}
 										>
-											{joinMutation.isPending || sessionMutation.isPending
-												? "Joining..."
-												: "Join course"}
+											{joinMutation.isPending || sessionMutation.isPending ? (
+												<>
+													<Loader2 className="size-4 animate-spin" />
+													Joining
+												</>
+											) : (
+												"Join course"
+											)}
 										</Button>
 									)}
 									{(data.joined || joinMutation.isSuccess) && (

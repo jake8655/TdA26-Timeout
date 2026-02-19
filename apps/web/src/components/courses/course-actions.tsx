@@ -5,6 +5,7 @@ import {
 	CalendarClock,
 	Copy,
 	Edit2,
+	Loader2,
 	PauseCircle,
 	Play,
 	Trash2,
@@ -160,7 +161,14 @@ export function CourseActions({
 									!duplicateName || isDuplicatePending || isDeletePending
 								}
 							>
-								{isDuplicatePending ? "Duplicating..." : "Duplicate Course"}
+								{isDuplicatePending ? (
+									<>
+										<Loader2 className="size-4 animate-spin" />
+										Duplicating
+									</>
+								) : (
+									"Duplicate Course"
+								)}
 							</Button>
 						</DialogFooter>
 					</DialogContent>
@@ -217,7 +225,14 @@ export function CourseActions({
 									isDuplicatePending
 								}
 							>
-								{isDeletePending ? "Deleting..." : "Delete permanently"}
+								{isDeletePending ? (
+									<>
+										<Loader2 className="size-4 animate-spin" />
+										Deleting
+									</>
+								) : (
+									"Delete permanently"
+								)}
 							</Button>
 						</DialogFooter>
 					</DialogContent>

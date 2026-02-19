@@ -8,9 +8,8 @@ import type { CourseSummary } from "@/api-client";
 import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
+import { formatCourseTime } from "@/lib/course-date-utils";
 import { cn } from "@/lib/utils";
-
-const COURSE_TIMEZONE = "Europe/Bratislava";
 
 export function CourseCard({
 	course,
@@ -91,16 +90,4 @@ export function CourseCard({
 			</div>
 		</motion.div>
 	);
-}
-
-function formatCourseTime(value: string) {
-	const date = new Date(value);
-	return date.toLocaleString("en-GB", {
-		timeZone: COURSE_TIMEZONE,
-		weekday: "short",
-		month: "short",
-		day: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-	});
 }

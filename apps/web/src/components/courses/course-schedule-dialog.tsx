@@ -2,6 +2,7 @@
 
 import { Clock2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -205,6 +206,18 @@ export function CourseScheduleDialog({
 						variant="accent"
 						onClick={() => {
 							if (!scheduleEndAt) return;
+
+							const now = new Date();
+							const start = scheduleStartAt ? new Date(scheduleStartAt) : null;
+							const end = new Date(scheduleEndAt);
+							if (
+								end < now ||
+								(showStart && start && (start < now || end <= start))
+							) {
+								toast.error("Please select a valid date and time.");
+								return;
+							}
+
 							onConfirm({
 								scheduledStartAt:
 									showStart && scheduleStartAt ? scheduleStartAt : undefined,

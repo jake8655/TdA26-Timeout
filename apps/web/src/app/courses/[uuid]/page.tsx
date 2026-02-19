@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	ArrowLeft,
 	BookOpen,
@@ -51,6 +51,9 @@ export default function CourseDetailPage({
 	const sessionMutation = useMutation({
 		...postCoursesByCourseIdSessionMutation(),
 	});
+
+	const queryClient = useQueryClient();
+
 	if (!isPending && !isError && !data) {
 		notFound();
 	}
@@ -65,7 +68,10 @@ export default function CourseDetailPage({
 			<CourseKickDialog
 				open={kickDialog.open}
 				reason={kickDialog.reason}
-				onClose={() => setKickDialog({ open: false })}
+				onClose={() => {
+					setKickDialog({ open: false });
+					queryClient.invalidateQueries();
+				}}
 			/>
 
 			<main className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-24">

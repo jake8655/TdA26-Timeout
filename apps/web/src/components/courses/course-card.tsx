@@ -91,10 +91,18 @@ export function CourseCard({
 							"ml-auto",
 							!course.joined &&
 								"border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary",
+							course.status === CourseStatus.PAUSED &&
+								"pointer-events-none opacity-50",
 						)}
 						asChild
 					>
-						<Link href={`/courses/${course.uuid}`}>
+						<Link
+							href={
+								course.status === CourseStatus.PAUSED
+									? "javasript:void(0)"
+									: `/courses/${course.uuid}`
+							}
+						>
 							<ArrowUpRight className="size-4" />
 							{course.joined ? "Continue" : "View"}
 						</Link>

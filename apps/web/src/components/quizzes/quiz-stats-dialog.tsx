@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
+import { getCoursesByCourseIdQuizzesByQuizIdStats } from "@/api-client";
 import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
 import EmptyState from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { env } from "@/env";
 import { QuizStatsQuestion } from "./quiz-stats-question";
 
 export function QuizStatsDialog({
@@ -38,45 +38,18 @@ export function QuizStatsDialog({
 	});
 
 	const {
-		data: stats,
+		data: statsResult,
 		isPending: statsPending,
 		refetch: refetchStats,
 	} = useQuery({
 		queryKey: ["quiz-stats", courseId, quizId],
-		queryFn: async () => {
-			const response = await fetch(
-				`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/quizzes/${quizId}/stats`,
-			);
-			if (response.status === 404) {
-				// Quiz was likely deleted, return null to show error state without toast
-				return null;
-			}
-			if (!response.ok) {
-				throw new Error("Failed to fetch quiz stats");
-			}
-			return response.json() as Promise<{
-				quizUuid: string;
-				quizTitle: string;
-				totalSubmissions: number;
-				questions: Array<{
-					questionUuid: string;
-					type: "singleChoice" | "multipleChoice";
-					question: string;
-					options: string[];
-					correctIndex?: number;
-					correctIndices?: number[];
-					optionCounts: Record<string, number>;
-				}>;
-			}>;
-		},
+		queryFn: () =>
+			getCoursesByCourseIdQuizzesByQuizIdStats({
+				path: { courseId, quizId },
+				responseStyle: "fields",
+				throwOnError: false,
+			}),
 	});
-
-	const questionStatsByUuid = new Map(
-		(stats?.questions ?? []).map((questionStats) => [
-			questionStats.questionUuid,
-			questionStats,
-		]),
-	);
 
 	if (isPending || statsPending) {
 		return (
@@ -91,27 +64,49 @@ export function QuizStatsDialog({
 		);
 	}
 
-	if (isError || !quiz || !stats) {
+	const statsResponse = statsResult?.response;
+	const statsData = statsResult?.data;
+	const statsNotAvailable = statsResponse?.status === 403;
+	const statsFailed = statsResponse
+		? !statsResponse.ok && !statsNotAvailable
+		: Boolean(statsResult);
+
+	const questionStatsByUuid = new Map(
+		(statsData?.questions ?? []).map((questionStats) => [
+			questionStats.questionUuid,
+			questionStats,
+		]),
+	);
+
+	if (isError || statsFailed || !quiz || !statsData) {
 		return (
 			<Dialog>
 				<DialogTrigger render={trigger} />
 				<DialogContent showCloseButton={false} className="sm:max-w-2xl">
-					<EmptyState
-						title="Unable to load quiz stats"
-						description="Please try again in a moment."
-						action={
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => {
-									refetchQuiz();
-									refetchStats();
-								}}
-							>
-								Retry
-							</Button>
-						}
-					/>
+					{statsNotAvailable ? (
+						<EmptyState
+							title="Stats available once live"
+							description="Quiz statistics will appear when the course is live."
+							className="border-dashed"
+						/>
+					) : (
+						<EmptyState
+							title="Unable to load quiz stats"
+							description="Please try again in a moment."
+							action={
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => {
+										refetchQuiz();
+										refetchStats();
+									}}
+								>
+									Retry
+								</Button>
+							}
+						/>
+					)}
 				</DialogContent>
 			</Dialog>
 		);
@@ -132,16 +127,16 @@ export function QuizStatsDialog({
 						<h2 className="font-semibold text-foreground text-lg">
 							{quizTitle}
 						</h2>
-						{stats && (
+						{statsData && (
 							<p className="mt-1 text-muted-foreground text-sm">
-								{stats.totalSubmissions} submission
-								{stats.totalSubmissions !== 1 ? "s" : ""}
+								{statsData.totalSubmissions} submission
+								{statsData.totalSubmissions !== 1 ? "s" : ""}
 							</p>
 						)}
 					</div>
 				</div>
 
-				{stats.totalSubmissions === 0 ? (
+				{statsData.totalSubmissions === 0 ? (
 					<EmptyState
 						title="No submissions yet"
 						description="Once students submit answers, you'll see response statistics here."
@@ -157,7 +152,7 @@ export function QuizStatsDialog({
 							{quiz.questions.map((question, index) => {
 								const questionStats = question.uuid
 									? questionStatsByUuid.get(question.uuid)
-									: stats.questions[index];
+									: statsData.questions[index];
 								if (!questionStats) return null;
 
 								return (

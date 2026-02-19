@@ -38,6 +38,8 @@ export function CourseActions({
 	onMoveToDraft,
 	onDuplicate,
 	onDelete,
+	duplicatePending = false,
+	deletePending = false,
 }: {
 	course: CourseDetail;
 	onSchedule: (payload: {
@@ -50,9 +52,13 @@ export function CourseActions({
 	onMoveToDraft: () => void;
 	onDuplicate: (name: string) => void;
 	onDelete: () => void;
+	duplicatePending?: boolean;
+	deletePending?: boolean;
 }) {
 	const [duplicateName, setDuplicateName] = useState(`${course.name} Copy`);
 	const [deleteConfirm, setDeleteConfirm] = useState("");
+	const isDuplicatePending = duplicatePending;
+	const isDeletePending = deletePending;
 
 	useEffect(() => {
 		setDuplicateName(`${course.name} Copy`);
@@ -96,7 +102,11 @@ export function CourseActions({
 							variant="outline"
 							size="sm"
 							className="gap-2"
-							disabled={course.status !== CourseStatus.DRAFT}
+							disabled={
+								course.status !== CourseStatus.DRAFT ||
+								isDuplicatePending ||
+								isDeletePending
+							}
 						>
 							<Edit2 className="size-4" />
 							Edit
@@ -106,7 +116,12 @@ export function CourseActions({
 				<Dialog>
 					<DialogTrigger
 						render={
-							<Button variant="outline" size="sm" className="gap-2">
+							<Button
+								variant="outline"
+								size="sm"
+								className="gap-2"
+								disabled={isDuplicatePending || isDeletePending}
+							>
 								<Copy className="size-4" />
 								Duplicate
 							</Button>
@@ -124,16 +139,28 @@ export function CourseActions({
 								value={duplicateName}
 								onChange={(event) => setDuplicateName(event.target.value)}
 								className="h-10"
+								disabled={isDuplicatePending || isDeletePending}
 							/>
 						</div>
 						<DialogFooter>
-							<DialogClose render={<Button variant="outline">Cancel</Button>} />
+							<DialogClose
+								render={
+									<Button
+										variant="outline"
+										disabled={isDuplicatePending || isDeletePending}
+									>
+										Cancel
+									</Button>
+								}
+							/>
 							<Button
 								variant="accent"
 								onClick={() => onDuplicate(duplicateName)}
-								disabled={!duplicateName}
+								disabled={
+									!duplicateName || isDuplicatePending || isDeletePending
+								}
 							>
-								Duplicate Course
+								{isDuplicatePending ? "Duplicating..." : "Duplicate Course"}
 							</Button>
 						</DialogFooter>
 					</DialogContent>
@@ -141,7 +168,12 @@ export function CourseActions({
 				<Dialog>
 					<DialogTrigger
 						render={
-							<Button variant="destructive" size="sm" className="gap-2">
+							<Button
+								variant="destructive"
+								size="sm"
+								className="gap-2"
+								disabled={isDeletePending || isDuplicatePending}
+							>
 								<Trash2 className="size-4" />
 								Delete
 							</Button>
@@ -162,16 +194,30 @@ export function CourseActions({
 								value={deleteConfirm}
 								onChange={(event) => setDeleteConfirm(event.target.value)}
 								className="h-10"
+								disabled={isDeletePending || isDuplicatePending}
 							/>
 						</div>
 						<DialogFooter>
-							<DialogClose render={<Button variant="outline">Cancel</Button>} />
+							<DialogClose
+								render={
+									<Button
+										variant="outline"
+										disabled={isDeletePending || isDuplicatePending}
+									>
+										Cancel
+									</Button>
+								}
+							/>
 							<Button
 								variant="destructive"
 								onClick={() => onDelete()}
-								disabled={deleteConfirm !== course.name}
+								disabled={
+									deleteConfirm !== course.name ||
+									isDeletePending ||
+									isDuplicatePending
+								}
 							>
-								Delete permanently
+								{isDeletePending ? "Deleting..." : "Delete permanently"}
 							</Button>
 						</DialogFooter>
 					</DialogContent>

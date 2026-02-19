@@ -99,7 +99,6 @@ export default function DashboardCourseDetailPage({
 	});
 	const deleteMutation = useMutation({
 		...deleteCoursesByCourseIdMutation(),
-		onSuccess: () => router.push("/dashboard"),
 	});
 
 	if (!authData) {
@@ -162,6 +161,8 @@ export default function DashboardCourseDetailPage({
 							<CourseHeader course={course} />
 							<CourseActions
 								course={course}
+								duplicatePending={duplicateMutation.isPending}
+								deletePending={deleteMutation.isPending}
 								onSchedule={(payload) =>
 									statusMutation.mutate({
 										path: { courseId: uuid },
@@ -201,13 +202,16 @@ export default function DashboardCourseDetailPage({
 										body: { name },
 									})
 								}
-								onDelete={() =>
+								onDelete={() => {
 									deleteMutation.mutate({
 										path: { courseId: uuid },
 										// @ts-expect-error server requires a JSON body
 										body: {},
-									})
-								}
+									});
+									// This is very cursed, do NOT do this or repeat this pattern
+									// It should be done in the onSuccess callback of the mutation, but all queries are invalidated (and the invalidation is awaited) on every mutation which causes the current (deleted) course's data to be refetched but it does not exist anymore so it throws an error
+									router.push("/dashboard");
+								}}
 							/>
 						</div>
 

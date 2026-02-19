@@ -171,82 +171,84 @@ export function CourseActions({
 					</DialogContent>
 				</Dialog>
 			</div>
-			<div className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4">
-				<p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
-					Course Actions
-				</p>
-				<div className="grid gap-2 sm:grid-cols-3">
-					{canSchedule && (
-						<CourseScheduleDialog
-							title="Schedule course"
-							description="Pick start and end times"
-							initialStartAt={course.scheduledStartAt}
-							initialEndAt={course.scheduledEndAt}
-							confirmLabel="Schedule"
-							onConfirm={(payload) => {
-								if (payload.scheduledStartAt) {
-									onSchedule({
-										scheduledStartAt: payload.scheduledStartAt,
-										scheduledEndAt: payload.scheduledEndAt,
-									});
+			{canSchedule || canStart || canPause || canMoveToDraft || canArchive ? (
+				<div className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4">
+					<p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
+						Course Actions
+					</p>
+					<div className="grid gap-2 sm:grid-cols-3">
+						{canSchedule && (
+							<CourseScheduleDialog
+								title="Schedule course"
+								description="Pick start and end times"
+								initialStartAt={course.scheduledStartAt}
+								initialEndAt={course.scheduledEndAt}
+								confirmLabel="Schedule"
+								onConfirm={(payload) => {
+									if (payload.scheduledStartAt) {
+										onSchedule({
+											scheduledStartAt: payload.scheduledStartAt,
+											scheduledEndAt: payload.scheduledEndAt,
+										});
+									}
+								}}
+								trigger={
+									<Button variant="outline" className="justify-start gap-2">
+										<CalendarClock className="size-4" />
+										Schedule Course
+									</Button>
 								}
-							}}
-							trigger={
-								<Button variant="outline" className="justify-start gap-2">
-									<CalendarClock className="size-4" />
-									Schedule Course
-								</Button>
-							}
-						/>
-					)}
-					{canStart && (
-						<CourseScheduleDialog
-							mode="start"
-							title="Start the course"
-							description="Set the end time before going live"
-							initialEndAt={course.scheduledEndAt}
-							confirmLabel="Start Now"
-							onConfirm={(payload) => onStart(payload.scheduledEndAt)}
-							trigger={
-								<Button variant="accent" className="justify-start gap-2">
-									<Play className="size-4" />
-									Go Live Now
-								</Button>
-							}
-						/>
-					)}
-					{canPause && (
-						<Button
-							variant="outline"
-							className="justify-start gap-2"
-							onClick={() => onPause()}
-						>
-							<PauseCircle className="size-4" />
-							Pause Course
-						</Button>
-					)}
-					{canMoveToDraft && (
-						<Button
-							variant="outline"
-							className="justify-start gap-2"
-							onClick={() => onMoveToDraft()}
-						>
-							<Copy className="size-4" />
-							Move to Draft
-						</Button>
-					)}
-					{canArchive && (
-						<Button
-							variant="outline"
-							className="justify-start gap-2"
-							onClick={() => onArchive()}
-						>
-							<Archive className="size-4" />
-							Archive Course
-						</Button>
-					)}
+							/>
+						)}
+						{canStart && (
+							<CourseScheduleDialog
+								mode="start"
+								title="Start the course"
+								description="Set the end time before going live"
+								initialEndAt={course.scheduledEndAt}
+								confirmLabel="Start Now"
+								onConfirm={(payload) => onStart(payload.scheduledEndAt)}
+								trigger={
+									<Button variant="accent" className="justify-start gap-2">
+										<Play className="size-4" />
+										Go Live Now
+									</Button>
+								}
+							/>
+						)}
+						{canPause && (
+							<Button
+								variant="outline"
+								className="justify-start gap-2"
+								onClick={() => onPause()}
+							>
+								<PauseCircle className="size-4" />
+								Pause Course
+							</Button>
+						)}
+						{canMoveToDraft && (
+							<Button
+								variant="outline"
+								className="justify-start gap-2"
+								onClick={() => onMoveToDraft()}
+							>
+								<Copy className="size-4" />
+								Move to Draft
+							</Button>
+						)}
+						{canArchive && (
+							<Button
+								variant="outline"
+								className="justify-start gap-2"
+								onClick={() => onArchive()}
+							>
+								<Archive className="size-4" />
+								Archive Course
+							</Button>
+						)}
+					</div>
 				</div>
-			</div>
+			) : null}
 		</div>
 	);
 }

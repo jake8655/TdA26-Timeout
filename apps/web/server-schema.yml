@@ -437,6 +437,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/QuizStatsResponse'
 
+  /courses/{courseId}/quizzes/{quizId}/results:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/QuizId'
+    get:
+      summary: Get quiz results
+      description: Returns quiz submissions for the current participant.
+      responses:
+        '200':
+          description: Quiz results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuizSubmitResponse'
+
   /courses/{courseId}/feed:
     parameters:
       - $ref: '#/components/parameters/CourseId'

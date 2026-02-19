@@ -97,6 +97,11 @@ public class CourseLifecycleService {
         course.getUuid(), "course_kick", createKickPayload(reason, status));
   }
 
+  public void kickCourseParticipants(Course course, String reason, Status status) {
+    feedService.broadcastMessage(
+        course.getUuid(), "course_kick", createKickPayload(reason, status));
+  }
+
   public void transitionToDraft(Course course, String reason) {
     course.setStatus(Status.DRAFT);
     course.setScheduledStartAt(null);

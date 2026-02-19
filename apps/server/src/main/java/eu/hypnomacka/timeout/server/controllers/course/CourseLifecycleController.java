@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class CourseLifecycleController extends Controller {
 
   private final CourseLifecycleService lifecycleService;
+
   public CourseLifecycleController(CourseLifecycleService lifecycleService) {
     this.lifecycleService = lifecycleService;
   }
@@ -72,8 +73,7 @@ public class CourseLifecycleController extends Controller {
       }
       case PAUSED -> {
         lifecycleService.transitionToPaused(course, "Course paused by lecturer");
-        lifecycleService.deactivateJoinsAndKick(
-            course, "Course paused by lecturer", Status.PAUSED);
+        lifecycleService.kickCourseParticipants(course, "Course paused by lecturer", Status.PAUSED);
       }
       case ARCHIVED -> {
         lifecycleService.transitionToArchived(course, "Course archived by lecturer");
@@ -129,8 +129,7 @@ public class CourseLifecycleController extends Controller {
     }
 
     lifecycleService.transitionToPaused(course, "Course paused by lecturer");
-    lifecycleService.deactivateJoinsAndKick(
-        course, "Course paused by lecturer", Status.PAUSED);
+    lifecycleService.kickCourseParticipants(course, "Course paused by lecturer", Status.PAUSED);
     if (request.getScheduledStartAt() != null) {
       course.setScheduledStartAt(Instant.parse(request.getScheduledStartAt()));
       course.save();
@@ -159,8 +158,7 @@ public class CourseLifecycleController extends Controller {
     }
 
     lifecycleService.transitionToArchived(course, "Course archived by lecturer");
-    lifecycleService.deactivateJoinsAndKick(
-        course, "Course archived by lecturer", Status.ARCHIVED);
+    lifecycleService.deactivateJoinsAndKick(course, "Course archived by lecturer", Status.ARCHIVED);
 
     return ResponseEntity.ok(course);
   }

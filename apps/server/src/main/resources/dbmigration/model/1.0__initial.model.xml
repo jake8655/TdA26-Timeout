@@ -2,16 +2,40 @@
 <migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
     <changeSet type="apply">
         <createTable name="courses" identityType="external" pkName="pk_courses">
-            <column name="id" type="uuid" primaryKey="true" identity="true"/>
-            <column name="lecturer_id" type="uuid" notnull="true" references="lecturers.id" foreignKeyName="fk_courses_lecturer_id" foreignKeyIndex="ix_courses_lecturer_id"/>
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="lecturer_uuid" type="uuid" notnull="true" references="lecturers.uuid" foreignKeyName="fk_courses_lecturer_uuid" foreignKeyIndex="ix_courses_lecturer_uuid"/>
             <column name="name" type="varchar" notnull="true"/>
             <column name="description" type="varchar"/>
+            <column name="status" type="varchar(9)" defaultValue="'DRAFT'" notnull="true" checkConstraint="check ( status in ('DRAFT','SCHEDULED','LIVE','PAUSED','ARCHIVED'))" checkConstraintName="ck_courses_status"/>
+            <column name="scheduled_start_at" type="timestamp"/>
+            <column name="scheduled_end_at" type="timestamp"/>
+            <column name="paused_at" type="timestamp"/>
+            <column name="archived_at" type="timestamp"/>
+            <column name="last_went_live_at" type="timestamp"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="course_joins" identityType="external" pkName="pk_course_joins">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_uuid" type="uuid" notnull="true" references="courses.uuid" foreignKeyName="fk_course_joins_course_uuid" foreignKeyIndex="ix_course_joins_course_uuid"/>
+            <column name="session_token" type="varchar" notnull="true"/>
+            <column name="active" type="boolean" notnull="true"/>
+            <column name="has_submitted_quiz" type="boolean"/>
+            <column name="joined_at" type="timestamp" notnull="true"/>
+            <column name="last_seen_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="events" identityType="external" pkName="pk_events">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_uuid" type="uuid" notnull="true" references="courses.uuid" foreignKeyName="fk_events_course_uuid" foreignKeyIndex="ix_events_course_uuid"/>
+            <column name="type" type="varchar(6)" notnull="true" checkConstraint="check ( type in ('MANUAL','SYSTEM'))" checkConstraintName="ck_events_type"/>
+            <column name="message" type="text" notnull="true"/>
+            <column name="edited" type="boolean" defaultValue="false" notnull="true"/>
             <column name="created_at" type="timestamp" notnull="true"/>
             <column name="updated_at" type="timestamp" notnull="true"/>
         </createTable>
         <createTable name="file_attachments" identityType="external" pkName="pk_file_attachments">
-            <column name="id" type="uuid" primaryKey="true" identity="true"/>
-            <column name="course_id" type="uuid" notnull="true" references="courses.id" foreignKeyName="fk_file_attachments_course_id" foreignKeyIndex="ix_file_attachments_course_id"/>
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_uuid" type="uuid" notnull="true" references="courses.uuid" foreignKeyName="fk_file_attachments_course_uuid" foreignKeyIndex="ix_file_attachments_course_uuid"/>
             <column name="name" type="varchar" notnull="true"/>
             <column name="description" type="varchar"/>
             <column name="type" type="varchar(4)" notnull="true" checkConstraint="check ( type in ('file'))" checkConstraintName="ck_file_attachments_type"/>
@@ -22,18 +46,63 @@
             <column name="updated_at" type="timestamp" notnull="true"/>
         </createTable>
         <createTable name="lecturers" identityType="external" pkName="pk_lecturers">
-            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
             <column name="username" type="varchar" notnull="true"/>
             <column name="hashed_pass" type="varchar" notnull="true"/>
             <column name="created_at" type="timestamp" notnull="true"/>
             <column name="updated_at" type="timestamp" notnull="true"/>
         </createTable>
+        <createTable name="questions" identityType="external" pkName="pk_questions">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="quiz_uuid" type="uuid" notnull="true" references="quizzes.uuid" foreignKeyName="fk_questions_quiz_uuid" foreignKeyIndex="ix_questions_quiz_uuid"/>
+            <column name="type" type="varchar(14)" notnull="true" checkConstraint="check ( type in ('singleChoice','multipleChoice'))" checkConstraintName="ck_questions_type"/>
+            <column name="question" type="text" notnull="true"/>
+            <column name="options" type="json" notnull="true"/>
+            <column name="correct_index" type="integer"/>
+            <column name="correct_indices" type="json"/>
+            <column name="position" type="integer" defaultValue="0" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="quizzes" identityType="external" pkName="pk_quizzes">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_uuid" type="uuid" notnull="true" references="courses.uuid" foreignKeyName="fk_quizzes_course_uuid" foreignKeyIndex="ix_quizzes_course_uuid"/>
+            <column name="title" type="varchar" notnull="true"/>
+            <column name="attempts_count" type="integer" defaultValue="0" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="quiz_answer_submissions" identityType="external" pkName="pk_quiz_answer_submissions">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="quiz_result_uuid" type="uuid" notnull="true" references="quiz_results.uuid" foreignKeyName="fk_quiz_answer_submissions_quiz_result_uuid" foreignKeyIndex="ix_quiz_answer_submissions_quiz_result_uuid"/>
+            <column name="question_uuid" type="text" notnull="true"/>
+            <column name="selected_indices" type="json" notnull="true"/>
+            <column name="submitted_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="quiz_results" identityType="external" pkName="pk_quiz_results">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="quiz_uuid" type="uuid" notnull="true" references="quizzes.uuid" foreignKeyName="fk_quiz_results_quiz_uuid" foreignKeyIndex="ix_quiz_results_quiz_uuid"/>
+            <column name="score" type="double" notnull="true"/>
+            <column name="max_score" type="double" notnull="true"/>
+            <column name="correct_per_question" type="json" notnull="true"/>
+            <column name="session_token" type="varchar"/>
+            <column name="submitted_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="sessions" identityType="external" pkName="pk_sessions">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="token" type="varchar" defaultValue="''" notnull="true"/>
+            <column name="lecturer_uuid" type="uuid" notnull="true" references="lecturers.uuid" foreignKeyName="fk_sessions_lecturer_uuid" foreignKeyIndex="ix_sessions_lecturer_uuid"/>
+            <column name="expires_at" type="timestamp" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
         <createTable name="url_attachments" identityType="external" pkName="pk_url_attachments">
-            <column name="id" type="uuid" primaryKey="true" identity="true"/>
-            <column name="course_id" type="uuid" notnull="true" references="courses.id" foreignKeyName="fk_url_attachments_course_id" foreignKeyIndex="ix_url_attachments_course_id"/>
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_uuid" type="uuid" notnull="true" references="courses.uuid" foreignKeyName="fk_url_attachments_course_uuid" foreignKeyIndex="ix_url_attachments_course_uuid"/>
             <column name="name" type="varchar" notnull="true"/>
             <column name="url" type="varchar" notnull="true"/>
             <column name="description" type="varchar"/>
+            <column name="type" type="varchar(3)" defaultValue="'url'" notnull="true" checkConstraint="check ( type in ('url'))" checkConstraintName="ck_url_attachments_type"/>
             <column name="favicon_url" type="varchar" notnull="true"/>
             <column name="created_at" type="timestamp" notnull="true"/>
             <column name="updated_at" type="timestamp" notnull="true"/>

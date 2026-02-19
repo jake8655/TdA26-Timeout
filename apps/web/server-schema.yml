@@ -61,6 +61,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/CourseSummary'
 
+  /courses/lecturer:
+    get:
+      summary: List lecturer courses
+      description: Returns all courses for lecturers, including all statuses.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseSummary'
+
+  /courses/lecturer/{courseId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      summary: Get lecturer course details
+      description: Returns full course details for lecturers in any state.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+
   /courses/{courseId}:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -100,6 +128,142 @@ paths:
           description: Course deleted
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /courses/{courseId}/status:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    put:
+      summary: Update course status
+      description: Transition course state and optionally set schedule.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseStatusUpdateRequest'
+      responses:
+        '200':
+          description: Course updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+
+  /courses/{courseId}/start:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      summary: Start course now
+      description: Starts a course immediately (requires end time).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseStartRequest'
+      responses:
+        '200':
+          description: Course updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+
+  /courses/{courseId}/pause:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      summary: Pause course
+      description: Pauses a live course and optionally schedules restart/end.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoursePauseRequest'
+      responses:
+        '200':
+          description: Course updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+
+  /courses/{courseId}/archive:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      summary: Archive course
+      description: Ends the course and hides it from public view.
+      responses:
+        '200':
+          description: Course updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+
+  /courses/{courseId}/join:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      summary: Join course
+      description: Records a student join for live courses.
+      responses:
+        '201':
+          description: Joined
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseJoinResponse'
+
+  /courses/{courseId}/session:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      summary: Create course session
+      description: Creates an anonymous student session for course participation.
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseSessionResponse'
+
+  /courses/{courseId}/leave:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      summary: Leave course
+      description: Marks a student as left.
+      responses:
+        '200':
+          description: Left
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseJoinResponse'
+
+  /courses/{courseId}/duplicate:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      summary: Duplicate course
+      description: Creates a draft copy of the course.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseDuplicateRequest'
+      responses:
+        '201':
+          description: Course duplicated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
 
   /courses/{courseId}/materials:
     parameters:
@@ -273,6 +437,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/QuizStatsResponse'
 
+  /courses/{courseId}/quizzes/{quizId}/results:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/QuizId'
+    get:
+      summary: Get quiz results
+      description: Returns quiz submissions for the current participant.
+      responses:
+        '200':
+          description: Quiz results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuizSubmitResponse'
+
   /courses/{courseId}/feed:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -422,6 +603,22 @@ components:
         updatedAt:
           type: string
           format: date-time
+        status:
+          $ref: '#/components/schemas/CourseStatus'
+        scheduledStartAt:
+          type: string
+          format: date-time
+        scheduledEndAt:
+          type: string
+          format: date-time
+        pausedAt:
+          type: string
+          format: date-time
+        archivedAt:
+          type: string
+          format: date-time
+        joined:
+          type: boolean
       required: [uuid, name]
 
     CourseCreateRequest:
@@ -462,7 +659,82 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FeedItem'
+        status:
+          $ref: '#/components/schemas/CourseStatus'
+        scheduledStartAt:
+          type: string
+          format: date-time
+        scheduledEndAt:
+          type: string
+          format: date-time
+        pausedAt:
+          type: string
+          format: date-time
+        archivedAt:
+          type: string
+          format: date-time
+        joined:
+          type: boolean
       required: [uuid, name]
+
+    CourseStatus:
+      type: string
+      enum: [draft, scheduled, live, paused, archived]
+
+    CourseStatusUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+        scheduledStartAt:
+          type: string
+          format: date-time
+        scheduledEndAt:
+          type: string
+          format: date-time
+      required: [status]
+
+    CourseStartRequest:
+      type: object
+      properties:
+        scheduledEndAt:
+          type: string
+          format: date-time
+      required: [scheduledEndAt]
+
+    CoursePauseRequest:
+      type: object
+      properties:
+        scheduledStartAt:
+          type: string
+          format: date-time
+        scheduledEndAt:
+          type: string
+          format: date-time
+
+    CourseJoinResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        joinedAt:
+          type: string
+          format: date-time
+
+    CourseSessionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        sessionId:
+          type: string
+
+    CourseDuplicateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+      required: [name]
 
     Material:
       oneOf:
@@ -749,4 +1021,3 @@ components:
           type: string
         edited:
           type: boolean
-

@@ -8,6 +8,7 @@ import { Providers } from "@/components/providers";
 const fontSans = localFont({
 	src: "./dosis.ttf",
 	variable: "--font-sans",
+	preload: false,
 });
 
 const siteTitle = "Think different Academy";

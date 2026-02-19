@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
 import { getCoursesOptions } from "@/api-client/@tanstack/react-query.gen";
+import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseCard } from "@/components/courses/course-card";
@@ -19,9 +20,12 @@ export default function CoursesPage() {
 	});
 
 	const trimmedQuery = searchQuery.trim();
+	const visibleCourses = (data ?? []).filter(
+		(course) => course.status !== CourseStatus.DRAFT,
+	);
 	const filteredCourses = !trimmedQuery
-		? (data ?? [])
-		: (data ?? []).filter(
+		? visibleCourses
+		: visibleCourses.filter(
 				(course) =>
 					course.name.toLowerCase().includes(trimmedQuery.toLowerCase()) ||
 					course.description

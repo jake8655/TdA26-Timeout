@@ -35,6 +35,8 @@ public class QuizResult extends Model {
   @Column(nullable = false, columnDefinition = "json")
   private List<Boolean> correctPerQuestion;
 
+  @Column private String sessionToken;
+
   @Column(nullable = false)
   private Instant submittedAt;
 

@@ -24,7 +24,7 @@ export function SearchInput({
 			className={cn("relative", className)}
 		>
 			<Search
-				className="-translate-y-1/2 absolute top-1/2 left-3 size-4 text-muted-foreground"
+				className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
 				aria-hidden="true"
 				focusable={false}
 			/>

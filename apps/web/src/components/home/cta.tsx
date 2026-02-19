@@ -9,7 +9,7 @@ export default function CallToAction() {
 	return (
 		<section className="relative py-32">
 			<div className="pointer-events-none absolute inset-0">
-				<div className="-translate-x-1/2 absolute top-0 left-1/2 size-96 rounded-full bg-primary/10 blur-[100px]" />
+				<div className="absolute top-0 left-1/2 size-96 -translate-x-1/2 rounded-full bg-primary/10 blur-[100px]" />
 				<div className="absolute right-0 bottom-0 size-96 rounded-full bg-accent/10 blur-[100px]" />
 			</div>
 

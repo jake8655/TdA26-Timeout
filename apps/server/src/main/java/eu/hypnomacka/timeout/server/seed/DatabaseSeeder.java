@@ -43,6 +43,7 @@ public class DatabaseSeeder {
             lecturer,
             "Introduction to Programming",
             "Learn the fundamentals of programming with hands-on examples and exercises.");
+    course.setStatus(Course.Status.DRAFT);
     course.save();
 
     createMaterials1(course);
@@ -140,6 +141,7 @@ public class DatabaseSeeder {
             lecturer,
             "Data Structures",
             "Master essential data structures including arrays, linked lists, trees, and graphs.");
+    course.setStatus(Course.Status.DRAFT);
     course.save();
 
     createMaterials2(course);
@@ -241,6 +243,7 @@ public class DatabaseSeeder {
             lecturer,
             "Web Development",
             "Build modern web applications using HTML, CSS, JavaScript, and popular frameworks.");
+    course.setStatus(Course.Status.DRAFT);
     course.save();
 
     createMaterials3(course);

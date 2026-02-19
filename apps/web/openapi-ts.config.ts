@@ -3,8 +3,7 @@ import { defineConfig } from "@hey-api/openapi-ts";
 export default defineConfig({
 	input: "./server-schema.yml",
 	output: {
-		format: "biome",
-		lint: "biome",
+		postProcess: ["biome:format", "biome:lint"],
 		path: "./src/api-client",
 	},
 	plugins: [

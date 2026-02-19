@@ -125,13 +125,19 @@ export function FeedPostFormDialog({
 	);
 }
 
-export function CreateFeedPostButton({ courseId }: { courseId: string }) {
+export function CreateFeedPostButton({
+	courseId,
+	disabled,
+}: {
+	courseId: string;
+	disabled?: boolean;
+}) {
 	return (
 		<FeedPostFormDialog
 			mode="add"
 			courseId={courseId}
 			trigger={
-				<Button variant="accent" size="sm">
+				<Button variant="accent" size="sm" disabled={disabled}>
 					<MessageSquarePlus />
 					<span className="hidden sm:inline">Create Post</span>
 				</Button>

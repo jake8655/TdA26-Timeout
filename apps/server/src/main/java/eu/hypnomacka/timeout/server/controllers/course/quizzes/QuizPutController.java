@@ -31,6 +31,7 @@ public class QuizPutController extends Controller {
   public ResponseEntity<?> updateQuiz(
       @PathVariable String courseId,
       @PathVariable String quizId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestBody QuizCreateRequest request) {
 
     UUID courseUuid;
@@ -53,6 +54,11 @@ public class QuizPutController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("message", "course not editable"));
     }
 
     Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();

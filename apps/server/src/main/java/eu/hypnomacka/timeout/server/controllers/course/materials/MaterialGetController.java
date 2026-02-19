@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.*;
 public class MaterialGetController extends Controller {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> listMaterials(@PathVariable("courseId") String courseIdStr) {
+  public ResponseEntity<?> listMaterials(
+      @PathVariable("courseId") String courseIdStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
     UUID courseId;
     try {
       courseId = UUID.fromString(courseIdStr);
@@ -33,6 +35,11 @@ public class MaterialGetController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "course not live"));
     }
 
     List<Object> materials = new ArrayList<>();

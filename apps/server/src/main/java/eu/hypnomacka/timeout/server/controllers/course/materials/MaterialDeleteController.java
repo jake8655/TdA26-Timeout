@@ -1,8 +1,10 @@
 package eu.hypnomacka.timeout.server.controllers.course.materials;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
+import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QFileAttachment;
 import eu.hypnomacka.timeout.server.core.query.QUrlAttachment;
 import eu.hypnomacka.timeout.server.storage.FileStorageService;
@@ -22,7 +24,9 @@ public class MaterialDeleteController extends Controller {
 
   @DeleteMapping("/{materialId}")
   public ResponseEntity<?> deleteMaterial(
-      @PathVariable String courseId, @PathVariable String materialId) {
+      @PathVariable String courseId,
+      @PathVariable String materialId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
 
     UUID uuid;
 
@@ -31,6 +35,25 @@ public class MaterialDeleteController extends Controller {
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "error", "message", "Failed to parse uuid from materialId"));
+    }
+
+    UUID courseUuid;
+    try {
+      courseUuid = UUID.fromString(courseId);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "error", "message", "Failed to parse uuid from courseId"));
+    }
+
+    Course course = new QCourse().uuid.eq(courseUuid).findOne();
+    if (course == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
     FileAttachment file = new QFileAttachment().uuid.eq(uuid).findOne();

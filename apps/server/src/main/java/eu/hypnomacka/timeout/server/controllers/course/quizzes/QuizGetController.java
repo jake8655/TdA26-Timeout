@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.*;
 public class QuizGetController extends Controller {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> listQuizzes(@PathVariable String courseId) {
+  public ResponseEntity<?> listQuizzes(
+      @PathVariable String courseId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
     UUID courseUuid;
     try {
       courseUuid = UUID.fromString(courseId);
@@ -35,6 +37,12 @@ public class QuizGetController extends Controller {
           .body(Map.of("message", "course not found"));
     }
 
+    if (course.getStatus() != Course.Status.LIVE
+        && course.getStatus() != Course.Status.ARCHIVED
+        && !isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "course not live"));
+    }
+
     List<Quiz> quizzes = new QQuiz().course.eq(course).orderBy().createdAt.desc().findList();
 
     List<QuizResponse> responses = new ArrayList<>();
@@ -46,7 +54,10 @@ public class QuizGetController extends Controller {
   }
 
   @GetMapping(value = "/{quizId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> getQuiz(@PathVariable String courseId, @PathVariable String quizId) {
+  public ResponseEntity<?> getQuiz(
+      @PathVariable String courseId,
+      @PathVariable String quizId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
 
     UUID courseUuid;
     try {
@@ -68,6 +79,12 @@ public class QuizGetController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("message", "course not found"));
+    }
+
+    if (course.getStatus() != Course.Status.LIVE
+        && course.getStatus() != Course.Status.ARCHIVED
+        && !isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "course not live"));
     }
 
     Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();

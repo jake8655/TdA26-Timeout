@@ -89,7 +89,7 @@ export default function Login() {
 									repeat: Number.POSITIVE_INFINITY,
 									repeatType: "reverse",
 								}}
-								className="-inset-6 absolute rounded-full bg-primary/10 blur-xl"
+								className="absolute -inset-6 rounded-full bg-primary/10 blur-xl"
 							/>
 							<Image
 								src="/logo/logo.svg"

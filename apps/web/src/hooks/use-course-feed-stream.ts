@@ -2,9 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { client } from "@/api-client/client.gen";
 import type { FeedItem } from "@/api-client/types.gen";
 
+type KickPayload = {
+	reason?: string;
+	status?: string;
+	effectiveAt?: string;
+};
+
 export function useCourseFeedStream(courseId: string) {
 	const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
 	const [isConnected, setIsConnected] = useState(false);
+	const [kickPayload, setKickPayload] = useState<KickPayload | null>(null);
 	const eventSourceRef = useRef<EventSource | null>(null);
 
 	useEffect(() => {
@@ -12,7 +19,7 @@ export function useCourseFeedStream(courseId: string) {
 
 		const baseUrl = client.getConfig().baseUrl;
 		const url = `${baseUrl}/courses/${courseId}/feed/stream`;
-		const eventSource = new EventSource(url);
+		const eventSource = new EventSource(url, { withCredentials: true });
 
 		eventSource.onopen = () => {
 			if (mounted) {
@@ -53,6 +60,16 @@ export function useCourseFeedStream(courseId: string) {
 			}
 		});
 
+		eventSource.addEventListener("course_kick", (event) => {
+			if (!mounted) return;
+			try {
+				const data = JSON.parse(event.data) as KickPayload;
+				setKickPayload(data);
+			} catch (error) {
+				console.error("Failed to parse kick event:", error);
+			}
+		});
+
 		eventSourceRef.current = eventSource;
 
 		return () => {
@@ -61,5 +78,6 @@ export function useCourseFeedStream(courseId: string) {
 		};
 	}, [courseId]);
 
-	return { feedItems, isConnected };
+	const clearKick = () => setKickPayload(null);
+	return { feedItems, isConnected, kickPayload, clearKick };
 }

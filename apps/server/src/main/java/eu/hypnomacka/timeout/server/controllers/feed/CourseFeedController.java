@@ -26,7 +26,9 @@ public class CourseFeedController extends Controller {
   }
 
   @GetMapping(value = "/{UUID}/feed", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> getFeed(@PathVariable("UUID") String uuidStr) {
+  public ResponseEntity<?> getFeed(
+      @PathVariable("UUID") String uuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
     UUID uuid;
     try {
       uuid = UUID.fromString(uuidStr);
@@ -39,6 +41,11 @@ public class CourseFeedController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "course not live"));
     }
 
     List<Event> events =
@@ -61,7 +68,9 @@ public class CourseFeedController extends Controller {
 
   @PostMapping(value = "/{UUID}/feed", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> createPost(
-      @PathVariable("UUID") String uuidStr, @Valid @RequestBody CreatePostRequest request) {
+      @PathVariable("UUID") String uuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @Valid @RequestBody CreatePostRequest request) {
 
     UUID uuid;
     try {
@@ -75,6 +84,11 @@ public class CourseFeedController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
     Event event = new Event();
@@ -99,7 +113,9 @@ public class CourseFeedController extends Controller {
   }
 
   @GetMapping(value = "/{UUID}/feed/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public ResponseEntity<SseEmitter> streamFeed(@PathVariable("UUID") String uuidStr) {
+  public ResponseEntity<SseEmitter> streamFeed(
+      @PathVariable("UUID") String uuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
     UUID uuid;
     try {
       uuid = UUID.fromString(uuidStr);
@@ -110,6 +126,10 @@ public class CourseFeedController extends Controller {
     Course course = DB.find(Course.class, uuid);
     if (course == null) {
       return ResponseEntity.notFound().build();
+    }
+
+    if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     SseEmitter emitter = new SseEmitter(1800000L);
@@ -135,6 +155,7 @@ public class CourseFeedController extends Controller {
   public ResponseEntity<?> updatePost(
       @PathVariable("UUID") String uuidStr,
       @PathVariable("postUUID") String postUuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @Valid @RequestBody UpdatePostRequest request) {
 
     UUID uuid;
@@ -151,6 +172,11 @@ public class CourseFeedController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
     Event event = DB.find(Event.class, postUuid);
@@ -183,7 +209,9 @@ public class CourseFeedController extends Controller {
 
   @DeleteMapping(value = "/{UUID}/feed/{postUUID}")
   public ResponseEntity<?> deletePost(
-      @PathVariable("UUID") String uuidStr, @PathVariable("postUUID") String postUuidStr) {
+      @PathVariable("UUID") String uuidStr,
+      @PathVariable("postUUID") String postUuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
 
     UUID uuid;
     UUID postUuid;
@@ -199,6 +227,11 @@ public class CourseFeedController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
     Event event = DB.find(Event.class, postUuid);

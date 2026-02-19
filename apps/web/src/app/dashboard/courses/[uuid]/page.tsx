@@ -1,53 +1,38 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import {
-	ArrowLeft,
-	ChartColumnDecreasing,
-	Download,
-	Edit2,
-	ExternalLink,
-	HelpCircle,
-	Loader2,
-	Plus,
-	Trash2,
-} from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import Image from "next/image";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, HelpCircle, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { use } from "react";
 import {
+	deleteCoursesByCourseIdMutation,
 	getCoursesByCourseIdMaterialsOptions,
-	getCoursesByCourseIdOptions,
 	getCoursesByCourseIdQuizzesOptions,
+	getCoursesLecturerByCourseIdOptions,
+	postCoursesByCourseIdArchiveMutation,
+	postCoursesByCourseIdDuplicateMutation,
+	postCoursesByCourseIdPauseMutation,
+	postCoursesByCourseIdStartMutation,
+	putCoursesByCourseIdStatusMutation,
 } from "@/api-client/@tanstack/react-query.gen";
-import type { Quiz } from "@/api-client/types.gen";
+import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
+import { CourseActions } from "@/components/courses/course-actions";
 import { CourseFeed } from "@/components/courses/course-feed";
+import { CourseHeader } from "@/components/courses/course-header";
+import { CourseMaterialsSection } from "@/components/courses/course-materials-section";
+import { CourseQuizzesSection } from "@/components/courses/course-quizzes-section";
 import { DeleteFeedPostButton } from "@/components/courses/delete-feed-post-dialog";
 import {
 	CreateFeedPostButton,
 	EditFeedPostButton,
 } from "@/components/courses/feed-post-form-dialog";
-import { CourseFormDialog } from "@/components/dashboard/course-form-dialog";
-import { DeleteMaterialDialog } from "@/components/dashboard/delete-material-dialog";
-import { MaterialFormDialog } from "@/components/dashboard/material-form-dialog";
-import {
-	DeleteQuizDialog,
-	QuizFormDialog,
-} from "@/components/dashboard/quiz-form-dialog";
 import EmptyState from "@/components/empty-state";
 import LoadingPlaceholder from "@/components/loading-placeholder";
-import { QuizStatsDialog } from "@/components/quizzes/quiz-stats-dialog";
 import { useRequireAuth } from "@/hooks/use-require-auth";
-import {
-	formatFileSize,
-	getFileTypeLabel,
-	getMaterialIcon,
-	type Material,
-} from "@/lib/material-utils";
 
 export default function DashboardCourseDetailPage({
 	params,
@@ -56,6 +41,8 @@ export default function DashboardCourseDetailPage({
 }) {
 	const { uuid } = use(params);
 	const { data: authData } = useRequireAuth();
+	const router = useRouter();
+	const queryClient = useQueryClient();
 
 	const {
 		data: course,
@@ -63,7 +50,7 @@ export default function DashboardCourseDetailPage({
 		isError: courseError,
 		refetch: refetchCourse,
 	} = useQuery({
-		...getCoursesByCourseIdOptions({
+		...getCoursesLecturerByCourseIdOptions({
 			path: { courseId: uuid },
 		}),
 	});
@@ -88,6 +75,30 @@ export default function DashboardCourseDetailPage({
 		...getCoursesByCourseIdQuizzesOptions({
 			path: { courseId: uuid },
 		}),
+	});
+
+	const kickMutation = useMutation({
+		...postCoursesByCourseIdPauseMutation(),
+	});
+	const startMutation = useMutation({
+		...postCoursesByCourseIdStartMutation(),
+	});
+	const archiveMutation = useMutation({
+		...postCoursesByCourseIdArchiveMutation(),
+	});
+	const statusMutation = useMutation({
+		...putCoursesByCourseIdStatusMutation(),
+	});
+	const duplicateMutation = useMutation({
+		...postCoursesByCourseIdDuplicateMutation(),
+		onSuccess: (data) => {
+			if (data?.uuid) {
+				router.push(`/dashboard/courses/${data.uuid}`);
+			}
+		},
+	});
+	const deleteMutation = useMutation({
+		...deleteCoursesByCourseIdMutation(),
 	});
 
 	if (!authData) {
@@ -144,51 +155,65 @@ export default function DashboardCourseDetailPage({
 							</Button>
 						}
 					/>
-				) : (
+				) : course ? (
 					<>
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5 }}
-							className="border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
-						>
-							<div className="flex items-center gap-4">
-								<div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
-									<Image
-										src="/icons/Idea/zarivka_idea_blue.svg"
-										alt="Course icon"
-										width={32}
-										height={32}
-									/>
-								</div>
-								<div className="flex-1 overflow-hidden">
-									<div className="flex items-start justify-between">
-										<h1 className="font-bold text-primary text-xl sm:text-2xl">
-											{course.name}
-										</h1>
-										<CourseFormDialog
-											mode="edit"
-											course={course}
-											trigger={
-												<Button
-													variant="ghost"
-													size="sm"
-													className="ml-2"
-													aria-label="Edit course"
-												>
-													<Edit2 />
-												</Button>
-											}
-										/>
-									</div>
-									<p className="mt-1 line-clamp-2 text-muted-foreground text-sm leading-relaxed">
-										{course.description || (
-											<span className="italic">No description available</span>
-										)}
-									</p>
-								</div>
-							</div>
-						</motion.div>
+						<div className="space-y-4 border border-white/5 bg-card/40 p-6 backdrop-blur-sm">
+							<CourseHeader course={course} />
+							<CourseActions
+								course={course}
+								duplicatePending={duplicateMutation.isPending}
+								deletePending={deleteMutation.isPending}
+								onSchedule={(payload) =>
+									statusMutation.mutate({
+										path: { courseId: uuid },
+										body: {
+											status: "scheduled",
+											scheduledStartAt: payload.scheduledStartAt,
+											scheduledEndAt: payload.scheduledEndAt,
+										},
+									})
+								}
+								onStart={(endAt) =>
+									startMutation.mutate({
+										path: { courseId: uuid },
+										body: { scheduledEndAt: endAt },
+									})
+								}
+								onPause={() =>
+									kickMutation.mutate({
+										path: { courseId: uuid },
+										body: {},
+									})
+								}
+								onArchive={() =>
+									archiveMutation.mutate({
+										path: { courseId: uuid },
+									})
+								}
+								onMoveToDraft={() =>
+									statusMutation.mutate({
+										path: { courseId: uuid },
+										body: { status: "draft" },
+									})
+								}
+								onDuplicate={(name) =>
+									duplicateMutation.mutate({
+										path: { courseId: uuid },
+										body: { name },
+									})
+								}
+								onDelete={() => {
+									deleteMutation.mutate({
+										path: { courseId: uuid },
+										// @ts-expect-error server requires a JSON body
+										body: {},
+									});
+									// This is very cursed, do NOT do this or repeat this pattern
+									// It should be done in the onSuccess callback of the mutation, but all queries are invalidated (and the invalidation is awaited) on every mutation which causes the current (deleted) course's data to be refetched but it does not exist anymore so it throws an error
+									router.push("/dashboard");
+								}}
+							/>
+						</div>
 
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
@@ -199,7 +224,10 @@ export default function DashboardCourseDetailPage({
 							<h2 className="font-semibold text-foreground text-xl">
 								Course Feed
 							</h2>
-							<CreateFeedPostButton courseId={uuid} />
+							<CreateFeedPostButton
+								courseId={uuid}
+								disabled={course.status !== CourseStatus.DRAFT}
+							/>
 						</motion.div>
 
 						<CourseFeed
@@ -211,377 +239,27 @@ export default function DashboardCourseDetailPage({
 							deleteTrigger={(item) => (
 								<DeleteFeedPostButton post={item} courseId={uuid} />
 							)}
+							onKick={() => queryClient.invalidateQueries()}
 						/>
 
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: 0.1 }}
-							className="flex items-center justify-between"
-						>
-							<h2 className="font-semibold text-foreground text-xl">
-								Course Materials
-							</h2>
-							<MaterialFormDialog
-								mode="add"
-								courseId={uuid}
-								trigger={
-									<Button variant="accent" size="sm">
-										<Plus />
-										Add Material
-									</Button>
-								}
-							/>
-						</motion.div>
+						<CourseMaterialsSection
+							course={course}
+							materials={materials}
+							loading={materialsLoading}
+							error={materialsError}
+							onRetry={() => refetchMaterials()}
+						/>
 
-						{materialsLoading ? (
-							<div className="flex justify-center py-12">
-								<Loader2 className="size-8 animate-spin text-primary" />
-							</div>
-						) : materialsError ? (
-							<EmptyState
-								title="Unable to load materials"
-								description="Please try again in a moment."
-								icon={<Download className="size-7 text-primary" />}
-								action={
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => refetchMaterials()}
-									>
-										Retry
-									</Button>
-								}
-							/>
-						) : materials.length === 0 ? (
-							<EmptyState
-								title="No materials yet"
-								description="Add files or links for your students."
-								icon={<Plus className="size-7 text-primary" />}
-								action={
-									<MaterialFormDialog
-										mode="add"
-										courseId={uuid}
-										trigger={
-											<Button variant="accent" size="sm">
-												<Plus />
-												Add First Material
-											</Button>
-										}
-									/>
-								}
-								className="border-dashed"
-							/>
-						) : (
-							<div className="flex flex-col gap-3">
-								<AnimatePresence mode="popLayout">
-									{materials.map((material, index) => (
-										<DashboardMaterialCard
-											key={material.uuid}
-											material={material}
-											courseId={uuid}
-											index={index}
-										/>
-									))}
-								</AnimatePresence>
-							</div>
-						)}
-
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: 0.2 }}
-							className="flex items-center justify-between"
-						>
-							<h2 className="font-semibold text-foreground text-xl">
-								Course Quizzes
-							</h2>
-							<QuizFormDialog
-								mode="create"
-								courseId={uuid}
-								trigger={
-									<Button variant="accent" size="sm">
-										<Plus />
-										Add Quiz
-									</Button>
-								}
-							/>
-						</motion.div>
-
-						{quizzesLoading ? (
-							<div className="flex justify-center py-12">
-								<Loader2 className="size-8 animate-spin text-primary" />
-							</div>
-						) : quizzesError ? (
-							<EmptyState
-								title="Unable to load quizzes"
-								description="Please try again in a moment."
-								icon={<HelpCircle className="size-7 text-primary" />}
-								action={
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => refetchQuizzes()}
-									>
-										Retry
-									</Button>
-								}
-							/>
-						) : quizzes.length === 0 ? (
-							<EmptyState
-								title="No quizzes yet"
-								description="Create your first quiz to test student knowledge."
-								icon={<Plus className="size-7 text-primary" />}
-								action={
-									<QuizFormDialog
-										mode="create"
-										courseId={uuid}
-										trigger={
-											<Button variant="accent" className="gap-2">
-												<Plus className="size-4" />
-												Create Your First Quiz
-											</Button>
-										}
-									/>
-								}
-								className="border-dashed"
-							/>
-						) : (
-							<div className="flex flex-col gap-3">
-								<AnimatePresence mode="popLayout">
-									{quizzes.map((quiz, index) => (
-										<DashboardQuizCard
-											key={quiz.uuid}
-											quiz={quiz}
-											courseId={uuid}
-											index={index}
-										/>
-									))}
-								</AnimatePresence>
-							</div>
-						)}
+						<CourseQuizzesSection
+							course={course}
+							quizzes={quizzes}
+							loading={quizzesLoading}
+							error={quizzesError}
+							onRetry={() => refetchQuizzes()}
+						/>
 					</>
-				)}
+				) : null}
 			</div>
 		</section>
-	);
-}
-
-function DashboardMaterialCard({
-	material,
-	courseId,
-	index,
-}: {
-	material: Material;
-	courseId: string;
-	index: number;
-}) {
-	const Icon = getMaterialIcon(material);
-
-	return (
-		<motion.div
-			layout
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, scale: 0.95 }}
-			transition={{ duration: 0.3, delay: index * 0.03 }}
-			className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-white/10"
-		>
-			<div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-				{material.type === "url" && material.faviconUrl ? (
-					<Image
-						src={material.faviconUrl}
-						alt={material.name}
-						width={24}
-						height={24}
-						className="size-6"
-						unoptimized
-					/>
-				) : (
-					<Icon className="size-6 text-primary" />
-				)}
-			</div>
-
-			<div className="flex-1 overflow-hidden">
-				<h3 className="font-semibold text-foreground text-sm">
-					{material.name}
-				</h3>
-				<p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
-					{material.description || (
-						<span className="italic">No description available</span>
-					)}
-				</p>
-				<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
-					{material.type === "url" ? (
-						<span className="truncate">{new URL(material.url).hostname}</span>
-					) : (
-						<>
-							<span>{getFileTypeLabel(material.mimeType)}</span>
-							{material.sizeBytes && (
-								<>
-									<span className="text-white/20">•</span>
-									<span>{formatFileSize(material.sizeBytes)}</span>
-								</>
-							)}
-						</>
-					)}
-				</div>
-			</div>
-
-			<div className="flex flex-col items-end gap-2">
-				{material.type === "url" ? (
-					<Button
-						variant="outline"
-						size="sm"
-						className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
-						asChild
-					>
-						<a href={material.url} target="_blank" rel="noopener noreferrer">
-							<ExternalLink className="size-3.5" />
-							<span className="hidden sm:inline">Visit Site</span>
-						</a>
-					</Button>
-				) : (
-					<Button
-						variant="outline"
-						size="sm"
-						className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
-						asChild
-					>
-						<a
-							href={material.fileUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							<Download className="size-3.5" />
-							<span className="hidden sm:inline">Download</span>
-						</a>
-					</Button>
-				)}
-
-				<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
-					<MaterialFormDialog
-						mode="edit"
-						courseId={courseId}
-						material={material}
-						trigger={
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
-								aria-label="Edit material"
-							>
-								<Edit2 />
-							</Button>
-						}
-					/>
-					<DeleteMaterialDialog
-						courseId={courseId}
-						material={material}
-						trigger={
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
-								aria-label="Delete material"
-							>
-								<Trash2 />
-							</Button>
-						}
-					/>
-				</div>
-			</div>
-		</motion.div>
-	);
-}
-
-function DashboardQuizCard({
-	quiz,
-	courseId,
-	index,
-}: {
-	quiz: Quiz;
-	courseId: string;
-	index: number;
-}) {
-	return (
-		<motion.div
-			layout
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: -20 }}
-			transition={{ duration: 0.3, delay: index * 0.03 }}
-			className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-white/10"
-		>
-			<div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-				<HelpCircle className="size-6 text-primary" />
-			</div>
-
-			<div className="flex-1 overflow-hidden">
-				<h3 className="font-semibold text-foreground text-sm">{quiz.title}</h3>
-				<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
-					<span>
-						{quiz.questions.length} question
-						{quiz.questions.length !== 1 ? "s" : ""}
-					</span>
-					{quiz.attemptsCount !== undefined && (
-						<>
-							<span className="text-white/20">•</span>
-							<span>
-								{quiz.attemptsCount} attempt
-								{quiz.attemptsCount !== 1 ? "s" : ""}
-							</span>
-						</>
-					)}
-				</div>
-			</div>
-
-			<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
-				<QuizStatsDialog
-					quizId={quiz.uuid ?? ""}
-					courseId={courseId}
-					quizTitle={quiz.title}
-					trigger={
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
-							aria-label="View quiz statistics"
-						>
-							<ChartColumnDecreasing />
-						</Button>
-					}
-				/>
-				<QuizFormDialog
-					mode="edit"
-					courseId={courseId}
-					quiz={quiz}
-					trigger={
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
-							aria-label="Edit quiz"
-						>
-							<Edit2 />
-						</Button>
-					}
-				/>
-				<DeleteQuizDialog
-					courseId={courseId}
-					quiz={quiz}
-					trigger={
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
-							aria-label="Delete quiz"
-						>
-							<Trash2 />
-						</Button>
-					}
-				/>
-			</div>
-		</motion.div>
 	);
 }

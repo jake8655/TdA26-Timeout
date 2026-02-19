@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Loader2, Maximize2, MessageSquare } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getCoursesByCourseIdFeedOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { FeedItem } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
@@ -21,14 +21,32 @@ export function CourseFeed({
 	editTrigger,
 	deleteTrigger,
 	viewTrigger,
+	onKick,
 }: {
 	courseId: string;
 	showActions?: boolean;
 	editTrigger?: (item: FeedItem) => React.ReactNode;
 	deleteTrigger?: (item: FeedItem) => React.ReactNode;
 	viewTrigger?: (item: FeedItem) => React.ReactNode;
+	onKick?: (payload: {
+		reason?: string;
+		status?: string;
+		effectiveAt?: string;
+	}) => void;
 }) {
-	const { feedItems: streamItems, isConnected } = useCourseFeedStream(courseId);
+	const {
+		feedItems: streamItems,
+		isConnected,
+		kickPayload,
+		clearKick,
+	} = useCourseFeedStream(courseId);
+
+	useEffect(() => {
+		if (kickPayload) {
+			onKick?.(kickPayload);
+			clearKick();
+		}
+	}, [kickPayload, onKick, clearKick]);
 
 	const {
 		data: initialItems,
@@ -42,7 +60,7 @@ export function CourseFeed({
 	});
 
 	const allItems = (() => {
-		if (!initialItems) return streamItems;
+		if (!Array.isArray(initialItems)) return streamItems;
 
 		const combined = [...initialItems];
 		for (const streamItem of streamItems) {

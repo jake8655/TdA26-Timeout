@@ -9,6 +9,7 @@ import eu.hypnomacka.timeout.server.utils.HashUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
@@ -40,9 +41,10 @@ public class AuthController extends Controller {
     Cookie cookie = new Cookie("SESSION_ID", sessionId);
     cookie.setHttpOnly(true);
     cookie.setPath("/");
-    cookie.setMaxAge(2592000);
+    cookie.setMaxAge(60 * 60 * 24 * 30); // 30 days
     response.addCookie(cookie);
-    Session session = new Session(lecturer, sessionId, Instant.now().plusMillis(2592000));
+    Session session =
+        new Session(lecturer, sessionId, Instant.now().plus(Duration.ofDays(30))); // 30 days
     session.save();
 
     return ResponseEntity.ok(Map.of("status", "ok", "message", "logged in"));

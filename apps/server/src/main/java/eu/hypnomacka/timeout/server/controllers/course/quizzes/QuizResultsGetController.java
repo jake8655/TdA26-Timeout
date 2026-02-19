@@ -2,9 +2,11 @@ package eu.hypnomacka.timeout.server.controllers.course.quizzes;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.CourseJoin;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.QuizResult;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import eu.hypnomacka.timeout.server.core.query.QQuiz;
 import eu.hypnomacka.timeout.server.core.query.QQuizResult;
 import java.util.ArrayList;
@@ -22,7 +24,10 @@ public class QuizResultsGetController extends Controller {
 
   @GetMapping(value = "/{quizId}/results", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> getQuizResults(
-      @PathVariable String courseId, @PathVariable String quizId) {
+      @PathVariable String courseId,
+      @PathVariable String quizId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
 
     UUID courseUuid;
     try {
@@ -46,14 +51,34 @@ public class QuizResultsGetController extends Controller {
           .body(Map.of("message", "course not found"));
     }
 
+    if (course.getStatus() == Course.Status.ARCHIVED) {
+      if (!isParticipant(course, studentSessionId)) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(Map.of("message", "course not found"));
+      }
+    }
+
     Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();
 
     if (quiz == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "quiz not found"));
     }
 
-    List<QuizResult> results =
-        new QQuizResult().quiz.eq(quiz).orderBy().submittedAt.desc().findList();
+    List<QuizResult> results = new ArrayList<>();
+    if (isLecturerSession(sessionId)) {
+      results = new QQuizResult().quiz.eq(quiz).orderBy().submittedAt.desc().findList();
+    } else if (studentSessionId != null && !studentSessionId.isBlank()) {
+      results =
+          new QQuizResult()
+              .quiz
+              .eq(quiz)
+              .sessionToken
+              .eq(studentSessionId)
+              .orderBy()
+              .submittedAt
+              .desc()
+              .findList();
+    }
 
     List<QuizSubmitResponse> responses = new ArrayList<>();
     for (QuizResult result : results) {
@@ -67,5 +92,14 @@ public class QuizResultsGetController extends Controller {
     }
 
     return ResponseEntity.ok(responses);
+  }
+
+  private boolean isParticipant(Course course, String studentSessionId) {
+    if (studentSessionId == null || studentSessionId.isBlank()) {
+      return false;
+    }
+    CourseJoin join =
+        new QCourseJoin().course.eq(course).sessionToken.eq(studentSessionId).findOne();
+    return join != null && Boolean.TRUE.equals(join.getHasSubmittedQuiz());
   }
 }

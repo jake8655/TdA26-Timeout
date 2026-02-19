@@ -23,7 +23,7 @@ export default function Hero() {
 								repeat: Number.POSITIVE_INFINITY,
 								repeatType: "reverse",
 							}}
-							className="-inset-10 absolute rounded-full bg-primary/20 blur-2xl"
+							className="absolute -inset-10 rounded-full bg-primary/20 blur-2xl"
 						/>
 						<Image
 							src="/logo/logo.svg"

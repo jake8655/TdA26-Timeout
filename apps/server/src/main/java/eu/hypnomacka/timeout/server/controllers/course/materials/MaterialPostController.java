@@ -46,13 +46,20 @@ public class MaterialPostController extends Controller {
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> uploadMaterialJson(
-      @PathVariable String courseId, @RequestBody Map<String, String> request) {
+      @PathVariable String courseId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @RequestBody Map<String, String> request) {
 
     Course course = new QCourse().uuid.eq(UUID.fromString(courseId)).findOne();
 
     if (course == null) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
     String name = request.get("name");
@@ -102,6 +109,7 @@ public class MaterialPostController extends Controller {
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<?> uploadMaterial(
       @PathVariable String courseId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestPart(value = "file") MultipartFile file,
       @RequestPart("type") String type,
       @RequestPart("name") String name,
@@ -123,6 +131,11 @@ public class MaterialPostController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
     String fileUrl;

@@ -2,6 +2,9 @@ package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Lecturer;
+import eu.hypnomacka.timeout.server.core.Session;
+import eu.hypnomacka.timeout.server.core.query.QSession;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,20 +41,20 @@ public class CoursePostController extends Controller {
           .body(Map.of("status", "bad", "message", "invalid name"));
     }
 
-    /*Session session = new QSession().token.eq(sessionId).findOne();
-    if (session == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "session not found in database")
-        );
-    }
-
-    Lecturer lecturer = new QLecturer().username.eq(session.getLecturer().getUsername()).findOne();*/
-    if (lecturer == null) {
+    if (!isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "session not linked to an account"));
     }
 
+    Session session = new QSession().token.eq(sessionId).findOne();
+    if (session == null || session.getLecturer() == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "session not linked to an account"));
+    }
+
+    Lecturer lecturer = session.getLecturer();
     Course course = new Course(lecturer, name, description);
+    course.setStatus(Course.Status.DRAFT);
     course.save();
 
     return ResponseEntity.status(HttpStatus.CREATED).body(course);

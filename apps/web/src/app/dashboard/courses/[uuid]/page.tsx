@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	Archive,
 	ArrowLeft,
@@ -90,6 +90,7 @@ export default function DashboardCourseDetailPage({
 	const { uuid } = use(params);
 	const { data: authData } = useRequireAuth();
 	const router = useRouter();
+	const queryClient = useQueryClient();
 
 	const {
 		data: course,
@@ -264,6 +265,7 @@ export default function DashboardCourseDetailPage({
 							deleteTrigger={(item) => (
 								<DeleteFeedPostButton post={item} courseId={uuid} />
 							)}
+							onKick={() => queryClient.invalidateQueries()}
 						/>
 
 						<motion.div

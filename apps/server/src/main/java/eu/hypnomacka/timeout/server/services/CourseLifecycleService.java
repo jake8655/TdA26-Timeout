@@ -22,7 +22,7 @@ public class CourseLifecycleService {
 
   private final CourseFeedService feedService;
 
-  @Scheduled(fixedDelay = 60000)
+  @Scheduled(cron = "0 * * * * *")
   public void applyScheduledTransitions() {
     Instant now = Instant.now();
 

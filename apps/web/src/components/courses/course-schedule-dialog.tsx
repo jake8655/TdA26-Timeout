@@ -64,6 +64,10 @@ export function CourseScheduleDialog({
 	const [endTime, setEndTime] = useState("");
 	const showStart = mode === "schedule";
 
+	const pastDates = Array.from({ length: new Date().getDate() - 1 }).map(
+		(_, i) => new Date(new Date().getFullYear(), new Date().getMonth(), i + 1),
+	);
+
 	useEffect(() => {
 		if (!open) return;
 
@@ -155,6 +159,7 @@ export function CourseScheduleDialog({
 								className="w-full rounded-none border border-white/10 bg-white/5"
 								weekStartsOn={1}
 								startMonth={new Date()}
+								disabled={pastDates}
 								fixedWeeks
 							/>
 							<InputGroup>
@@ -179,6 +184,7 @@ export function CourseScheduleDialog({
 							className="w-full rounded-none border border-white/10 bg-white/5"
 							weekStartsOn={1}
 							startMonth={new Date()}
+							disabled={pastDates}
 							fixedWeeks
 						/>
 						<InputGroup>

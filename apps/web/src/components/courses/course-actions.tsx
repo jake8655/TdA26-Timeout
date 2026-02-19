@@ -17,6 +17,7 @@ import { CourseScheduleDialog } from "@/components/courses/course-schedule-dialo
 import { CourseFormDialog } from "@/components/dashboard/course-form-dialog";
 import {
 	Dialog,
+	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -120,6 +121,7 @@ export function CourseActions({
 							/>
 						</div>
 						<DialogFooter>
+							<DialogClose render={<Button variant="outline">Cancel</Button>} />
 							<Button
 								variant="accent"
 								onClick={() => onDuplicate(duplicateName)}
@@ -148,7 +150,7 @@ export function CourseActions({
 						</DialogHeader>
 						<div className="space-y-2">
 							<p className="text-muted-foreground text-sm">
-								Type "{course.name}" to confirm.
+								Type "<b>{course.name}</b>" to confirm.
 							</p>
 							<Input
 								value={deleteConfirm}
@@ -157,6 +159,7 @@ export function CourseActions({
 							/>
 						</div>
 						<DialogFooter>
+							<DialogClose render={<Button variant="outline">Cancel</Button>} />
 							<Button
 								variant="destructive"
 								onClick={() => onDelete()}

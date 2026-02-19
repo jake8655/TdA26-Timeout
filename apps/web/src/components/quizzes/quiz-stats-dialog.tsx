@@ -64,7 +64,7 @@ export function QuizStatsDialog({
 		);
 	}
 
-	const statsData = statsResult?.data;
+	const statsData = statsResult?.data || { totalSubmissions: 0, questions: [] };
 
 	const questionStatsByUuid = new Map(
 		(statsData?.questions ?? []).map((questionStats) => [

@@ -33,11 +33,14 @@ public class CourseJoin extends Model {
   @Column(nullable = false)
   private Boolean active = true;
 
+  @Column private Boolean hasSubmittedQuiz = false;
+
   public CourseJoin() {}
 
   public CourseJoin(Course course, String sessionToken) {
     this.course = course;
     this.sessionToken = sessionToken;
     this.active = true;
+    this.hasSubmittedQuiz = false;
   }
 }

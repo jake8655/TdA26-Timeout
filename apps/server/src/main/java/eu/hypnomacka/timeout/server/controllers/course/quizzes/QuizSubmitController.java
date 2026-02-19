@@ -29,7 +29,7 @@ public class QuizSubmitController extends Controller {
   public ResponseEntity<?> submitQuiz(
       @PathVariable String courseId,
       @PathVariable String quizId,
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId,
       @RequestBody QuizSubmitRequest request) {
 
     UUID courseUuid;
@@ -125,18 +125,22 @@ public class QuizSubmitController extends Controller {
     double score = correctCount;
 
     QuizResult result = new QuizResult(quiz, score, maxScore, correctPerQuestion, Instant.now());
+    if (studentSessionId != null && !studentSessionId.isBlank()) {
+      result.setSessionToken(studentSessionId);
+    }
     result.save();
 
-    if (sessionId != null && !sessionId.isBlank()) {
+    if (studentSessionId != null && !studentSessionId.isBlank()) {
       eu.hypnomacka.timeout.server.core.CourseJoin join =
           new eu.hypnomacka.timeout.server.core.query.QCourseJoin()
               .course
               .eq(course)
               .sessionToken
-              .eq(sessionId)
+              .eq(studentSessionId)
               .findOne();
       if (join != null) {
         join.setActive(true);
+        join.setHasSubmittedQuiz(true);
         join.setLastSeenAt(Instant.now());
         join.save();
       }

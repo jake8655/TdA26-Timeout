@@ -37,7 +37,9 @@ public class QuizGetController extends Controller {
           .body(Map.of("message", "course not found"));
     }
 
-    if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
+    if (course.getStatus() != Course.Status.LIVE
+        && course.getStatus() != Course.Status.ARCHIVED
+        && !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "course not live"));
     }
 
@@ -79,7 +81,9 @@ public class QuizGetController extends Controller {
           .body(Map.of("message", "course not found"));
     }
 
-    if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
+    if (course.getStatus() != Course.Status.LIVE
+        && course.getStatus() != Course.Status.ARCHIVED
+        && !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "course not live"));
     }
 

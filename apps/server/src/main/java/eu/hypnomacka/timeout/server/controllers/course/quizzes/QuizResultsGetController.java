@@ -26,7 +26,8 @@ public class QuizResultsGetController extends Controller {
   public ResponseEntity<?> getQuizResults(
       @PathVariable String courseId,
       @PathVariable String quizId,
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
 
     UUID courseUuid;
     try {
@@ -51,7 +52,7 @@ public class QuizResultsGetController extends Controller {
     }
 
     if (course.getStatus() == Course.Status.ARCHIVED) {
-      if (!isParticipant(course, sessionId)) {
+      if (!isParticipant(course, studentSessionId)) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(Map.of("message", "course not found"));
       }
@@ -63,8 +64,21 @@ public class QuizResultsGetController extends Controller {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "quiz not found"));
     }
 
-    List<QuizResult> results =
-        new QQuizResult().quiz.eq(quiz).orderBy().submittedAt.desc().findList();
+    List<QuizResult> results = new ArrayList<>();
+    if (isLecturerSession(sessionId)) {
+      results = new QQuizResult().quiz.eq(quiz).orderBy().submittedAt.desc().findList();
+    } else if (studentSessionId != null && !studentSessionId.isBlank()) {
+      results =
+          new QQuizResult()
+              .quiz
+              .eq(quiz)
+              .sessionToken
+              .eq(studentSessionId)
+              .orderBy()
+              .submittedAt
+              .desc()
+              .findList();
+    }
 
     List<QuizSubmitResponse> responses = new ArrayList<>();
     for (QuizResult result : results) {
@@ -80,11 +94,12 @@ public class QuizResultsGetController extends Controller {
     return ResponseEntity.ok(responses);
   }
 
-  private boolean isParticipant(Course course, String sessionId) {
-    if (sessionId == null || sessionId.isBlank()) {
+  private boolean isParticipant(Course course, String studentSessionId) {
+    if (studentSessionId == null || studentSessionId.isBlank()) {
       return false;
     }
-    CourseJoin join = new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
-    return join != null && Boolean.TRUE.equals(join.getActive());
+    CourseJoin join =
+        new QCourseJoin().course.eq(course).sessionToken.eq(studentSessionId).findOne();
+    return join != null && Boolean.TRUE.equals(join.getHasSubmittedQuiz());
   }
 }

@@ -9,6 +9,7 @@ import {
 	Play,
 	Trash2,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import type { CourseDetail } from "@/api-client/types.gen";
 import { CourseStatus } from "@/api-client/types.gen";
@@ -81,7 +82,12 @@ export function CourseActions({
 
 	return (
 		<div className="space-y-4">
-			<div className="flex flex-wrap items-center gap-2">
+			<motion.div
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.4 }}
+				className="flex flex-wrap items-center gap-2"
+			>
 				<CourseFormDialog
 					mode="edit"
 					course={course}
@@ -170,9 +176,14 @@ export function CourseActions({
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
-			</div>
+			</motion.div>
 			{canSchedule || canStart || canPause || canMoveToDraft || canArchive ? (
-				<div className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4">
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.4 }}
+					className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4"
+				>
 					<p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
 						Course Actions
 					</p>
@@ -247,7 +258,7 @@ export function CourseActions({
 							</Button>
 						)}
 					</div>
-				</div>
+				</motion.div>
 			) : null}
 		</div>
 	);

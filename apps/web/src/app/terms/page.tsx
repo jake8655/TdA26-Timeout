@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import BackgroundGrid from "@/components/background-grid";
+
+export const metadata: Metadata = {
+	title: "Terms of Use",
+	description:
+		"Terms of Use for Think different Academy. Learn about usage guidelines, account responsibilities, and legal information.",
+};
 
 export default function TermsPage() {
 	return (

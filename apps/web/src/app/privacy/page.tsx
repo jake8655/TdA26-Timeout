@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import BackgroundGrid from "@/components/background-grid";
+
+export const metadata: Metadata = {
+	title: "Privacy Policy",
+	description:
+		"Privacy Policy for Think different Academy. Learn about data collection, usage, and your GDPR rights.",
+};
 
 export default function PrivacyPage() {
 	return (

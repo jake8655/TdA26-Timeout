@@ -456,10 +456,14 @@ function ModuleMaterialRow({ material }: { material: Material }) {
 					<Icon className="size-5 text-primary" />
 				</div>
 				<div className="min-w-0">
-					<p className="truncate font-medium text-foreground">{material.name}</p>
+					<p className="truncate font-medium text-foreground">
+						{material.name}
+					</p>
 					<p className="truncate text-muted-foreground text-xs">
 						{getFileTypeLabel(material.mimeType)}
-						{material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}
+						{material.sizeBytes
+							? ` • ${formatFileSize(material.sizeBytes)}`
+							: ""}
 					</p>
 				</div>
 			</div>

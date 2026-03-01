@@ -36,9 +36,9 @@ public class UrlAttachment extends Model {
   @Id private UUID uuid;
 
   @ManyToOne(optional = false)
-  @JoinColumn(name = "course_uuid", nullable = false)
+  @JoinColumn(name = "module_uuid", nullable = false)
   @JsonBackReference
-  private Course course;
+  private Module module;
 
   @Column(nullable = false)
   private String name;
@@ -63,8 +63,8 @@ public class UrlAttachment extends Model {
   public UrlAttachment() {}
 
   public UrlAttachment(
-      Course course, String name, String url, String description, Type type, String faviconUrl) {
-    this.course = course;
+      Module module, String name, String url, String description, Type type, String faviconUrl) {
+    this.module = module;
     this.name = name;
     this.url = url;
     this.description = description;

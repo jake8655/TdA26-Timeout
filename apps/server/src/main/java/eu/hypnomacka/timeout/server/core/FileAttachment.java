@@ -35,9 +35,9 @@ public class FileAttachment extends Model {
   @Id private UUID uuid;
 
   @ManyToOne(optional = false)
-  @JoinColumn(name = "course_uuid", nullable = false)
+  @JoinColumn(name = "module_uuid", nullable = false)
   @JsonBackReference
-  private Course course;
+  private Module module;
 
   @Column(nullable = false)
   private String name;
@@ -62,14 +62,14 @@ public class FileAttachment extends Model {
   public FileAttachment() {}
 
   public FileAttachment(
-      Course course,
+      Module module,
       String name,
       String description,
       Type type,
       Long sizeBytes,
       String mimeType,
       String fileUrl) {
-    this.course = course;
+    this.module = module;
     this.name = name;
     this.description = description;
     this.type = type;

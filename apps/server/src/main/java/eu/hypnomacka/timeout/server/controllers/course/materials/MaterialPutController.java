@@ -3,11 +3,10 @@ package eu.hypnomacka.timeout.server.controllers.course.materials;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
+import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
-import eu.hypnomacka.timeout.server.core.query.QCourse;
-import eu.hypnomacka.timeout.server.core.query.QFileAttachment;
-import eu.hypnomacka.timeout.server.core.query.QUrlAttachment;
 import eu.hypnomacka.timeout.server.storage.FileStorageService;
+import io.ebean.DB;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/courses/{courseId}/materials")
+@RequestMapping("/courses/{courseId}/modules/{moduleId}/materials")
 @RequiredArgsConstructor
 public class MaterialPutController extends Controller {
 
@@ -39,24 +38,21 @@ public class MaterialPutController extends Controller {
   @PutMapping(value = "/{materialId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> updateMaterialJson(
       @PathVariable String courseId,
+      @PathVariable String moduleId,
       @PathVariable String materialId,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestBody Map<String, String> request) {
 
-    UUID courseUuid;
-    UUID materialUuid;
-    try {
-      courseUuid = UUID.fromString(courseId);
-      materialUuid = UUID.fromString(materialId);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "bad", "message", "invalid UUID format"));
-    }
-
-    Course course = new QCourse().uuid.eq(courseUuid).findOne();
+    Course course = findCourse(courseId);
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    Module module = findModule(moduleId, course);
+    if (module == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "module not found"));
     }
 
     if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
@@ -64,8 +60,16 @@ public class MaterialPutController extends Controller {
           .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
-    UrlAttachment urlAttachment = new QUrlAttachment().uuid.eq(materialUuid).findOne();
-    if (urlAttachment != null) {
+    UUID materialUuid;
+    try {
+      materialUuid = UUID.fromString(materialId);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+    }
+
+    UrlAttachment urlAttachment = DB.find(UrlAttachment.class, materialUuid);
+    if (urlAttachment != null && urlAttachment.getModule().getUuid().equals(module.getUuid())) {
       String name = request.get("name");
       String url = request.get("url");
       String description = request.get("description");
@@ -88,8 +92,8 @@ public class MaterialPutController extends Controller {
       return ResponseEntity.ok(urlAttachment);
     }
 
-    FileAttachment fileAttachment = new QFileAttachment().uuid.eq(materialUuid).findOne();
-    if (fileAttachment != null) {
+    FileAttachment fileAttachment = DB.find(FileAttachment.class, materialUuid);
+    if (fileAttachment != null && fileAttachment.getModule().getUuid().equals(module.getUuid())) {
       String name = request.get("name");
       String description = request.get("description");
 
@@ -111,26 +115,23 @@ public class MaterialPutController extends Controller {
   @PutMapping(value = "/{materialId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<?> updateMaterialFile(
       @PathVariable String courseId,
+      @PathVariable String moduleId,
       @PathVariable String materialId,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestPart(value = "file", required = false) MultipartFile file,
       @RequestPart(value = "name", required = false) String name,
       @RequestPart(value = "description", required = false) String description) {
 
-    UUID courseUuid;
-    UUID materialUuid;
-    try {
-      courseUuid = UUID.fromString(courseId);
-      materialUuid = UUID.fromString(materialId);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "bad", "message", "invalid UUID format"));
-    }
-
-    Course course = new QCourse().uuid.eq(courseUuid).findOne();
+    Course course = findCourse(courseId);
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    Module module = findModule(moduleId, course);
+    if (module == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "module not found"));
     }
 
     if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
@@ -138,8 +139,16 @@ public class MaterialPutController extends Controller {
           .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
-    FileAttachment fileAttachment = new QFileAttachment().uuid.eq(materialUuid).findOne();
-    if (fileAttachment == null) {
+    UUID materialUuid;
+    try {
+      materialUuid = UUID.fromString(materialId);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+    }
+
+    FileAttachment fileAttachment = DB.find(FileAttachment.class, materialUuid);
+    if (fileAttachment == null || !fileAttachment.getModule().getUuid().equals(module.getUuid())) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "material not found"));
     }
@@ -155,16 +164,14 @@ public class MaterialPutController extends Controller {
       String oldUrl = fileAttachment.getFileUrl();
       try {
         fileStorageService.delete(oldUrl);
-      } catch (IOException e) {
+      } catch (IOException | IllegalArgumentException e) {
         System.err.println("Warning: Failed to delete old file: " + e.getMessage());
-      } catch (IllegalArgumentException e) {
-        System.err.println("Warning: " + e.getMessage());
       }
 
       String newFileUrl;
       try {
         newFileUrl =
-            fileStorageService.store(courseUuid, file.getOriginalFilename(), file.getBytes());
+            fileStorageService.store(course.getUuid(), file.getOriginalFilename(), file.getBytes());
       } catch (IOException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(Map.of("status", "bad", "message", "failed to store file: " + e.getMessage()));
@@ -183,5 +190,25 @@ public class MaterialPutController extends Controller {
     fileAttachment.save();
 
     return ResponseEntity.ok(fileAttachment);
+  }
+
+  private Course findCourse(String courseId) {
+    try {
+      return DB.find(Course.class, UUID.fromString(courseId));
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private Module findModule(String moduleId, Course course) {
+    try {
+      Module module = DB.find(Module.class, UUID.fromString(moduleId));
+      if (module == null || !module.getCourse().getUuid().equals(course.getUuid())) {
+        return null;
+      }
+      return module;
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
   }
 }

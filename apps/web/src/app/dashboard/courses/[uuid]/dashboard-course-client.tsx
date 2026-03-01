@@ -7,8 +7,6 @@ import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import {
 	deleteCoursesByCourseIdMutation,
-	getCoursesByCourseIdMaterialsOptions,
-	getCoursesByCourseIdQuizzesOptions,
 	getCoursesLecturerByCourseIdOptions,
 	postCoursesByCourseIdArchiveMutation,
 	postCoursesByCourseIdDuplicateMutation,
@@ -22,8 +20,7 @@ import BackgroundGrid from "@/components/background-grid";
 import { CourseActions } from "@/components/courses/course-actions";
 import { CourseFeed } from "@/components/courses/course-feed";
 import { CourseHeader } from "@/components/courses/course-header";
-import { CourseMaterialsSection } from "@/components/courses/course-materials-section";
-import { CourseQuizzesSection } from "@/components/courses/course-quizzes-section";
+import { CourseModulesSection } from "@/components/courses/course-modules-section";
 import { DeleteFeedPostButton } from "@/components/courses/delete-feed-post-dialog";
 import {
 	CreateFeedPostButton,
@@ -47,28 +44,6 @@ export default function DashboardCourseClient() {
 		refetch: refetchCourse,
 	} = useQuery({
 		...getCoursesLecturerByCourseIdOptions({
-			path: { courseId: uuid },
-		}),
-	});
-
-	const {
-		data: materials,
-		isPending: materialsLoading,
-		isError: materialsError,
-		refetch: refetchMaterials,
-	} = useQuery({
-		...getCoursesByCourseIdMaterialsOptions({
-			path: { courseId: uuid },
-		}),
-	});
-
-	const {
-		data: quizzes,
-		isPending: quizzesLoading,
-		isError: quizzesError,
-		refetch: refetchQuizzes,
-	} = useQuery({
-		...getCoursesByCourseIdQuizzesOptions({
 			path: { courseId: uuid },
 		}),
 	});
@@ -222,7 +197,7 @@ export default function DashboardCourseClient() {
 							</h2>
 							<CreateFeedPostButton
 								courseId={uuid}
-								disabled={course.status !== CourseStatus.DRAFT}
+								disabled={course.status !== CourseStatus.LIVE}
 							/>
 						</motion.div>
 
@@ -236,22 +211,12 @@ export default function DashboardCourseClient() {
 								<DeleteFeedPostButton post={item} courseId={uuid} />
 							)}
 							onKick={() => queryClient.invalidateQueries()}
+							onModuleReveal={() => queryClient.invalidateQueries()}
 						/>
 
-						<CourseMaterialsSection
-							course={course}
-							materials={materials}
-							loading={materialsLoading}
-							error={materialsError}
-							onRetry={() => refetchMaterials()}
-						/>
-
-						<CourseQuizzesSection
-							course={course}
-							quizzes={quizzes}
-							loading={quizzesLoading}
-							error={quizzesError}
-							onRetry={() => refetchQuizzes()}
+						<CourseModulesSection
+							courseId={uuid}
+							courseStatus={course.status ?? CourseStatus.DRAFT}
 						/>
 					</>
 				) : null}

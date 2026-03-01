@@ -1,28 +1,12 @@
 openapi: 3.0.3
 info:
-  title: Think Different Academy – Tour de App 2026 API
+  title: Think Different Academy API
   version: 1.0.0
-  description: >
-    Official OpenAPI (Swagger) specification for the **Tour de App 2026** competition project.
-
-    This API defines the architecture for the **Think Different Academy** learning platform —
-    an interactive educational system combining courses, materials, quizzes, and live updates.
-
-    It covers the main development phases of the challenge:
-    - Phase 0 – basic deployment (Hello TdA)
-    - Phase 1 – course catalog and instructor dashboard
-    - Phase 2 – course materials
-    - Phase 3 – quizzes
-    - Phase 4 – news feed and SSE updates
-
-    **Authentication is not part of this specification.**
-    All endpoints are publicly accessible for simplicity.
 
 paths:
   /:
     get:
       summary: Root endpoint
-      description: Returns basic organization information for environment validation.
       responses:
         '200':
           description: OK
@@ -34,7 +18,6 @@ paths:
   /courses:
     get:
       summary: List all courses
-      description: Returns all available public courses.
       responses:
         '200':
           description: OK
@@ -46,7 +29,6 @@ paths:
                   $ref: '#/components/schemas/CourseSummary'
     post:
       summary: Create a new course
-      description: Instructor can create a new course.
       requestBody:
         required: true
         content:
@@ -55,7 +37,7 @@ paths:
               $ref: '#/components/schemas/CourseCreateRequest'
       responses:
         '201':
-          description: Course created successfully
+          description: Created
           content:
             application/json:
               schema:
@@ -64,7 +46,6 @@ paths:
   /courses/lecturer:
     get:
       summary: List lecturer courses
-      description: Returns all courses for lecturers, including all statuses.
       responses:
         '200':
           description: OK
@@ -80,7 +61,6 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     get:
       summary: Get lecturer course details
-      description: Returns full course details for lecturers in any state.
       responses:
         '200':
           description: OK
@@ -94,7 +74,6 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     get:
       summary: Get course details
-      description: Returns full course details, including materials, quizzes, and feed items.
       responses:
         '200':
           description: OK
@@ -106,7 +85,6 @@ paths:
           $ref: '#/components/responses/NotFound'
     put:
       summary: Update course
-      description: Updates course name or description.
       requestBody:
         required: true
         content:
@@ -115,26 +93,22 @@ paths:
               $ref: '#/components/schemas/CourseUpdateRequest'
       responses:
         '200':
-          description: Course updated
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CourseSummary'
     delete:
       summary: Delete course
-      description: Deletes the course, including related data.
       responses:
         '204':
-          description: Course deleted
-        '404':
-          $ref: '#/components/responses/NotFound'
+          description: No content
 
   /courses/{courseId}/status:
     parameters:
       - $ref: '#/components/parameters/CourseId'
     put:
       summary: Update course status
-      description: Transition course state and optionally set schedule.
       requestBody:
         required: true
         content:
@@ -143,7 +117,7 @@ paths:
               $ref: '#/components/schemas/CourseStatusUpdateRequest'
       responses:
         '200':
-          description: Course updated
+          description: OK
           content:
             application/json:
               schema:
@@ -154,7 +128,6 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     post:
       summary: Start course now
-      description: Starts a course immediately (requires end time).
       requestBody:
         required: true
         content:
@@ -163,7 +136,7 @@ paths:
               $ref: '#/components/schemas/CourseStartRequest'
       responses:
         '200':
-          description: Course updated
+          description: OK
           content:
             application/json:
               schema:
@@ -174,7 +147,6 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     post:
       summary: Pause course
-      description: Pauses a live course and optionally schedules restart/end.
       requestBody:
         required: true
         content:
@@ -183,7 +155,7 @@ paths:
               $ref: '#/components/schemas/CoursePauseRequest'
       responses:
         '200':
-          description: Course updated
+          description: OK
           content:
             application/json:
               schema:
@@ -194,10 +166,9 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     post:
       summary: Archive course
-      description: Ends the course and hides it from public view.
       responses:
         '200':
-          description: Course updated
+          description: OK
           content:
             application/json:
               schema:
@@ -208,10 +179,9 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     post:
       summary: Join course
-      description: Records a student join for live courses.
       responses:
         '201':
-          description: Joined
+          description: Created
           content:
             application/json:
               schema:
@@ -222,10 +192,9 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     post:
       summary: Create course session
-      description: Creates an anonymous student session for course participation.
       responses:
         '201':
-          description: Session created
+          description: Created
           content:
             application/json:
               schema:
@@ -236,10 +205,9 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     post:
       summary: Leave course
-      description: Marks a student as left.
       responses:
         '200':
-          description: Left
+          description: OK
           content:
             application/json:
               schema:
@@ -250,7 +218,6 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     post:
       summary: Duplicate course
-      description: Creates a draft copy of the course.
       requestBody:
         required: true
         content:
@@ -259,18 +226,87 @@ paths:
               $ref: '#/components/schemas/CourseDuplicateRequest'
       responses:
         '201':
-          description: Course duplicated
+          description: Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CourseDetail'
 
-  /courses/{courseId}/materials:
+  /courses/{courseId}/modules:
     parameters:
       - $ref: '#/components/parameters/CourseId'
     get:
-      summary: List course materials
-      description: Returns all learning materials associated with a course.
+      summary: List modules
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Module'
+    post:
+      summary: Create module
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+
+  /courses/{courseId}/modules/{moduleId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
+    put:
+      summary: Update module
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleUpdateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+    delete:
+      summary: Delete module
+      responses:
+        '204':
+          description: No content
+
+  /courses/{courseId}/modules/{moduleId}/reveal:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
+    put:
+      summary: Reveal module
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+
+  /courses/{courseId}/modules/{moduleId}/materials:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
+    get:
+      summary: List module materials
       responses:
         '200':
           description: OK
@@ -281,63 +317,59 @@ paths:
                 items:
                   $ref: '#/components/schemas/Material'
     post:
-      summary: Add new material (file or URL)
-      description: >
-        Adds a new file or link material to a course.
-        Use `multipart/form-data` for files and `application/json` for URLs.
+      summary: Add material
       requestBody:
         required: true
         content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/FileMaterialCreateRequest'
           application/json:
             schema:
               $ref: '#/components/schemas/UrlMaterialCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FileMaterialCreateRequest'
       responses:
         '201':
-          description: Material created successfully
+          description: Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Material'
 
-  /courses/{courseId}/materials/{materialId}:
+  /courses/{courseId}/modules/{moduleId}/materials/{materialId}:
     parameters:
       - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
       - $ref: '#/components/parameters/MaterialId'
     put:
       summary: Update material
-      description: Update metadata or replace an uploaded file.
       requestBody:
         required: true
         content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/FileMaterialUpdateRequest'
           application/json:
             schema:
               $ref: '#/components/schemas/UrlMaterialUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FileMaterialUpdateRequest'
       responses:
         '200':
-          description: Material updated
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Material'
     delete:
       summary: Delete material
-      description: Removes the material from the course.
       responses:
         '204':
-          description: Material deleted
+          description: No content
 
-  /courses/{courseId}/quizzes:
+  /courses/{courseId}/modules/{moduleId}/quizzes:
     parameters:
       - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
     get:
-      summary: List quizzes
-      description: Returns all quizzes belonging to a specific course.
+      summary: List module quizzes
       responses:
         '200':
           description: OK
@@ -348,8 +380,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Quiz'
     post:
-      summary: Create new quiz
-      description: Instructor can create a new quiz for a course.
+      summary: Create quiz
       requestBody:
         required: true
         content:
@@ -358,19 +389,19 @@ paths:
               $ref: '#/components/schemas/Quiz'
       responses:
         '201':
-          description: Quiz created successfully
+          description: Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Quiz'
 
-  /courses/{courseId}/quizzes/{quizId}:
+  /courses/{courseId}/modules/{moduleId}/quizzes/{quizId}:
     parameters:
       - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
       - $ref: '#/components/parameters/QuizId'
     get:
-      summary: Get quiz details
-      description: Returns quiz data, including all questions.
+      summary: Get quiz
       responses:
         '200':
           description: OK
@@ -380,7 +411,6 @@ paths:
                 $ref: '#/components/schemas/Quiz'
     put:
       summary: Update quiz
-      description: Update quiz title or questions.
       requestBody:
         required: true
         content:
@@ -389,25 +419,24 @@ paths:
               $ref: '#/components/schemas/Quiz'
       responses:
         '200':
-          description: Quiz updated
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Quiz'
     delete:
       summary: Delete quiz
-      description: Permanently removes the quiz from the course.
       responses:
         '204':
-          description: Quiz deleted
+          description: No content
 
-  /courses/{courseId}/quizzes/{quizId}/submit:
+  /courses/{courseId}/modules/{moduleId}/quizzes/{quizId}/submit:
     parameters:
       - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
       - $ref: '#/components/parameters/QuizId'
     post:
       summary: Submit quiz answers
-      description: Evaluates quiz answers and returns the score.
       requestBody:
         required: true
         content:
@@ -416,37 +445,37 @@ paths:
               $ref: '#/components/schemas/QuizSubmitRequest'
       responses:
         '200':
-          description: Quiz evaluation result
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QuizSubmitResponse'
 
-  /courses/{courseId}/quizzes/{quizId}/stats:
+  /courses/{courseId}/modules/{moduleId}/quizzes/{quizId}/stats:
     parameters:
       - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
       - $ref: '#/components/parameters/QuizId'
     get:
-      summary: Get quiz statistics
-      description: Returns aggregated statistics for quiz answers, including the number of submissions for each option.
+      summary: Get quiz stats
       responses:
         '200':
-          description: Quiz statistics
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QuizStatsResponse'
 
-  /courses/{courseId}/quizzes/{quizId}/results:
+  /courses/{courseId}/modules/{moduleId}/quizzes/{quizId}/results:
     parameters:
       - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
       - $ref: '#/components/parameters/QuizId'
     get:
       summary: Get quiz results
-      description: Returns quiz submissions for the current participant.
       responses:
         '200':
-          description: Quiz results
+          description: OK
           content:
             application/json:
               schema:
@@ -459,7 +488,6 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     get:
       summary: Get course feed
-      description: Returns course news posts and automatic system events.
       responses:
         '200':
           description: OK
@@ -470,8 +498,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/FeedItem'
     post:
-      summary: Add new feed post
-      description: Instructor can add manual updates (e.g. announcements).
+      summary: Add feed post
       requestBody:
         required: true
         content:
@@ -480,7 +507,7 @@ paths:
               $ref: '#/components/schemas/FeedCreateRequest'
       responses:
         '201':
-          description: Post created
+          description: Created
           content:
             application/json:
               schema:
@@ -490,9 +517,13 @@ paths:
     parameters:
       - $ref: '#/components/parameters/CourseId'
       - $ref: '#/components/parameters/PostId'
+    delete:
+      summary: Delete feed post
+      responses:
+        '204':
+          description: No content
     put:
       summary: Update feed post
-      description: Edit an existing post and mark it as edited.
       requestBody:
         required: true
         content:
@@ -501,25 +532,17 @@ paths:
               $ref: '#/components/schemas/FeedUpdateRequest'
       responses:
         '200':
-          description: Post updated
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedItem'
-    delete:
-      summary: Delete feed post
-      description: Remove a post from the course feed.
-      responses:
-        '204':
-          description: Post deleted
 
   /courses/{courseId}/feed/stream:
     parameters:
       - $ref: '#/components/parameters/CourseId'
     get:
-      summary: SSE live feed stream
-      description: >
-        Streams new posts and automatic events in real-time using Server-Sent Events (SSE).
+      summary: Stream course feed
       responses:
         '200':
           description: Event stream
@@ -527,14 +550,18 @@ paths:
             text/event-stream:
               schema:
                 type: string
-                example: |
-                  event: new_post
-                  data: {"uuid":"123","message":"New material added"}
 
 components:
   parameters:
     CourseId:
       name: courseId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ModuleId:
+      name: moduleId
       in: path
       required: true
       schema:
@@ -573,22 +600,21 @@ components:
   schemas:
     OrganizationResponse:
       type: object
+      required: [organization]
       properties:
         organization:
           type: string
-          example: Student Cyber Games
-      required: [organization]
 
     ErrorResponse:
       type: object
+      required: [message]
       properties:
         message:
           type: string
-          example: The requested resource was not found.
-      required: [message]
 
     CourseSummary:
       type: object
+      required: [uuid, name]
       properties:
         uuid:
           type: string
@@ -619,16 +645,15 @@ components:
           format: date-time
         joined:
           type: boolean
-      required: [uuid, name]
 
     CourseCreateRequest:
       type: object
+      required: [name]
       properties:
         name:
           type: string
         description:
           type: string
-      required: [name]
 
     CourseUpdateRequest:
       type: object
@@ -640,21 +665,19 @@ components:
 
     CourseDetail:
       type: object
+      required: [uuid, name]
       properties:
         uuid:
           type: string
+          format: uuid
         name:
           type: string
         description:
           type: string
-        materials:
+        modules:
           type: array
           items:
-            $ref: '#/components/schemas/Material'
-        quizzes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Quiz'
+            $ref: '#/components/schemas/Module'
         feed:
           type: array
           items:
@@ -675,7 +698,6 @@ components:
           format: date-time
         joined:
           type: boolean
-      required: [uuid, name]
 
     CourseStatus:
       type: string
@@ -683,6 +705,7 @@ components:
 
     CourseStatusUpdateRequest:
       type: object
+      required: [status]
       properties:
         status:
           type: string
@@ -692,15 +715,14 @@ components:
         scheduledEndAt:
           type: string
           format: date-time
-      required: [status]
 
     CourseStartRequest:
       type: object
+      required: [scheduledEndAt]
       properties:
         scheduledEndAt:
           type: string
           format: date-time
-      required: [scheduledEndAt]
 
     CoursePauseRequest:
       type: object
@@ -731,10 +753,58 @@ components:
 
     CourseDuplicateRequest:
       type: object
+      required: [name]
       properties:
         name:
           type: string
-      required: [name]
+
+    Module:
+      type: object
+      required: [uuid, title, visible]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        visible:
+          type: boolean
+        revealedAt:
+          type: string
+          format: date-time
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/Material'
+        quizzes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quiz'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ModuleCreateRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+
+    ModuleUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
 
     Material:
       oneOf:
@@ -748,9 +818,11 @@ components:
 
     FileMaterial:
       type: object
+      required: [uuid, type, name, fileUrl]
       properties:
         uuid:
           type: string
+          format: uuid
         type:
           type: string
           enum: [file]
@@ -760,18 +832,19 @@ components:
           type: string
         fileUrl:
           type: string
-          format: uri
         mimeType:
           type: string
         sizeBytes:
           type: integer
-      required: [uuid, type, name, fileUrl]
+          format: int64
 
     UrlMaterial:
       type: object
+      required: [uuid, type, name, url]
       properties:
         uuid:
           type: string
+          format: uuid
         type:
           type: string
           enum: [url]
@@ -781,14 +854,12 @@ components:
           type: string
         url:
           type: string
-          format: uri
         faviconUrl:
           type: string
-          format: uri
-      required: [uuid, type, name, url]
 
     FileMaterialCreateRequest:
       type: object
+      required: [type, name, file]
       properties:
         type:
           type: string
@@ -800,10 +871,10 @@ components:
         file:
           type: string
           format: binary
-      required: [type, name, file]
 
     UrlMaterialCreateRequest:
       type: object
+      required: [type, name, url]
       properties:
         type:
           type: string
@@ -814,8 +885,6 @@ components:
           type: string
         url:
           type: string
-          format: uri
-      required: [type, name, url]
 
     FileMaterialUpdateRequest:
       type: object
@@ -837,13 +906,14 @@ components:
           type: string
         url:
           type: string
-          format: uri
 
     Quiz:
       type: object
+      required: [title, questions]
       properties:
         uuid:
           type: string
+          format: uuid
         title:
           type: string
         attemptsCount:
@@ -852,7 +922,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Question'
-      required: [title, questions]
 
     Question:
       oneOf:
@@ -866,9 +935,11 @@ components:
 
     SingleChoiceQuestion:
       type: object
+      required: [type, question, options, correctIndex]
       properties:
         uuid:
           type: string
+          format: uuid
         type:
           type: string
           enum: [singleChoice]
@@ -880,13 +951,14 @@ components:
             type: string
         correctIndex:
           type: integer
-      required: [type, question, options, correctIndex]
 
     MultipleChoiceQuestion:
       type: object
+      required: [type, question, options, correctIndices]
       properties:
         uuid:
           type: string
+          format: uuid
         type:
           type: string
           enum: [multipleChoice]
@@ -900,22 +972,22 @@ components:
           type: array
           items:
             type: integer
-      required: [type, question, options, correctIndices]
 
     QuizSubmitRequest:
       type: object
+      required: [answers]
       properties:
         answers:
           type: array
           items:
             $ref: '#/components/schemas/QuizAnswer'
-      required: [answers]
 
     QuizAnswer:
       type: object
       properties:
         uuid:
           type: string
+          format: uuid
         selectedIndex:
           type: integer
         selectedIndices:
@@ -924,13 +996,14 @@ components:
             type: integer
         comment:
           type: string
-          description: Optional comment or explanation for the answer
 
     QuizSubmitResponse:
       type: object
+      required: [quizUuid, score, maxScore, submittedAt]
       properties:
         quizUuid:
           type: string
+          format: uuid
         score:
           type: number
         maxScore:
@@ -942,10 +1015,10 @@ components:
         submittedAt:
           type: string
           format: date-time
-      required: [quizUuid, score, maxScore, submittedAt]
 
     QuizStatsResponse:
       type: object
+      required: [quizUuid, quizTitle, totalSubmissions, questions]
       properties:
         quizUuid:
           type: string
@@ -958,10 +1031,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/QuestionStats'
-      required: [quizUuid, quizTitle, totalSubmissions, questions]
 
     QuestionStats:
       type: object
+      required: [questionUuid, type, question, options, optionCounts]
       properties:
         questionUuid:
           type: string
@@ -985,13 +1058,14 @@ components:
           type: object
           additionalProperties:
             type: integer
-      required: [questionUuid, type, question, options, optionCounts]
 
     FeedItem:
       type: object
+      required: [uuid, type, message, createdAt]
       properties:
         uuid:
           type: string
+          format: uuid
         type:
           type: string
           enum: [manual, system]
@@ -1005,14 +1079,13 @@ components:
         updatedAt:
           type: string
           format: date-time
-      required: [uuid, type, message, createdAt]
 
     FeedCreateRequest:
       type: object
+      required: [message]
       properties:
         message:
           type: string
-      required: [message]
 
     FeedUpdateRequest:
       type: object

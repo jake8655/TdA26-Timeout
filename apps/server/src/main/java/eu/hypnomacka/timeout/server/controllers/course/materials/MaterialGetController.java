@@ -3,8 +3,9 @@ package eu.hypnomacka.timeout.server.controllers.course.materials;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
+import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
-import eu.hypnomacka.timeout.server.core.query.QCourse;
+import io.ebean.DB;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,35 +17,47 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/courses/{courseId}/materials")
+@RequestMapping("/courses/{courseId}/modules/{moduleId}/materials")
 public class MaterialGetController extends Controller {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> listMaterials(
       @PathVariable("courseId") String courseIdStr,
+      @PathVariable("moduleId") String moduleIdStr,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
     UUID courseId;
+    UUID moduleId;
     try {
       courseId = UUID.fromString(courseIdStr);
+      moduleId = UUID.fromString(moduleIdStr);
     } catch (IllegalArgumentException e) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "invalid UUID format"));
     }
 
-    Course course = new QCourse().uuid.eq(courseId).findOne();
+    Course course = DB.find(Course.class, courseId);
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
+    Module module = DB.find(Module.class, moduleId);
+    if (module == null || !module.getCourse().getUuid().equals(course.getUuid())) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "module not found"));
+    }
+
+    boolean isLecturer = isLecturerSession(sessionId);
+    if (!isLecturer
+        && (course.getStatus() != Course.Status.LIVE
+            || !Boolean.TRUE.equals(module.getVisible()))) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
-          .body(Map.of("status", "bad", "message", "course not live"));
+          .body(Map.of("status", "bad", "message", "module not visible"));
     }
 
     List<Object> materials = new ArrayList<>();
-    materials.addAll(course.getFileAttachments());
-    materials.addAll(course.getUrlAttachments());
+    materials.addAll(module.getFileAttachments());
+    materials.addAll(module.getUrlAttachments());
 
     materials.sort(
         (a, b) -> {

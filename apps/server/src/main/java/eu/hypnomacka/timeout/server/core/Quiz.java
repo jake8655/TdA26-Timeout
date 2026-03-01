@@ -23,9 +23,9 @@ public class Quiz extends Model {
   @Id private UUID uuid;
 
   @ManyToOne(optional = false)
-  @JoinColumn(name = "course_uuid", nullable = false)
+  @JoinColumn(name = "module_uuid", nullable = false)
   @JsonBackReference
-  private Course course;
+  private Module module;
 
   @Column(nullable = false)
   private String title;
@@ -49,8 +49,8 @@ public class Quiz extends Model {
 
   public Quiz() {}
 
-  public Quiz(Course course, String title) {
-    this.course = course;
+  public Quiz(Module module, String title) {
+    this.module = module;
     this.title = title;
   }
 }

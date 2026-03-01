@@ -5,6 +5,7 @@ import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.CourseJoin;
 import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
+import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
@@ -12,7 +13,12 @@ import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import eu.hypnomacka.timeout.server.core.query.QEvent;
 import eu.hypnomacka.timeout.server.core.query.QQuizResult;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +51,7 @@ public class CourseGetController extends Controller {
               .desc()
               .findList();
     }
+
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
       if (!isLecturer
@@ -114,85 +121,8 @@ public class CourseGetController extends Controller {
           .body(buildLimitedCourseResponse(course, studentSessionId));
     }
 
-    List<Object> materials = new ArrayList<>();
-    materials.addAll(course.getFileAttachments());
-    materials.addAll(course.getUrlAttachments());
-
-    materials.sort(
-        (a, b) -> {
-          Instant dateA =
-              a instanceof FileAttachment
-                  ? ((FileAttachment) a).getUpdatedAt()
-                  : ((UrlAttachment) a).getUpdatedAt();
-          Instant dateB =
-              b instanceof FileAttachment
-                  ? ((FileAttachment) b).getUpdatedAt()
-                  : ((UrlAttachment) b).getUpdatedAt();
-          return dateB.compareTo(dateA);
-        });
-
-    List<Quiz> quizzes = new ArrayList<>(course.getQuizzes());
-    quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
-
-    List<Event> events = new QEvent().course.eq(course).orderBy().createdAt.desc().findList();
-
-    List<Map<String, Object>> feed = new ArrayList<>();
-    for (Event event : events) {
-      Map<String, Object> eventMap = new LinkedHashMap<>();
-      eventMap.put("uuid", event.getUuid());
-      eventMap.put("type", event.getType().name().toLowerCase());
-      eventMap.put("message", event.getMessage());
-      eventMap.put("edited", event.getEdited());
-      eventMap.put("createdAt", event.getCreatedAt());
-      eventMap.put("updatedAt", event.getUpdatedAt());
-      feed.add(eventMap);
-    }
-
     return ResponseEntity.status(HttpStatus.OK)
-        .body(buildCourseDetailResponse(course, materials, quizzes, feed, studentSessionId));
-  }
-
-  private Map<String, Object> buildCourseSummaryResponse(Course course, String studentSessionId) {
-    Map<String, Object> response = new LinkedHashMap<>();
-    response.put("uuid", course.getUuid());
-    response.put("name", course.getName());
-    response.put("description", course.getDescription());
-    response.put("createdAt", course.getCreatedAt());
-    response.put("updatedAt", course.getUpdatedAt());
-    response.put("status", course.getStatus().name().toLowerCase());
-    response.put("scheduledStartAt", course.getScheduledStartAt());
-    response.put("scheduledEndAt", course.getScheduledEndAt());
-    response.put("pausedAt", course.getPausedAt());
-    response.put("archivedAt", course.getArchivedAt());
-    if (studentSessionId != null) {
-      response.put("joined", isJoined(course, studentSessionId));
-    }
-
-    return response;
-  }
-
-  private Map<String, Object> buildCourseDetailResponse(
-      Course course,
-      List<Object> materials,
-      List<Quiz> quizzes,
-      List<Map<String, Object>> feed,
-      String studentSessionId) {
-    Map<String, Object> response = new LinkedHashMap<>();
-    response.put("uuid", course.getUuid());
-    response.put("name", course.getName());
-    response.put("description", course.getDescription());
-    response.put("createdAt", course.getCreatedAt());
-    response.put("updatedAt", course.getUpdatedAt());
-    response.put("materials", materials);
-    response.put("quizzes", quizzes);
-    response.put("feed", feed);
-    response.put("status", course.getStatus().name().toLowerCase());
-    response.put("scheduledStartAt", course.getScheduledStartAt());
-    response.put("scheduledEndAt", course.getScheduledEndAt());
-    response.put("pausedAt", course.getPausedAt());
-    response.put("archivedAt", course.getArchivedAt());
-    response.put("joined", isJoined(course, studentSessionId));
-    return response;
+        .body(buildCourseDetailResponse(course, isLecturer, studentSessionId));
   }
 
   @GetMapping(value = "/lecturer/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -218,28 +148,42 @@ public class CourseGetController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    List<Object> materials = new ArrayList<>();
-    materials.addAll(course.getFileAttachments());
-    materials.addAll(course.getUrlAttachments());
+    return ResponseEntity.ok(buildCourseDetailResponse(course, true, null));
+  }
 
-    materials.sort(
-        (a, b) -> {
-          Instant dateA =
-              a instanceof FileAttachment
-                  ? ((FileAttachment) a).getUpdatedAt()
-                  : ((UrlAttachment) a).getUpdatedAt();
-          Instant dateB =
-              b instanceof FileAttachment
-                  ? ((FileAttachment) b).getUpdatedAt()
-                  : ((UrlAttachment) b).getUpdatedAt();
-          return dateB.compareTo(dateA);
-        });
+  private Map<String, Object> buildCourseSummaryResponse(Course course, String studentSessionId) {
+    Map<String, Object> response = new LinkedHashMap<>();
+    response.put("uuid", course.getUuid());
+    response.put("name", course.getName());
+    response.put("description", course.getDescription());
+    response.put("createdAt", course.getCreatedAt());
+    response.put("updatedAt", course.getUpdatedAt());
+    response.put("status", course.getStatus().name().toLowerCase());
+    response.put("scheduledStartAt", course.getScheduledStartAt());
+    response.put("scheduledEndAt", course.getScheduledEndAt());
+    response.put("pausedAt", course.getPausedAt());
+    response.put("archivedAt", course.getArchivedAt());
+    if (studentSessionId != null) {
+      response.put("joined", isJoined(course, studentSessionId));
+    }
 
-    List<Quiz> quizzes = new ArrayList<>(course.getQuizzes());
-    quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
+    return response;
+  }
+
+  private Map<String, Object> buildCourseDetailResponse(
+      Course course, boolean isLecturer, String studentSessionId) {
+    List<Module> modules = new ArrayList<>(course.getModules());
+    modules.sort(Comparator.comparing(Module::getCreatedAt));
+
+    List<Map<String, Object>> moduleResponses = new ArrayList<>();
+    for (Module module : modules) {
+      if (!isLecturer && !Boolean.TRUE.equals(module.getVisible())) {
+        continue;
+      }
+      moduleResponses.add(buildModuleResponse(module, true));
+    }
 
     List<Event> events = new QEvent().course.eq(course).orderBy().createdAt.desc().findList();
-
     List<Map<String, Object>> feed = new ArrayList<>();
     for (Event event : events) {
       Map<String, Object> eventMap = new LinkedHashMap<>();
@@ -252,7 +196,21 @@ public class CourseGetController extends Controller {
       feed.add(eventMap);
     }
 
-    return ResponseEntity.ok(buildCourseDetailResponse(course, materials, quizzes, feed, null));
+    Map<String, Object> response = new LinkedHashMap<>();
+    response.put("uuid", course.getUuid());
+    response.put("name", course.getName());
+    response.put("description", course.getDescription());
+    response.put("createdAt", course.getCreatedAt());
+    response.put("updatedAt", course.getUpdatedAt());
+    response.put("modules", moduleResponses);
+    response.put("feed", feed);
+    response.put("status", course.getStatus().name().toLowerCase());
+    response.put("scheduledStartAt", course.getScheduledStartAt());
+    response.put("scheduledEndAt", course.getScheduledEndAt());
+    response.put("pausedAt", course.getPausedAt());
+    response.put("archivedAt", course.getArchivedAt());
+    response.put("joined", isJoined(course, studentSessionId));
+    return response;
   }
 
   private Map<String, Object> buildLimitedCourseResponse(Course course, String studentSessionId) {
@@ -268,6 +226,7 @@ public class CourseGetController extends Controller {
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
     response.put("joined", isJoined(course, studentSessionId));
+    response.put("modules", List.of());
     return response;
   }
 
@@ -287,7 +246,8 @@ public class CourseGetController extends Controller {
     if (join != null && Boolean.TRUE.equals(join.getHasSubmittedQuiz())) {
       return true;
     }
-    return new QQuizResult().quiz.course.eq(course).sessionToken.eq(sessionId).findCount() > 0;
+    return new QQuizResult().quiz.module.course.eq(course).sessionToken.eq(sessionId).findCount()
+        > 0;
   }
 
   private Map<String, Object> buildArchivedCourseResponse(Course course, String studentSessionId) {
@@ -297,7 +257,6 @@ public class CourseGetController extends Controller {
     response.put("description", course.getDescription());
     response.put("createdAt", course.getCreatedAt());
     response.put("updatedAt", course.getUpdatedAt());
-    response.put("materials", List.of());
     response.put("feed", List.of());
     response.put("status", course.getStatus().name().toLowerCase());
     response.put("scheduledStartAt", course.getScheduledStartAt());
@@ -305,20 +264,76 @@ public class CourseGetController extends Controller {
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
     response.put("joined", isJoined(course, studentSessionId));
-    response.put("quizzes", filterQuizzesWithResults(course, studentSessionId));
+    response.put("modules", filterArchivedModules(course, studentSessionId));
     return response;
   }
 
-  private List<Quiz> filterQuizzesWithResults(Course course, String studentSessionId) {
+  private List<Map<String, Object>> filterArchivedModules(Course course, String studentSessionId) {
     if (studentSessionId == null || studentSessionId.isBlank()) {
       return List.of();
     }
-    List<Quiz> quizzes = new ArrayList<>(course.getQuizzes());
+
+    List<Module> modules = new ArrayList<>(course.getModules());
+    modules.sort(Comparator.comparing(Module::getCreatedAt));
+
+    List<Map<String, Object>> response = new ArrayList<>();
+    for (Module module : modules) {
+      List<Quiz> quizzes = new ArrayList<>(module.getQuizzes());
+      quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
+      List<Quiz> submittedQuizzes =
+          quizzes.stream()
+              .filter(
+                  quiz ->
+                      new QQuizResult().quiz.eq(quiz).sessionToken.eq(studentSessionId).findCount()
+                          > 0)
+              .toList();
+
+      if (submittedQuizzes.isEmpty()) {
+        continue;
+      }
+
+      Map<String, Object> moduleMap = new LinkedHashMap<>();
+      moduleMap.put("uuid", module.getUuid());
+      moduleMap.put("title", module.getTitle());
+      moduleMap.put("quizzes", submittedQuizzes);
+      response.add(moduleMap);
+    }
+
+    return response;
+  }
+
+  private Map<String, Object> buildModuleResponse(Module module, boolean includeDescription) {
+    List<Object> materials = new ArrayList<>();
+    materials.addAll(module.getFileAttachments());
+    materials.addAll(module.getUrlAttachments());
+    materials.sort(
+        (a, b) -> {
+          Instant dateA =
+              a instanceof FileAttachment
+                  ? ((FileAttachment) a).getUpdatedAt()
+                  : ((UrlAttachment) a).getUpdatedAt();
+          Instant dateB =
+              b instanceof FileAttachment
+                  ? ((FileAttachment) b).getUpdatedAt()
+                  : ((UrlAttachment) b).getUpdatedAt();
+          return dateB.compareTo(dateA);
+        });
+
+    List<Quiz> quizzes = new ArrayList<>(module.getQuizzes());
     quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
-    return quizzes.stream()
-        .filter(
-            quiz ->
-                new QQuizResult().quiz.eq(quiz).sessionToken.eq(studentSessionId).findCount() > 0)
-        .toList();
+
+    Map<String, Object> response = new LinkedHashMap<>();
+    response.put("uuid", module.getUuid());
+    response.put("title", module.getTitle());
+    if (includeDescription) {
+      response.put("description", module.getDescription());
+    }
+    response.put("visible", module.getVisible());
+    response.put("revealedAt", module.getRevealedAt());
+    response.put("materials", materials);
+    response.put("quizzes", quizzes);
+    response.put("createdAt", module.getCreatedAt());
+    response.put("updatedAt", module.getUpdatedAt());
+    return response;
   }
 }

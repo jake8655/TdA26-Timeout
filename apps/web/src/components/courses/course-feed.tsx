@@ -22,6 +22,7 @@ export function CourseFeed({
 	deleteTrigger,
 	viewTrigger,
 	onKick,
+	onModuleReveal,
 }: {
 	courseId: string;
 	showActions?: boolean;
@@ -33,12 +34,19 @@ export function CourseFeed({
 		status?: string;
 		effectiveAt?: string;
 	}) => void;
+	onModuleReveal?: (payload: {
+		moduleId: string;
+		title?: string;
+		revealedAt?: string;
+	}) => void;
 }) {
 	const {
 		feedItems: streamItems,
 		isConnected,
 		kickPayload,
+		moduleRevealPayload,
 		clearKick,
+		clearModuleReveal,
 	} = useCourseFeedStream(courseId);
 
 	useEffect(() => {
@@ -47,6 +55,13 @@ export function CourseFeed({
 			clearKick();
 		}
 	}, [kickPayload, onKick, clearKick]);
+
+	useEffect(() => {
+		if (moduleRevealPayload) {
+			onModuleReveal?.(moduleRevealPayload);
+			clearModuleReveal();
+		}
+	}, [moduleRevealPayload, onModuleReveal, clearModuleReveal]);
 
 	const {
 		data: initialItems,

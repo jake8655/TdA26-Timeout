@@ -59,7 +59,7 @@ public class CourseFeedService {
               Map.of(
                   "uuid", event.getUuid().toString(),
                   "message", event.getMessage(),
-                  "type", event.getType().toString(),
+                  "type", event.getType().toString().toLowerCase(),
                   "edited", event.getEdited(),
                   "createdAt", event.getCreatedAt().toString()));
 

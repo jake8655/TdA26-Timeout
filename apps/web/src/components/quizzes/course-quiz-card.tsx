@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { HelpCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { postCoursesByCourseIdQuizzesByQuizIdSubmitMutation } from "@/api-client/@tanstack/react-query.gen";
+import { postCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdSubmitMutation } from "@/api-client/@tanstack/react-query.gen";
 import type {
 	Quiz,
 	QuizAnswer,
@@ -23,10 +23,12 @@ import { QuizPlayer } from "./quiz-player";
 export function CourseQuizCard({
 	quiz,
 	courseId,
+	moduleId,
 	onSaveResult,
 }: {
 	quiz: Quiz;
 	courseId: string;
+	moduleId?: string;
 	onSaveResult: (result: QuizSubmitResponse) => void;
 }) {
 	const [isPlaying, setIsPlaying] = useState(false);
@@ -40,7 +42,7 @@ export function CourseQuizCard({
 			? localStorage.getItem(`quizAnswers:${quiz.uuid}`)
 			: null;
 	const mutation = useMutation(
-		postCoursesByCourseIdQuizzesByQuizIdSubmitMutation(),
+		postCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdSubmitMutation(),
 	);
 
 	const handleSubmitAnswers = async (
@@ -52,7 +54,7 @@ export function CourseQuizCard({
 
 		const body: QuizSubmitRequest = { answers };
 		const response = await mutation.mutateAsync({
-			path: { courseId, quizId: quiz.uuid },
+			path: { courseId, moduleId: moduleId ?? "", quizId: quiz.uuid },
 			body,
 		});
 
@@ -112,6 +114,7 @@ export function CourseQuizCard({
 					<QuizPlayer
 						quizUuid={quiz.uuid ?? ""}
 						courseId={courseId}
+						moduleId={moduleId}
 						initialSubmittedResult={
 							existingResult ? JSON.parse(existingResult) : null
 						}

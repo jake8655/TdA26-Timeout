@@ -57,15 +57,7 @@ public class Course extends Model {
 
   @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
   @JsonManagedReference
-  private List<FileAttachment> fileAttachments = new ArrayList<>();
-
-  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-  @JsonManagedReference
-  private List<UrlAttachment> urlAttachments = new ArrayList<>();
-
-  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-  @JsonManagedReference
-  private List<Quiz> quizzes = new ArrayList<>();
+  private List<Module> modules = new ArrayList<>();
 
   @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
   @JsonManagedReference

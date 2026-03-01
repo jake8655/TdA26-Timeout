@@ -3,8 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { getCoursesByCourseIdQuizzesByQuizIdStats } from "@/api-client";
-import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
+import {
+	getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdOptions,
+	getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdStatsOptions,
+} from "@/api-client/@tanstack/react-query.gen";
 import EmptyState from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,11 +20,13 @@ import { QuizStatsQuestion } from "./quiz-stats-question";
 export function QuizStatsDialog({
 	quizId,
 	courseId,
+	moduleId,
 	quizTitle,
 	trigger,
 }: {
 	quizId: string;
 	courseId: string;
+	moduleId?: string;
 	quizTitle: string;
 	trigger: React.ReactElement;
 }) {
@@ -32,8 +36,8 @@ export function QuizStatsDialog({
 		isError,
 		refetch: refetchQuiz,
 	} = useQuery({
-		...getCoursesByCourseIdQuizzesByQuizIdOptions({
-			path: { courseId, quizId },
+		...getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdOptions({
+			path: { courseId, moduleId: moduleId ?? "", quizId },
 		}),
 	});
 
@@ -43,12 +47,9 @@ export function QuizStatsDialog({
 		refetch: refetchStats,
 		isError: statsFailed,
 	} = useQuery({
-		queryKey: ["quiz-stats", courseId, quizId],
-		queryFn: () =>
-			getCoursesByCourseIdQuizzesByQuizIdStats({
-				path: { courseId, quizId },
-				responseStyle: "fields",
-			}),
+		...getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdStatsOptions({
+			path: { courseId, moduleId: moduleId ?? "", quizId },
+		}),
 	});
 
 	if (isPending || statsPending) {
@@ -64,7 +65,7 @@ export function QuizStatsDialog({
 		);
 	}
 
-	const statsData = statsResult?.data || { totalSubmissions: 0, questions: [] };
+	const statsData = statsResult || { totalSubmissions: 0, questions: [] };
 
 	const questionStatsByUuid = new Map(
 		(statsData?.questions ?? []).map((questionStats) => [

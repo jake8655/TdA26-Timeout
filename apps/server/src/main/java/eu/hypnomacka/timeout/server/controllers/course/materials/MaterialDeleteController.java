@@ -3,11 +3,10 @@ package eu.hypnomacka.timeout.server.controllers.course.materials;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
+import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
-import eu.hypnomacka.timeout.server.core.query.QCourse;
-import eu.hypnomacka.timeout.server.core.query.QFileAttachment;
-import eu.hypnomacka.timeout.server.core.query.QUrlAttachment;
 import eu.hypnomacka.timeout.server.storage.FileStorageService;
+import io.ebean.DB;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/courses/{courseId}/materials")
+@RequestMapping("/courses/{courseId}/modules/{moduleId}/materials")
 @RequiredArgsConstructor
 public class MaterialDeleteController extends Controller {
 
@@ -25,30 +24,20 @@ public class MaterialDeleteController extends Controller {
   @DeleteMapping("/{materialId}")
   public ResponseEntity<?> deleteMaterial(
       @PathVariable String courseId,
+      @PathVariable String moduleId,
       @PathVariable String materialId,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
 
-    UUID uuid;
-
-    try {
-      uuid = UUID.fromString(materialId);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "error", "message", "Failed to parse uuid from materialId"));
-    }
-
-    UUID courseUuid;
-    try {
-      courseUuid = UUID.fromString(courseId);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "error", "message", "Failed to parse uuid from courseId"));
-    }
-
-    Course course = new QCourse().uuid.eq(courseUuid).findOne();
+    Course course = findCourse(courseId);
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    Module module = findModule(moduleId, course);
+    if (module == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "module not found"));
     }
 
     if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
@@ -56,10 +45,27 @@ public class MaterialDeleteController extends Controller {
           .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
-    FileAttachment file = new QFileAttachment().uuid.eq(uuid).findOne();
-    UrlAttachment urlFile = new QUrlAttachment().uuid.eq(uuid).findOne();
+    UUID materialUuid;
+    try {
+      materialUuid = UUID.fromString(materialId);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+    }
 
-    if (file != null) {
+    int moduleItemCount =
+        module.getFileAttachments().size()
+            + module.getUrlAttachments().size()
+            + module.getQuizzes().size();
+    if (moduleItemCount <= 1) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  "status", "bad", "message", "module must contain at least one material or quiz"));
+    }
+
+    FileAttachment file = DB.find(FileAttachment.class, materialUuid);
+    if (file != null && file.getModule().getUuid().equals(module.getUuid())) {
       String fileUrl = file.getFileUrl();
       try {
         fileStorageService.delete(fileUrl);
@@ -69,22 +75,43 @@ public class MaterialDeleteController extends Controller {
 
       if (file.delete()) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-      } else {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(Map.of("status", "bad", "message", "Failed to delete from database"));
       }
+
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("status", "bad", "message", "failed to delete from database"));
     }
 
-    if (urlFile != null) {
+    UrlAttachment urlFile = DB.find(UrlAttachment.class, materialUuid);
+    if (urlFile != null && urlFile.getModule().getUuid().equals(module.getUuid())) {
       if (urlFile.delete()) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-      } else {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(Map.of("status", "bad", "message", "Failed to delete from database"));
       }
+
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("status", "bad", "message", "failed to delete from database"));
     }
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(Map.of("status", "bad", "message", "material not found"));
+  }
+
+  private Course findCourse(String courseId) {
+    try {
+      return DB.find(Course.class, UUID.fromString(courseId));
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private Module findModule(String moduleId, Course course) {
+    try {
+      Module module = DB.find(Module.class, UUID.fromString(moduleId));
+      if (module == null || !module.getCourse().getUuid().equals(course.getUuid())) {
+        return null;
+      }
+      return module;
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
   }
 }

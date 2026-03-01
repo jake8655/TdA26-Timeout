@@ -2,12 +2,12 @@ package eu.hypnomacka.timeout.server.controllers.course.quizzes;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Question;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.QuizAnswerSubmission;
 import eu.hypnomacka.timeout.server.core.QuizResult;
-import eu.hypnomacka.timeout.server.core.query.QCourse;
-import eu.hypnomacka.timeout.server.core.query.QQuiz;
+import io.ebean.DB;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,37 +19,33 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/courses/{courseId}/quizzes")
+@RequestMapping("/courses/{courseId}/modules/{moduleId}/quizzes")
 public class QuizStatsGetController extends Controller {
 
   @GetMapping(value = "/{quizId}/stats", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> getQuizStats(
-      @PathVariable String courseId, @PathVariable String quizId) {
+      @PathVariable String courseId,
+      @PathVariable String moduleId,
+      @PathVariable String quizId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
 
-    UUID courseUuid;
-    try {
-      courseUuid = UUID.fromString(courseId);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("message", "invalid UUID format"));
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "unauthorized"));
     }
 
-    UUID quizUuid;
-    try {
-      quizUuid = UUID.fromString(quizId);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("message", "invalid UUID format"));
-    }
-
-    Course course = new QCourse().uuid.eq(courseUuid).findOne();
+    Course course = findCourse(courseId);
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("message", "course not found"));
     }
 
-    Quiz quiz = new QQuiz().uuid.eq(quizUuid).course.eq(course).findOne();
+    Module module = findModule(moduleId, course);
+    if (module == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("message", "module not found"));
+    }
 
+    Quiz quiz = findQuiz(quizId, module);
     if (quiz == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "quiz not found"));
     }
@@ -94,5 +90,37 @@ public class QuizStatsGetController extends Controller {
     response.put("questions", questionStats);
 
     return ResponseEntity.ok(response);
+  }
+
+  private Course findCourse(String courseId) {
+    try {
+      return DB.find(Course.class, UUID.fromString(courseId));
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private Module findModule(String moduleId, Course course) {
+    try {
+      Module module = DB.find(Module.class, UUID.fromString(moduleId));
+      if (module == null || !module.getCourse().getUuid().equals(course.getUuid())) {
+        return null;
+      }
+      return module;
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private Quiz findQuiz(String quizId, Module module) {
+    try {
+      Quiz quiz = DB.find(Quiz.class, UUID.fromString(quizId));
+      if (quiz == null || !quiz.getModule().getUuid().equals(module.getUuid())) {
+        return null;
+      }
+      return quiz;
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
   }
 }

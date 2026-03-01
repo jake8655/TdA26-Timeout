@@ -3,6 +3,7 @@ package eu.hypnomacka.timeout.server.controllers.course;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Course.Status;
+import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.services.CourseLifecycleService;
 import java.time.Instant;
@@ -66,6 +67,15 @@ public class CourseLifecycleController extends Controller {
           return ResponseEntity.status(HttpStatus.BAD_REQUEST)
               .body(Map.of("status", "bad", "message", "live requires end time"));
         }
+        if (hasEmptyModules(course)) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(
+                  Map.of(
+                      "status",
+                      "bad",
+                      "message",
+                      "all modules must have at least one material or one quiz"));
+        }
         if (request.getScheduledEndAt() != null) {
           course.setScheduledEndAt(Instant.parse(request.getScheduledEndAt()));
         }
@@ -104,6 +114,15 @@ public class CourseLifecycleController extends Controller {
     if (request.getScheduledEndAt() == null) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "end time required"));
+    }
+    if (hasEmptyModules(course)) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  "status",
+                  "bad",
+                  "message",
+                  "all modules must have at least one material or one quiz"));
     }
 
     course.setScheduledEndAt(Instant.parse(request.getScheduledEndAt()));
@@ -171,6 +190,19 @@ public class CourseLifecycleController extends Controller {
       return null;
     }
     return new QCourse().uuid.eq(courseId).findOne();
+  }
+
+  private boolean hasEmptyModules(Course course) {
+    for (Module module : course.getModules()) {
+      int itemCount =
+          module.getFileAttachments().size()
+              + module.getUrlAttachments().size()
+              + module.getQuizzes().size();
+      if (itemCount == 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Data

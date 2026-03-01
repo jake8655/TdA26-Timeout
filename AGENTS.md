@@ -56,6 +56,7 @@ just run             # Run with dev profile
 just db              # Start MySQL container
 ./google-java-format -n $(find ./src -name "*.java")  # Format check, outputs filenames that are not formatted
 ./google-java-format -i $(find ./src -name "*.java")  # Fix formatting
+./gradlew generateMigration  # Generate DB migration sql file, never manually write migration files, always generate them from entity changes
 ```
 
 ### Code Style

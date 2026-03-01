@@ -1,10 +1,14 @@
 package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
-import eu.hypnomacka.timeout.server.core.*;
+import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Event;
+import eu.hypnomacka.timeout.server.core.FileAttachment;
+import eu.hypnomacka.timeout.server.core.Module;
+import eu.hypnomacka.timeout.server.core.Question;
+import eu.hypnomacka.timeout.server.core.Quiz;
+import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Data;
@@ -51,49 +55,52 @@ public class CourseDuplicateController extends Controller {
     clone.setStatus(Course.Status.DRAFT);
     clone.save();
 
-    List<FileAttachment> fileCopies = new ArrayList<>();
-    for (FileAttachment attachment : course.getFileAttachments()) {
-      FileAttachment copy =
-          new FileAttachment(
-              clone,
-              attachment.getName(),
-              attachment.getDescription(),
-              attachment.getType(),
-              attachment.getSizeBytes(),
-              attachment.getMimeType(),
-              attachment.getFileUrl());
-      fileCopies.add(copy);
-    }
-    fileCopies.forEach(FileAttachment::save);
+    for (Module module : course.getModules()) {
+      Module moduleCopy = new Module(clone, module.getTitle(), module.getDescription());
+      moduleCopy.setVisible(false);
+      moduleCopy.setRevealedAt(null);
+      moduleCopy.save();
 
-    List<UrlAttachment> urlCopies = new ArrayList<>();
-    for (UrlAttachment attachment : course.getUrlAttachments()) {
-      UrlAttachment copy =
-          new UrlAttachment(
-              clone,
-              attachment.getName(),
-              attachment.getUrl(),
-              attachment.getDescription(),
-              attachment.getType(),
-              attachment.getFaviconUrl());
-      urlCopies.add(copy);
-    }
-    urlCopies.forEach(UrlAttachment::save);
+      for (FileAttachment attachment : module.getFileAttachments()) {
+        FileAttachment copy =
+            new FileAttachment(
+                moduleCopy,
+                attachment.getName(),
+                attachment.getDescription(),
+                attachment.getType(),
+                attachment.getSizeBytes(),
+                attachment.getMimeType(),
+                attachment.getFileUrl());
+        copy.save();
+      }
 
-    for (Quiz quiz : course.getQuizzes()) {
-      Quiz newQuiz = new Quiz(clone, quiz.getTitle());
-      newQuiz.save();
+      for (UrlAttachment attachment : module.getUrlAttachments()) {
+        UrlAttachment copy =
+            new UrlAttachment(
+                moduleCopy,
+                attachment.getName(),
+                attachment.getUrl(),
+                attachment.getDescription(),
+                attachment.getType(),
+                attachment.getFaviconUrl());
+        copy.save();
+      }
 
-      for (Question question : quiz.getQuestions()) {
-        Question newQuestion = new Question();
-        newQuestion.setQuiz(newQuiz);
-        newQuestion.setType(question.getType());
-        newQuestion.setQuestion(question.getQuestion());
-        newQuestion.setOptions(question.getOptions());
-        newQuestion.setCorrectIndex(question.getCorrectIndex());
-        newQuestion.setCorrectIndices(question.getCorrectIndices());
-        newQuestion.setPosition(question.getPosition());
-        newQuestion.save();
+      for (Quiz quiz : module.getQuizzes()) {
+        Quiz newQuiz = new Quiz(moduleCopy, quiz.getTitle());
+        newQuiz.save();
+
+        for (Question question : quiz.getQuestions()) {
+          Question newQuestion = new Question();
+          newQuestion.setQuiz(newQuiz);
+          newQuestion.setType(question.getType());
+          newQuestion.setQuestion(question.getQuestion());
+          newQuestion.setOptions(question.getOptions());
+          newQuestion.setCorrectIndex(question.getCorrectIndex());
+          newQuestion.setCorrectIndices(question.getCorrectIndices());
+          newQuestion.setPosition(question.getPosition());
+          newQuestion.save();
+        }
       }
     }
 

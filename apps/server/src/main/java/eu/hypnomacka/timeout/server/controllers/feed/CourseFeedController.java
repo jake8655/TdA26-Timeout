@@ -86,7 +86,7 @@ public class CourseFeedController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.LIVE) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
     }
@@ -98,8 +98,6 @@ public class CourseFeedController extends Controller {
     event.setMessage(request.getMessage());
     event.setEdited(false);
     event.save();
-
-    feedService.broadcastEvent(event);
 
     Map<String, Object> eventMap = new LinkedHashMap<>();
     eventMap.put("uuid", event.getUuid());
@@ -174,7 +172,7 @@ public class CourseFeedController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.LIVE) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
     }
@@ -189,12 +187,14 @@ public class CourseFeedController extends Controller {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "post does not belong to this course"));
     }
+    if (event.getType() != Event.Type.MANUAL) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "system posts cannot be edited"));
+    }
 
     event.setMessage(request.getMessage());
     event.setEdited(request.getEdited());
     event.save();
-
-    feedService.broadcastEvent(event);
 
     Map<String, Object> eventMap = new LinkedHashMap<>();
     eventMap.put("uuid", event.getUuid());
@@ -229,7 +229,7 @@ public class CourseFeedController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.LIVE) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
     }
@@ -243,6 +243,10 @@ public class CourseFeedController extends Controller {
     if (!event.getCourse().getUuid().equals(uuid)) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "post does not belong to this course"));
+    }
+    if (event.getType() != Event.Type.MANUAL) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "system posts cannot be deleted"));
     }
 
     event.delete();

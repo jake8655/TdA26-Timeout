@@ -5,6 +5,7 @@ import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Course.Status;
 import eu.hypnomacka.timeout.server.core.CourseJoin;
 import eu.hypnomacka.timeout.server.core.Event;
+import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import java.time.Instant;
@@ -52,11 +53,14 @@ public class CourseLifecycleService {
   }
 
   public void transitionToLive(Course course, String reason) {
+    Status previousStatus = course.getStatus();
     course.setStatus(Status.LIVE);
     course.setLastWentLiveAt(Instant.now());
     course.setPausedAt(null);
     course.save();
-    createSystemEvent(course, reason);
+    if (previousStatus != Status.PAUSED) {
+      hideAllModules(course);
+    }
   }
 
   public void transitionToPaused(Course course, String reason) {
@@ -72,7 +76,6 @@ public class CourseLifecycleService {
     course.setScheduledEndAt(endAt);
     course.setPausedAt(null);
     course.save();
-    createSystemEvent(course, reason);
   }
 
   public void transitionToArchived(Course course, String reason) {
@@ -109,7 +112,6 @@ public class CourseLifecycleService {
     course.setPausedAt(null);
     course.setArchivedAt(null);
     course.save();
-    createSystemEvent(course, reason);
   }
 
   public void createSystemEvent(Course course, String message) {
@@ -120,6 +122,14 @@ public class CourseLifecycleService {
     event.setMessage(message);
     event.setEdited(false);
     event.save();
+  }
+
+  private void hideAllModules(Course course) {
+    for (Module module : course.getModules()) {
+      module.setVisible(false);
+      module.setRevealedAt(null);
+      module.save();
+    }
   }
 
   private String createKickPayload(String reason, Status status) {

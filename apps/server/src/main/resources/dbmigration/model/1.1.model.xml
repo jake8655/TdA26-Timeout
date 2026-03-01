@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="file_attachments">
+            <column name="module_uuid" type="uuid" notnull="true" references="modules.uuid" foreignKeyName="fk_file_attachments_module_uuid" foreignKeyIndex="ix_file_attachments_module_uuid"/>
+        </addColumn>
+        <createTable name="modules" identityType="external" pkName="pk_modules">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_uuid" type="uuid" notnull="true" references="courses.uuid" foreignKeyName="fk_modules_course_uuid" foreignKeyIndex="ix_modules_course_uuid"/>
+            <column name="title" type="varchar" notnull="true"/>
+            <column name="description" type="varchar"/>
+            <column name="visible" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="revealed_at" type="timestamp"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <addColumn tableName="quizzes">
+            <column name="module_uuid" type="uuid" notnull="true" references="modules.uuid" foreignKeyName="fk_quizzes_module_uuid" foreignKeyIndex="ix_quizzes_module_uuid"/>
+        </addColumn>
+        <addColumn tableName="url_attachments">
+            <column name="module_uuid" type="uuid" notnull="true" references="modules.uuid" foreignKeyName="fk_url_attachments_module_uuid" foreignKeyIndex="ix_url_attachments_module_uuid"/>
+        </addColumn>
+    </changeSet>
+    <changeSet type="pendingDrops">
+        <dropColumn columnName="course_uuid" tableName="file_attachments"/>
+        <dropColumn columnName="course_uuid" tableName="quizzes"/>
+        <dropColumn columnName="course_uuid" tableName="url_attachments"/>
+    </changeSet>
+</migration>

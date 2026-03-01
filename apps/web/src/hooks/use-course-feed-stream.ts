@@ -8,10 +8,18 @@ type KickPayload = {
 	effectiveAt?: string;
 };
 
+type ModuleRevealPayload = {
+	moduleId: string;
+	title?: string;
+	revealedAt?: string;
+};
+
 export function useCourseFeedStream(courseId: string) {
 	const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
 	const [isConnected, setIsConnected] = useState(false);
 	const [kickPayload, setKickPayload] = useState<KickPayload | null>(null);
+	const [moduleRevealPayload, setModuleRevealPayload] =
+		useState<ModuleRevealPayload | null>(null);
 	const eventSourceRef = useRef<EventSource | null>(null);
 
 	useEffect(() => {
@@ -33,7 +41,7 @@ export function useCourseFeedStream(courseId: string) {
 			}
 		};
 
-		eventSource.addEventListener("new_post", (event) => {
+		const handleFeedItem = (event: MessageEvent) => {
 			if (!mounted) return;
 			try {
 				const data = JSON.parse(event.data) as FeedItem;
@@ -58,7 +66,10 @@ export function useCourseFeedStream(courseId: string) {
 			} catch (error) {
 				console.error("Failed to parse SSE message:", error);
 			}
-		});
+		};
+
+		eventSource.addEventListener("new_post", handleFeedItem);
+		eventSource.addEventListener("system_event", handleFeedItem);
 
 		eventSource.addEventListener("course_kick", (event) => {
 			if (!mounted) return;
@@ -67,6 +78,16 @@ export function useCourseFeedStream(courseId: string) {
 				setKickPayload(data);
 			} catch (error) {
 				console.error("Failed to parse kick event:", error);
+			}
+		});
+
+		eventSource.addEventListener("module_revealed", (event) => {
+			if (!mounted) return;
+			try {
+				const data = JSON.parse(event.data) as ModuleRevealPayload;
+				setModuleRevealPayload(data);
+			} catch (error) {
+				console.error("Failed to parse module revealed event:", error);
 			}
 		});
 
@@ -79,5 +100,13 @@ export function useCourseFeedStream(courseId: string) {
 	}, [courseId]);
 
 	const clearKick = () => setKickPayload(null);
-	return { feedItems, isConnected, kickPayload, clearKick };
+	const clearModuleReveal = () => setModuleRevealPayload(null);
+	return {
+		feedItems,
+		isConnected,
+		kickPayload,
+		moduleRevealPayload,
+		clearKick,
+		clearModuleReveal,
+	};
 }

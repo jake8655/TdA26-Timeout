@@ -19,16 +19,20 @@ import {
 	postCoursesByCourseIdJoinMutation,
 	postCoursesByCourseIdSessionMutation,
 } from "@/api-client/@tanstack/react-query.gen";
-import { CourseStatus } from "@/api-client/types.gen";
+import {
+	CourseStatus,
+	type Material,
+	type Module,
+} from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseArchivedResults } from "@/components/courses/course-archived-results";
 import { CourseFeed } from "@/components/courses/course-feed";
 import { CourseKickDialog } from "@/components/courses/course-kick-dialog";
-import { MaterialsList } from "@/components/courses/materials-list";
 import EmptyState from "@/components/empty-state";
 import { CourseQuizCard } from "@/components/quizzes/course-quiz-card";
 import { formatCourseTime } from "@/lib/course-date-utils";
+import { formatFileSize, getFileTypeLabel } from "@/lib/material-utils";
 
 export default function CourseDetailClient() {
 	const { uuid } = useParams<{ uuid: string }>();
@@ -178,7 +182,7 @@ export default function CourseDetailClient() {
 						</div>
 						<div className="rounded-none border border-white/5 bg-card/50 p-6 text-muted-foreground">
 							This course is archived. You can review your submitted quiz
-							results.
+							results grouped by module.
 						</div>
 						<div className="mt-8 border-white/5 border-t pt-8">
 							<div className="mb-6 flex items-center gap-3">
@@ -189,7 +193,7 @@ export default function CourseDetailClient() {
 							</div>
 							<CourseArchivedResults
 								courseId={uuid}
-								quizzes={data.quizzes ?? []}
+								modules={data.modules ?? []}
 							/>
 						</div>
 					</section>
@@ -281,6 +285,7 @@ export default function CourseDetailClient() {
 												reason: payload.reason,
 											})
 										}
+										onModuleReveal={() => queryClient.invalidateQueries()}
 									/>
 								</div>
 
@@ -288,44 +293,17 @@ export default function CourseDetailClient() {
 									<div className="mb-6 flex items-center gap-3">
 										<BookOpen className="size-5 text-primary" />
 										<h2 className="font-semibold text-foreground text-lg">
-											Course Materials
+											Modules
 										</h2>
 									</div>
-									<MaterialsList courseId={uuid} />
-								</div>
-
-								<div className="mt-8 border-white/5 border-t pt-8">
-									<div className="mb-6 flex items-center gap-3">
-										<BookOpen className="size-5 text-primary" />
-										<h2 className="font-semibold text-foreground text-lg">
-											Quizzes
-										</h2>
-									</div>
-									{data.quizzes && data.quizzes.length > 0 ? (
-										<div className="flex flex-col gap-3">
-											{data.quizzes.map((quiz) => (
-												<CourseQuizCard
-													key={quiz.uuid ?? quiz.title}
-													quiz={quiz}
-													courseId={uuid}
-													onSaveResult={() => {}}
-												/>
-											))}
-										</div>
-									) : (
-										<EmptyState
-											title="No quizzes yet"
-											description="Check back soon for interactive quizzes."
-											icon={<BookOpen className="size-7 text-primary" />}
-										/>
-									)}
+									<LiveModules modules={data.modules ?? []} courseId={uuid} />
 								</div>
 							</>
 						) : (
 							<div className="border-white/5 border-t pt-8">
 								<EmptyState
 									title="Join to view course content"
-									description="Once you join, the feed, materials, and quizzes will unlock."
+									description="Once you join, the feed and modules will unlock."
 									icon={<BookOpen className="size-7 text-primary" />}
 								/>
 							</div>
@@ -334,5 +312,129 @@ export default function CourseDetailClient() {
 				)}
 			</main>
 		</div>
+	);
+}
+
+function LiveModules({
+	modules,
+	courseId,
+}: {
+	modules: Module[];
+	courseId: string;
+}) {
+	if (modules.length === 0) {
+		return (
+			<EmptyState
+				title="No modules revealed yet"
+				description="Your lecturer will reveal modules one by one during the session."
+				icon={<BookOpen className="size-7 text-primary" />}
+			/>
+		);
+	}
+
+	return (
+		<div className="space-y-4">
+			{modules.map((module) => (
+				<div
+					key={module.uuid}
+					className="rounded-none border border-white/5 bg-card/30 p-4"
+				>
+					<h3 className="font-semibold text-base text-foreground">
+						{module.title}
+					</h3>
+					{module.description && (
+						<p className="mt-1 text-muted-foreground text-sm">
+							{module.description}
+						</p>
+					)}
+
+					<div className="mt-4 space-y-4">
+						<div>
+							<p className="mb-2 font-semibold text-foreground text-sm">
+								Materials
+							</p>
+							{(module.materials?.length ?? 0) === 0 ? (
+								<p className="text-muted-foreground text-xs italic">
+									No materials in this module.
+								</p>
+							) : (
+								<div className="space-y-2">
+									{(module.materials ?? []).map((material) => (
+										<ModuleMaterialRow
+											key={material.uuid}
+											material={material}
+										/>
+									))}
+								</div>
+							)}
+						</div>
+
+						<div>
+							<p className="mb-2 font-semibold text-foreground text-sm">
+								Quizzes
+							</p>
+							{(module.quizzes?.length ?? 0) === 0 ? (
+								<p className="text-muted-foreground text-xs italic">
+									No quizzes in this module.
+								</p>
+							) : (
+								<div className="space-y-3">
+									{(module.quizzes ?? []).map((quiz) => (
+										<CourseQuizCard
+											key={quiz.uuid ?? quiz.title}
+											quiz={quiz}
+											courseId={courseId}
+											moduleId={module.uuid}
+											onSaveResult={() => {}}
+										/>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			))}
+		</div>
+	);
+}
+
+function ModuleMaterialRow({ material }: { material: Material }) {
+	if (material.type === "url") {
+		return (
+			<a
+				href={material.url}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30"
+			>
+				<div className="min-w-0">
+					<p className="truncate font-medium text-foreground">
+						{material.name}
+					</p>
+					<p className="truncate text-muted-foreground text-xs">
+						{material.url}
+					</p>
+				</div>
+				<span className="text-primary text-xs">Open</span>
+			</a>
+		);
+	}
+
+	return (
+		<a
+			href={material.fileUrl}
+			target="_blank"
+			rel="noopener noreferrer"
+			className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30"
+		>
+			<div className="min-w-0">
+				<p className="truncate font-medium text-foreground">{material.name}</p>
+				<p className="truncate text-muted-foreground text-xs">
+					{getFileTypeLabel(material.mimeType)}
+					{material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}
+				</p>
+			</div>
+			<span className="text-primary text-xs">Download</span>
+		</a>
 	);
 }

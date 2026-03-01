@@ -14,6 +14,7 @@ import {
 	Trash2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
 import { useState } from "react";
 import { z } from "zod";
 import {
@@ -49,7 +50,11 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/hooks/form";
-import { formatFileSize, getFileTypeLabel } from "@/lib/material-utils";
+import {
+	formatFileSize,
+	getFileTypeLabel,
+	getMaterialIcon,
+} from "@/lib/material-utils";
 
 type Material = FileMaterial | UrlMaterial;
 
@@ -294,15 +299,31 @@ function ModuleCard({
 												key={material.uuid}
 												className="flex items-center justify-between gap-3 rounded-none border border-white/5 bg-background/20 p-3"
 											>
-												<div className="min-w-0">
-													<p className="truncate font-medium text-foreground text-sm">
-														{material.name}
-													</p>
-													<p className="text-muted-foreground text-xs">
-														{material.type === "file"
-															? `${getFileTypeLabel(material.mimeType)}${material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}`
-															: new URL(material.url).hostname}
-													</p>
+												<div className="flex min-w-0 items-center gap-3">
+													<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+														{material.type === "url" && material.faviconUrl ? (
+															<Image
+																src={material.faviconUrl}
+																alt={material.name}
+																width={20}
+																height={20}
+																className="size-5"
+																unoptimized
+															/>
+														) : (
+															<MaterialTypeIcon material={material} />
+														)}
+													</div>
+													<div className="min-w-0">
+														<p className="truncate font-medium text-foreground text-sm">
+															{material.name}
+														</p>
+														<p className="text-muted-foreground text-xs">
+															{material.type === "file"
+																? `${getFileTypeLabel(material.mimeType)}${material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}`
+																: new URL(material.url).hostname}
+														</p>
+													</div>
 												</div>
 												<div className="flex gap-1">
 													{material.type === "url" ? (
@@ -470,6 +491,12 @@ function ModuleCard({
 	);
 }
 
+function MaterialTypeIcon({ material }: { material: Material }) {
+	const Icon = getMaterialIcon(material);
+
+	return <Icon className="size-5 text-primary" />;
+}
+
 function ModuleFormDialog({
 	mode,
 	courseId,
@@ -484,11 +511,17 @@ function ModuleFormDialog({
 	const [open, setOpen] = useState(false);
 	const createMutation = useMutation({
 		...postCoursesByCourseIdModulesMutation(),
-		onSuccess: () => setOpen(false),
+		onSuccess: () => {
+			form.reset();
+			setOpen(false);
+		},
 	});
 	const updateMutation = useMutation({
 		...putCoursesByCourseIdModulesByModuleIdMutation(),
-		onSuccess: () => setOpen(false),
+		onSuccess: () => {
+			form.reset();
+			setOpen(false);
+		},
 	});
 
 	const moduleFormSchema = z.object({

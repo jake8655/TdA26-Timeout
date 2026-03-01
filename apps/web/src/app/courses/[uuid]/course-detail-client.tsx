@@ -34,7 +34,11 @@ import { CourseKickDialog } from "@/components/courses/course-kick-dialog";
 import EmptyState from "@/components/empty-state";
 import { CourseQuizCard } from "@/components/quizzes/course-quiz-card";
 import { formatCourseTime } from "@/lib/course-date-utils";
-import { formatFileSize, getFileTypeLabel } from "@/lib/material-utils";
+import {
+	formatFileSize,
+	getFileTypeLabel,
+	getMaterialIcon,
+} from "@/lib/material-utils";
 
 export default function CourseDetailClient() {
 	const { uuid } = useParams<{ uuid: string }>();
@@ -401,16 +405,34 @@ function LiveModules({
 }
 
 function ModuleMaterialRow({ material }: { material: Material }) {
+	const Icon = getMaterialIcon(material);
+
 	if (material.type === "url") {
 		return (
 			<div className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30">
-				<div className="min-w-0">
-					<p className="truncate font-medium text-foreground">
-						{material.name}
-					</p>
-					<p className="truncate text-muted-foreground text-xs">
-						{material.url}
-					</p>
+				<div className="flex min-w-0 items-center gap-3">
+					<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+						{material.faviconUrl ? (
+							<Image
+								src={material.faviconUrl}
+								alt={material.name}
+								width={20}
+								height={20}
+								className="size-5"
+								unoptimized
+							/>
+						) : (
+							<Icon className="size-5 text-primary" />
+						)}
+					</div>
+					<div className="min-w-0">
+						<p className="truncate font-medium text-foreground">
+							{material.name}
+						</p>
+						<p className="truncate text-muted-foreground text-xs">
+							{material.url}
+						</p>
+					</div>
 				</div>
 				<Button
 					variant="outline"
@@ -429,12 +451,17 @@ function ModuleMaterialRow({ material }: { material: Material }) {
 
 	return (
 		<div className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30">
-			<div className="min-w-0">
-				<p className="truncate font-medium text-foreground">{material.name}</p>
-				<p className="truncate text-muted-foreground text-xs">
-					{getFileTypeLabel(material.mimeType)}
-					{material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}
-				</p>
+			<div className="flex min-w-0 items-center gap-3">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+					<Icon className="size-5 text-primary" />
+				</div>
+				<div className="min-w-0">
+					<p className="truncate font-medium text-foreground">{material.name}</p>
+					<p className="truncate text-muted-foreground text-xs">
+						{getFileTypeLabel(material.mimeType)}
+						{material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}
+					</p>
+				</div>
 			</div>
 			<Button
 				variant="outline"

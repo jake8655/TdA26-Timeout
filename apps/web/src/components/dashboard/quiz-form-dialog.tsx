@@ -5,9 +5,9 @@ import { Loader2, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 import {
-	deleteCoursesByCourseIdQuizzesByQuizIdMutation,
-	postCoursesByCourseIdQuizzesMutation,
-	putCoursesByCourseIdQuizzesByQuizIdMutation,
+	deleteCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdMutation,
+	postCoursesByCourseIdModulesByModuleIdQuizzesMutation,
+	putCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdMutation,
 } from "@/api-client/@tanstack/react-query.gen";
 import type {
 	MultipleChoiceQuestion,
@@ -66,6 +66,7 @@ const quizFormSchema = z.object({
 interface QuizFormDialogProps {
 	mode: "create" | "edit";
 	courseId: string;
+	moduleId?: string;
 	quiz?: Quiz;
 	trigger: React.ReactElement;
 }
@@ -73,17 +74,18 @@ interface QuizFormDialogProps {
 function QuizFormDialog({
 	mode,
 	courseId,
+	moduleId,
 	quiz,
 	trigger,
 }: QuizFormDialogProps) {
 	const [open, setOpen] = useState(false);
 
 	const createMutation = useMutation({
-		...postCoursesByCourseIdQuizzesMutation(),
+		...postCoursesByCourseIdModulesByModuleIdQuizzesMutation(),
 	});
 
 	const updateMutation = useMutation({
-		...putCoursesByCourseIdQuizzesByQuizIdMutation(),
+		...putCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdMutation(),
 	});
 
 	const form = useAppForm({
@@ -105,7 +107,7 @@ function QuizFormDialog({
 		onSubmit: async ({ value }) => {
 			if (mode === "create") {
 				await createMutation.mutateAsync({
-					path: { courseId },
+					path: { courseId, moduleId: moduleId ?? "" },
 					body: {
 						title: value.title,
 						questions: value.questions,
@@ -113,7 +115,11 @@ function QuizFormDialog({
 				});
 			} else if (quiz) {
 				await updateMutation.mutateAsync({
-					path: { courseId, quizId: quiz.uuid as string },
+					path: {
+						courseId,
+						moduleId: moduleId ?? "",
+						quizId: quiz.uuid as string,
+					},
 					body: {
 						title: value.title,
 						questions: value.questions,
@@ -448,16 +454,18 @@ function QuizFormDialog({
 function DeleteQuizDialog({
 	quiz,
 	courseId,
+	moduleId,
 	trigger,
 }: {
 	quiz: Quiz;
 	courseId: string;
+	moduleId?: string;
 	trigger: React.ReactElement;
 }) {
 	const [open, setOpen] = useState(false);
 
 	const deleteMutation = useMutation({
-		...deleteCoursesByCourseIdQuizzesByQuizIdMutation(),
+		...deleteCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdMutation(),
 		onSuccess: () => {
 			setOpen(false);
 		},
@@ -465,7 +473,7 @@ function DeleteQuizDialog({
 
 	const handleDelete = async () => {
 		await deleteMutation.mutateAsync({
-			path: { courseId, quizId: quiz.uuid as string },
+			path: { courseId, moduleId: moduleId ?? "", quizId: quiz.uuid as string },
 		});
 	};
 

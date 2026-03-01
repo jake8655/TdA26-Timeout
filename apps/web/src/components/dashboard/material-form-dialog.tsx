@@ -5,8 +5,8 @@ import { File, Link as LinkIcon } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 import {
-	postCoursesByCourseIdMaterialsMutation,
-	putCoursesByCourseIdMaterialsByMaterialIdMutation,
+	postCoursesByCourseIdModulesByModuleIdMaterialsMutation,
+	putCoursesByCourseIdModulesByModuleIdMaterialsByMaterialIdMutation,
 } from "@/api-client/@tanstack/react-query.gen";
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
@@ -50,6 +50,7 @@ const fileFormSchema = z.object({
 interface MaterialFormDialogProps {
 	mode: "add" | "edit";
 	courseId: string;
+	moduleId?: string;
 	material?: Material;
 	trigger: React.ReactElement;
 }
@@ -57,6 +58,7 @@ interface MaterialFormDialogProps {
 export function MaterialFormDialog({
 	mode,
 	courseId,
+	moduleId,
 	material,
 	trigger,
 }: MaterialFormDialogProps) {
@@ -67,11 +69,11 @@ export function MaterialFormDialog({
 	const queryClient = useQueryClient();
 
 	const createMutation = useMutation({
-		...postCoursesByCourseIdMaterialsMutation(),
+		...postCoursesByCourseIdModulesByModuleIdMaterialsMutation(),
 	});
 
 	const updateMutation = useMutation({
-		...putCoursesByCourseIdMaterialsByMaterialIdMutation(),
+		...putCoursesByCourseIdModulesByModuleIdMaterialsByMaterialIdMutation(),
 	});
 
 	const urlForm = useAppForm({
@@ -86,7 +88,7 @@ export function MaterialFormDialog({
 		onSubmit: async ({ value }) => {
 			if (mode === "add") {
 				await createMutation.mutateAsync({
-					path: { courseId },
+					path: { courseId, moduleId: moduleId ?? "" },
 					body: {
 						type: "url",
 						name: value.name,
@@ -96,7 +98,11 @@ export function MaterialFormDialog({
 				});
 			} else if (material) {
 				await updateMutation.mutateAsync({
-					path: { courseId, materialId: material.uuid },
+					path: {
+						courseId,
+						moduleId: moduleId ?? "",
+						materialId: material.uuid,
+					},
 					body: {
 						name: value.name,
 						description: value.description,
@@ -141,7 +147,7 @@ export function MaterialFormDialog({
 				}
 
 				await fetch(
-					`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/materials`,
+					`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/modules/${moduleId ?? ""}/materials`,
 					{
 						method: "POST",
 						body: formData,
@@ -151,7 +157,7 @@ export function MaterialFormDialog({
 				await queryClient.invalidateQueries();
 			} else if (material) {
 				await fetch(
-					`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/materials/${material.uuid}`,
+					`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/modules/${moduleId ?? ""}/materials/${material.uuid}`,
 					{
 						method: "PUT",
 						credentials: "include",

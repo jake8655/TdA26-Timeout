@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Check, Loader2, Medal, Target, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { getCoursesByCourseIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
+import { getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { QuizAnswer, QuizSubmitResponse } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { QuizQuestion } from "./quiz-question";
@@ -28,6 +28,7 @@ export function QuizPlayer({
 	initialAnswers = null,
 	quizUuid,
 	courseId,
+	moduleId,
 	onCancel,
 	onSubmitComplete,
 	onSubmitAnswers,
@@ -36,6 +37,7 @@ export function QuizPlayer({
 	initialAnswers?: QuizAnswer[] | null;
 	quizUuid: string;
 	courseId: string;
+	moduleId?: string;
 	onCancel: () => void;
 	onSubmitComplete: (result: QuizSubmitResponse) => void;
 	onSubmitAnswers: (answers: QuizAnswer[]) => Promise<QuizSubmitResponse>;
@@ -52,8 +54,8 @@ export function QuizPlayer({
 		isPending,
 		isError,
 	} = useQuery({
-		...getCoursesByCourseIdQuizzesByQuizIdOptions({
-			path: { courseId, quizId: quizUuid },
+		...getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdOptions({
+			path: { courseId, moduleId: moduleId ?? "", quizId: quizUuid },
 		}),
 	});
 

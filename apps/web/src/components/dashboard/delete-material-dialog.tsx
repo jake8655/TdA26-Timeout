@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { deleteCoursesByCourseIdMaterialsByMaterialIdMutation } from "@/api-client/@tanstack/react-query.gen";
+import { deleteCoursesByCourseIdModulesByModuleIdMaterialsByMaterialIdMutation } from "@/api-client/@tanstack/react-query.gen";
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import {
@@ -21,19 +21,21 @@ type Material = FileMaterial | UrlMaterial;
 
 interface DeleteMaterialDialogProps {
 	courseId: string;
+	moduleId?: string;
 	material: Material;
 	trigger: React.ReactElement;
 }
 
 export function DeleteMaterialDialog({
 	courseId,
+	moduleId,
 	material,
 	trigger,
 }: DeleteMaterialDialogProps) {
 	const [open, setOpen] = useState(false);
 
 	const deleteMutation = useMutation({
-		...deleteCoursesByCourseIdMaterialsByMaterialIdMutation(),
+		...deleteCoursesByCourseIdModulesByModuleIdMaterialsByMaterialIdMutation(),
 		onSuccess: () => {
 			setOpen(false);
 		},
@@ -60,7 +62,11 @@ export function DeleteMaterialDialog({
 							deleteMutation.mutate({
 								// @ts-expect-error TdA requires json body even for DELETE
 								body: {},
-								path: { courseId, materialId: material.uuid },
+								path: {
+									courseId,
+									moduleId: moduleId ?? "",
+									materialId: material.uuid,
+								},
 							})
 						}
 					>

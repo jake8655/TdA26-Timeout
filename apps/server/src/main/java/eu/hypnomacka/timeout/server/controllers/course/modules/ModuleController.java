@@ -83,51 +83,11 @@ public class ModuleController extends Controller {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "title is required"));
     }
-    boolean hasInitialMaterial =
-        request.getInitialMaterialName() != null
-            && !request.getInitialMaterialName().isBlank()
-            && request.getInitialMaterialUrl() != null
-            && !request.getInitialMaterialUrl().isBlank();
-    boolean hasInitialQuizTitle =
-        request.getInitialQuizTitle() != null && !request.getInitialQuizTitle().isBlank();
-    if (!hasInitialMaterial && !hasInitialQuizTitle) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(
-              Map.of(
-                  "status",
-                  "bad",
-                  "message",
-                  "module requires at least one initial material or quiz"));
-    }
 
     Module module = new Module(course, request.getTitle(), request.getDescription());
     module.setUuid(UUID.randomUUID());
     module.setVisible(false);
     module.save();
-
-    if (hasInitialMaterial) {
-      String materialDescription = request.getInitialMaterialDescription();
-      if (materialDescription == null) {
-        materialDescription = "";
-      }
-      String materialUrl = request.getInitialMaterialUrl();
-      UrlAttachment attachment =
-          new UrlAttachment(
-              module,
-              request.getInitialMaterialName(),
-              materialUrl,
-              materialDescription,
-              UrlAttachment.Type.url,
-              "https://icons.duckduckgo.com/ip2/"
-                  + materialUrl.replace("https://", "").replace("http://", "").split("/")[0]
-                  + ".ico");
-      attachment.save();
-    }
-
-    if (hasInitialQuizTitle) {
-      Quiz quiz = new Quiz(module, request.getInitialQuizTitle());
-      quiz.save();
-    }
 
     return ResponseEntity.status(HttpStatus.CREATED).body(buildModuleResponse(module));
   }
@@ -227,6 +187,20 @@ public class ModuleController extends Controller {
           .body(Map.of("status", "bad", "message", "module can only be revealed in live"));
     }
 
+    boolean hasContent =
+        !module.getFileAttachments().isEmpty()
+            || !module.getUrlAttachments().isEmpty()
+            || !module.getQuizzes().isEmpty();
+    if (!hasContent) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  "status",
+                  "bad",
+                  "message",
+                  "cannot reveal an empty module — add at least one material or quiz first"));
+    }
+
     if (Boolean.TRUE.equals(module.getVisible())) {
       return ResponseEntity.ok(buildModuleResponse(module));
     }
@@ -302,10 +276,6 @@ public class ModuleController extends Controller {
   public static class CreateModuleRequest {
     private String title;
     private String description;
-    private String initialMaterialName;
-    private String initialMaterialUrl;
-    private String initialMaterialDescription;
-    private String initialQuizTitle;
   }
 
   @Data

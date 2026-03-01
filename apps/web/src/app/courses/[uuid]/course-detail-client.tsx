@@ -6,6 +6,8 @@ import {
 	BookOpen,
 	CalendarClock,
 	ClipboardCheck,
+	Download,
+	ExternalLink,
 	Loader2,
 	MessageSquareText,
 } from "lucide-react";
@@ -401,12 +403,7 @@ function LiveModules({
 function ModuleMaterialRow({ material }: { material: Material }) {
 	if (material.type === "url") {
 		return (
-			<a
-				href={material.url}
-				target="_blank"
-				rel="noopener noreferrer"
-				className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30"
-			>
+			<div className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30">
 				<div className="min-w-0">
 					<p className="truncate font-medium text-foreground">
 						{material.name}
@@ -415,18 +412,23 @@ function ModuleMaterialRow({ material }: { material: Material }) {
 						{material.url}
 					</p>
 				</div>
-				<span className="text-primary text-xs">Open</span>
-			</a>
+				<Button
+					variant="outline"
+					size="sm"
+					className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+					asChild
+				>
+					<a href={material.url} target="_blank" rel="noopener noreferrer">
+						<ExternalLink className="size-3.5" />
+						Visit Site
+					</a>
+				</Button>
+			</div>
 		);
 	}
 
 	return (
-		<a
-			href={material.fileUrl}
-			target="_blank"
-			rel="noopener noreferrer"
-			className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30"
-		>
+		<div className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30">
 			<div className="min-w-0">
 				<p className="truncate font-medium text-foreground">{material.name}</p>
 				<p className="truncate text-muted-foreground text-xs">
@@ -434,7 +436,17 @@ function ModuleMaterialRow({ material }: { material: Material }) {
 					{material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}
 				</p>
 			</div>
-			<span className="text-primary text-xs">Download</span>
-		</a>
+			<Button
+				variant="outline"
+				size="sm"
+				className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+				asChild
+			>
+				<a href={material.fileUrl} target="_blank" rel="noopener noreferrer">
+					<Download className="size-3.5" />
+					Download
+				</a>
+			</Button>
+		</div>
 	);
 }

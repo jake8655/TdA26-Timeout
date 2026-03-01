@@ -5,7 +5,9 @@ import {
 	ChartColumnDecreasing,
 	ChevronDown,
 	ChevronRight,
+	Download,
 	Edit2,
+	ExternalLink,
 	Eye,
 	Loader2,
 	Plus,
@@ -13,6 +15,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
+import { z } from "zod";
 import {
 	deleteCoursesByCourseIdModulesByModuleIdMutation,
 	getCoursesByCourseIdModulesOptions,
@@ -154,6 +157,8 @@ function ModuleCard({
 
 	const materials = (module.materials ?? []) as Material[];
 	const quizzes = module.quizzes ?? [];
+	const contentCount = materials.length + quizzes.length;
+	const isEmpty = contentCount === 0;
 
 	return (
 		<motion.div
@@ -195,21 +200,28 @@ function ModuleCard({
 					</div>
 				</div>
 
-				<div className="flex flex-wrap gap-2">
+				<div className="flex flex-wrap items-center gap-2">
 					{courseStatus === "live" && !module.visible && (
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() =>
-								revealMutation.mutate({
-									path: { courseId, moduleId: module.uuid },
-								})
-							}
-							disabled={revealMutation.isPending}
-						>
-							<Eye className="size-3.5" />
-							Reveal
-						</Button>
+						<>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() =>
+									revealMutation.mutate({
+										path: { courseId, moduleId: module.uuid },
+									})
+								}
+								disabled={revealMutation.isPending || isEmpty}
+							>
+								<Eye className="size-3.5" />
+								Reveal
+							</Button>
+							{isEmpty && (
+								<span className="text-muted-foreground text-xs">
+									Add a material or quiz first
+								</span>
+							)}
+						</>
 					)}
 					<ModuleFormDialog
 						mode="edit"
@@ -293,6 +305,39 @@ function ModuleCard({
 													</p>
 												</div>
 												<div className="flex gap-1">
+													{material.type === "url" ? (
+														<Button
+															variant="outline"
+															size="sm"
+															className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+															asChild
+														>
+															<a
+																href={material.url}
+																target="_blank"
+																rel="noopener noreferrer"
+															>
+																<ExternalLink className="size-3.5" />
+																Visit Site
+															</a>
+														</Button>
+													) : (
+														<Button
+															variant="outline"
+															size="sm"
+															className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+															asChild
+														>
+															<a
+																href={material.fileUrl}
+																target="_blank"
+																rel="noopener noreferrer"
+															>
+																<Download className="size-3.5" />
+																Download
+															</a>
+														</Button>
+													)}
 													<MaterialFormDialog
 														mode="edit"
 														courseId={courseId}
@@ -446,14 +491,18 @@ function ModuleFormDialog({
 		onSuccess: () => setOpen(false),
 	});
 
+	const moduleFormSchema = z.object({
+		title: z.string().trim().min(1, "Title is required"),
+		description: z.string(),
+	});
+
 	const form = useAppForm({
 		defaultValues: {
 			title: module?.title ?? "",
 			description: module?.description ?? "",
-			initialMaterialName: "",
-			initialMaterialUrl: "",
-			initialMaterialDescription: "",
-			initialQuizTitle: "",
+		},
+		validators: {
+			onChange: moduleFormSchema,
 		},
 		onSubmit: async ({ value }) => {
 			if (mode === "create") {
@@ -462,11 +511,6 @@ function ModuleFormDialog({
 					body: {
 						title: value.title,
 						description: value.description,
-						initialMaterialName: value.initialMaterialName || undefined,
-						initialMaterialUrl: value.initialMaterialUrl || undefined,
-						initialMaterialDescription:
-							value.initialMaterialDescription || undefined,
-						initialQuizTitle: value.initialQuizTitle || undefined,
 					},
 				});
 				return;
@@ -520,43 +564,6 @@ function ModuleFormDialog({
 							/>
 						)}
 					</form.AppField>
-					{mode === "create" && (
-						<>
-							<form.AppField name="initialMaterialName">
-								{(field) => (
-									<field.TextField
-										label="First Material Name"
-										placeholder="Optional if you provide first quiz title"
-									/>
-								)}
-							</form.AppField>
-							<form.AppField name="initialMaterialUrl">
-								{(field) => (
-									<field.TextField
-										label="First Material URL"
-										placeholder="https://example.com"
-									/>
-								)}
-							</form.AppField>
-							<form.AppField name="initialMaterialDescription">
-								{(field) => (
-									<field.TextareaField
-										label="First Material Description"
-										placeholder="Optional"
-										rows={2}
-									/>
-								)}
-							</form.AppField>
-							<form.AppField name="initialQuizTitle">
-								{(field) => (
-									<field.TextField
-										label="First Quiz Title"
-										placeholder="Optional if material fields are filled"
-									/>
-								)}
-							</form.AppField>
-						</>
-					)}
 					<DialogFooter>
 						<DialogClose render={<Button variant="outline">Cancel</Button>} />
 						<form.AppForm>

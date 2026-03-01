@@ -797,14 +797,6 @@ components:
           type: string
         description:
           type: string
-        initialMaterialName:
-          type: string
-        initialMaterialUrl:
-          type: string
-        initialMaterialDescription:
-          type: string
-        initialQuizTitle:
-          type: string
 
     ModuleUpdateRequest:
       type: object

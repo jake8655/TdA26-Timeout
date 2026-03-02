@@ -19,6 +19,7 @@ import { useState } from "react";
 import {
 	getCoursesByCourseIdOptions,
 	postCoursesByCourseIdJoinMutation,
+	postCoursesByCourseIdMaterialsByMaterialIdInteractionsMutation,
 	postCoursesByCourseIdSessionMutation,
 } from "@/api-client/@tanstack/react-query.gen";
 import {
@@ -292,6 +293,7 @@ export default function CourseDetailClient() {
 											})
 										}
 										onModuleReveal={() => queryClient.invalidateQueries()}
+										onModuleHidden={() => queryClient.invalidateQueries()}
 									/>
 								</div>
 
@@ -369,6 +371,7 @@ function LiveModules({
 										<ModuleMaterialRow
 											key={material.uuid}
 											material={material}
+											courseId={courseId}
 										/>
 									))}
 								</div>
@@ -404,8 +407,24 @@ function LiveModules({
 	);
 }
 
-function ModuleMaterialRow({ material }: { material: Material }) {
+function ModuleMaterialRow({
+	material,
+	courseId,
+}: {
+	material: Material;
+	courseId: string;
+}) {
 	const Icon = getMaterialIcon(material);
+	const interactionMutation = useMutation({
+		...postCoursesByCourseIdMaterialsByMaterialIdInteractionsMutation(),
+	});
+
+	const handleInteraction = (url: string) => {
+		interactionMutation.mutate({
+			path: { courseId, materialId: material.uuid },
+		});
+		window.open(url, "_blank", "noopener,noreferrer");
+	};
 
 	if (material.type === "url") {
 		return (
@@ -438,12 +457,10 @@ function ModuleMaterialRow({ material }: { material: Material }) {
 					variant="outline"
 					size="sm"
 					className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
-					asChild
+					onClick={() => handleInteraction(material.url)}
 				>
-					<a href={material.url} target="_blank" rel="noopener noreferrer">
-						<ExternalLink className="size-3.5" />
-						Visit Site
-					</a>
+					<ExternalLink className="size-3.5" />
+					Visit Site
 				</Button>
 			</div>
 		);
@@ -471,12 +488,10 @@ function ModuleMaterialRow({ material }: { material: Material }) {
 				variant="outline"
 				size="sm"
 				className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
-				asChild
+				onClick={() => handleInteraction(material.fileUrl)}
 			>
-				<a href={material.fileUrl} target="_blank" rel="noopener noreferrer">
-					<Download className="size-3.5" />
-					Download
-				</a>
+				<Download className="size-3.5" />
+				Download
 			</Button>
 		</div>
 	);

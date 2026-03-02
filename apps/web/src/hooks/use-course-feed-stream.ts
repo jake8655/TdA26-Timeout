@@ -14,12 +14,20 @@ type ModuleRevealPayload = {
 	revealedAt?: string;
 };
 
+type ModuleHiddenPayload = {
+	moduleId: string;
+	title?: string;
+	hiddenAt?: string;
+};
+
 export function useCourseFeedStream(courseId: string) {
 	const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
 	const [isConnected, setIsConnected] = useState(false);
 	const [kickPayload, setKickPayload] = useState<KickPayload | null>(null);
 	const [moduleRevealPayload, setModuleRevealPayload] =
 		useState<ModuleRevealPayload | null>(null);
+	const [moduleHiddenPayload, setModuleHiddenPayload] =
+		useState<ModuleHiddenPayload | null>(null);
 	const eventSourceRef = useRef<EventSource | null>(null);
 
 	useEffect(() => {
@@ -91,6 +99,16 @@ export function useCourseFeedStream(courseId: string) {
 			}
 		});
 
+		eventSource.addEventListener("module_hidden", (event) => {
+			if (!mounted) return;
+			try {
+				const data = JSON.parse(event.data) as ModuleHiddenPayload;
+				setModuleHiddenPayload(data);
+			} catch (error) {
+				console.error("Failed to parse module hidden event:", error);
+			}
+		});
+
 		eventSourceRef.current = eventSource;
 
 		return () => {
@@ -101,12 +119,15 @@ export function useCourseFeedStream(courseId: string) {
 
 	const clearKick = () => setKickPayload(null);
 	const clearModuleReveal = () => setModuleRevealPayload(null);
+	const clearModuleHidden = () => setModuleHiddenPayload(null);
 	return {
 		feedItems,
 		isConnected,
 		kickPayload,
 		moduleRevealPayload,
+		moduleHiddenPayload,
 		clearKick,
 		clearModuleReveal,
+		clearModuleHidden,
 	};
 }

@@ -7,12 +7,14 @@ import eu.hypnomacka.timeout.server.core.Question;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.QuizAnswerSubmission;
 import eu.hypnomacka.timeout.server.core.QuizResult;
+import eu.hypnomacka.timeout.server.services.CourseStatsService;
 import io.ebean.DB;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/courses/{courseId}/modules/{moduleId}/quizzes")
+@RequiredArgsConstructor
 public class QuizSubmitController extends Controller {
+
+  private final CourseStatsService statsService;
 
   @PostMapping(
       value = "/{quizId}/submit",
@@ -150,6 +155,8 @@ public class QuizSubmitController extends Controller {
 
     quiz.setAttemptsCount(quiz.getAttemptsCount() + 1);
     quiz.save();
+
+    statsService.recordQuizResult(course, score, maxScore);
 
     QuizSubmitResponse response =
         new QuizSubmitResponse(

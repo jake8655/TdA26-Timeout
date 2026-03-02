@@ -173,7 +173,7 @@ public class CourseGetController extends Controller {
   private Map<String, Object> buildCourseDetailResponse(
       Course course, boolean isLecturer, String studentSessionId) {
     List<Module> modules = new ArrayList<>(course.getModules());
-    modules.sort(Comparator.comparing(Module::getCreatedAt));
+    modules.sort(Comparator.comparing(Module::getOrderIndex).thenComparing(Module::getCreatedAt));
 
     List<Map<String, Object>> moduleResponses = new ArrayList<>();
     for (Module module : modules) {
@@ -274,7 +274,7 @@ public class CourseGetController extends Controller {
     }
 
     List<Module> modules = new ArrayList<>(course.getModules());
-    modules.sort(Comparator.comparing(Module::getCreatedAt));
+    modules.sort(Comparator.comparing(Module::getOrderIndex).thenComparing(Module::getCreatedAt));
 
     List<Map<String, Object>> response = new ArrayList<>();
     for (Module module : modules) {
@@ -330,6 +330,7 @@ public class CourseGetController extends Controller {
     }
     response.put("visible", module.getVisible());
     response.put("revealedAt", module.getRevealedAt());
+    response.put("orderIndex", module.getOrderIndex());
     response.put("materials", materials);
     response.put("quizzes", quizzes);
     response.put("createdAt", module.getCreatedAt());

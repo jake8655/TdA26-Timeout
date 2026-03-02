@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,7 +48,7 @@ public class ModuleController extends Controller {
     }
 
     List<Module> modules = new ArrayList<>(course.getModules());
-    modules.sort(Comparator.comparing(Module::getCreatedAt));
+    modules.sort(Comparator.comparing(Module::getOrderIndex).thenComparing(Module::getCreatedAt));
 
     List<Map<String, Object>> response = new ArrayList<>();
     for (Module module : modules) {
@@ -87,6 +88,10 @@ public class ModuleController extends Controller {
     Module module = new Module(course, request.getTitle(), request.getDescription());
     module.setUuid(UUID.randomUUID());
     module.setVisible(false);
+
+    int maxOrder = course.getModules().stream().mapToInt(Module::getOrderIndex).max().orElse(-1);
+    module.setOrderIndex(maxOrder + 1);
+
     module.save();
 
     return ResponseEntity.status(HttpStatus.CREATED).body(buildModuleResponse(module));
@@ -205,6 +210,24 @@ public class ModuleController extends Controller {
       return ResponseEntity.ok(buildModuleResponse(module));
     }
 
+    List<Module> allModules = new ArrayList<>(course.getModules());
+    allModules.sort(
+        Comparator.comparing(Module::getOrderIndex).thenComparing(Module::getCreatedAt));
+    Module nextUnrevealed =
+        allModules.stream()
+            .filter(m -> !Boolean.TRUE.equals(m.getVisible()))
+            .findFirst()
+            .orElse(null);
+    if (nextUnrevealed == null || !nextUnrevealed.getUuid().equals(module.getUuid())) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  "status",
+                  "bad",
+                  "message",
+                  "modules must be revealed in order — reveal the next module first"));
+    }
+
     module.setVisible(true);
     module.setRevealedAt(Instant.now());
     module.save();
@@ -217,6 +240,171 @@ public class ModuleController extends Controller {
             module.getUuid(), module.getTitle().replace("\"", "\\\""), module.getRevealedAt()));
 
     return ResponseEntity.ok(buildModuleResponse(module));
+  }
+
+  @PutMapping(value = "/order", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> reorderModules(
+      @PathVariable String courseId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
+      @RequestBody ReorderModulesRequest request) {
+
+    Course course = findCourse(courseId);
+    if (course == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "can only reorder in draft"));
+    }
+
+    List<String> moduleIds = request.getModuleIds();
+    if (moduleIds == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "moduleIds required"));
+    }
+
+    List<Module> courseModules = course.getModules();
+    if (moduleIds.size() != courseModules.size()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "moduleIds count mismatch"));
+    }
+
+    Map<String, Module> moduleMap =
+        courseModules.stream().collect(Collectors.toMap(m -> m.getUuid().toString(), m -> m));
+
+    for (String id : moduleIds) {
+      if (!moduleMap.containsKey(id)) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(Map.of("status", "bad", "message", "module " + id + " not in course"));
+      }
+    }
+
+    for (int i = 0; i < moduleIds.size(); i++) {
+      Module m = moduleMap.get(moduleIds.get(i));
+      m.setOrderIndex(i);
+      m.save();
+    }
+
+    return ResponseEntity.ok(Map.of("status", "ok"));
+  }
+
+  @PutMapping(value = "/reveal-next", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> revealNextModule(
+      @PathVariable String courseId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+
+    Course course = findCourse(courseId);
+    if (course == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (course.getStatus() != Course.Status.LIVE) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course must be live"));
+    }
+
+    List<Module> allModules = new ArrayList<>(course.getModules());
+    allModules.sort(
+        Comparator.comparing(Module::getOrderIndex).thenComparing(Module::getCreatedAt));
+
+    Module next =
+        allModules.stream()
+            .filter(m -> !Boolean.TRUE.equals(m.getVisible()))
+            .findFirst()
+            .orElse(null);
+
+    if (next == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "no more modules to reveal"));
+    }
+
+    boolean hasContent =
+        !next.getFileAttachments().isEmpty()
+            || !next.getUrlAttachments().isEmpty()
+            || !next.getQuizzes().isEmpty();
+    if (!hasContent) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              Map.of(
+                  "status",
+                  "bad",
+                  "message",
+                  "cannot reveal an empty module — add at least one material or quiz first"));
+    }
+
+    next.setVisible(true);
+    next.setRevealedAt(Instant.now());
+    next.save();
+
+    feedService.broadcastMessage(
+        course.getUuid(),
+        "module_revealed",
+        String.format(
+            "{\"moduleId\":\"%s\",\"title\":\"%s\",\"revealedAt\":\"%s\"}",
+            next.getUuid(), next.getTitle().replace("\"", "\\\""), next.getRevealedAt()));
+
+    return ResponseEntity.ok(buildModuleResponse(next));
+  }
+
+  @PutMapping(value = "/hide-last", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> hideLastModule(
+      @PathVariable String courseId,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+
+    Course course = findCourse(courseId);
+    if (course == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (course.getStatus() != Course.Status.LIVE) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "course must be live"));
+    }
+
+    List<Module> allModules = new ArrayList<>(course.getModules());
+    allModules.sort(
+        Comparator.comparing(Module::getOrderIndex).thenComparing(Module::getCreatedAt));
+
+    Module last = null;
+    for (int i = allModules.size() - 1; i >= 0; i--) {
+      if (Boolean.TRUE.equals(allModules.get(i).getVisible())) {
+        last = allModules.get(i);
+        break;
+      }
+    }
+
+    if (last == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "no revealed modules to hide"));
+    }
+
+    Instant hiddenAt = Instant.now();
+    last.setVisible(false);
+    last.setRevealedAt(null);
+    last.save();
+
+    feedService.broadcastMessage(
+        course.getUuid(),
+        "module_hidden",
+        String.format(
+            "{\"moduleId\":\"%s\",\"title\":\"%s\",\"hiddenAt\":\"%s\"}",
+            last.getUuid(), last.getTitle().replace("\"", "\\\""), hiddenAt));
+
+    return ResponseEntity.ok(buildModuleResponse(last));
   }
 
   private Map<String, Object> buildModuleResponse(Module module) {
@@ -245,6 +433,7 @@ public class ModuleController extends Controller {
     response.put("description", module.getDescription());
     response.put("visible", module.getVisible());
     response.put("revealedAt", module.getRevealedAt());
+    response.put("orderIndex", module.getOrderIndex());
     response.put("materials", materials);
     response.put("quizzes", quizzes);
     response.put("createdAt", module.getCreatedAt());
@@ -282,5 +471,10 @@ public class ModuleController extends Controller {
   public static class UpdateModuleRequest {
     private String title;
     private String description;
+  }
+
+  @Data
+  public static class ReorderModulesRequest {
+    private List<String> moduleIds;
   }
 }

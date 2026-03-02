@@ -301,6 +301,51 @@ paths:
               schema:
                 $ref: '#/components/schemas/Module'
 
+  /courses/{courseId}/modules/order:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    put:
+      summary: Reorder modules (draft only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderModulesRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+
+  /courses/{courseId}/modules/reveal-next:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    put:
+      summary: Reveal next module in order (LIVE only)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+
+  /courses/{courseId}/modules/hide-last:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    put:
+      summary: Hide last revealed module (LIVE only)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+
   /courses/{courseId}/modules/{moduleId}/materials:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -551,6 +596,46 @@ paths:
               schema:
                 type: string
 
+  /courses/{courseId}/stats:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      summary: Get course stats (lecturer only)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseStatsResponse'
+
+  /courses/{courseId}/stats/stream:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      summary: Stream course stats (lecturer only)
+      responses:
+        '200':
+          description: Event stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /courses/{courseId}/materials/{materialId}/interactions:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/MaterialId'
+    post:
+      summary: Record material interaction
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+
 components:
   parameters:
     CourseId:
@@ -774,6 +859,8 @@ components:
         revealedAt:
           type: string
           format: date-time
+        orderIndex:
+          type: integer
         materials:
           type: array
           items:
@@ -1094,3 +1181,38 @@ components:
           type: string
         edited:
           type: boolean
+
+    StatusResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    ReorderModulesRequest:
+      type: object
+      required: [moduleIds]
+      properties:
+        moduleIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    CourseStatsResponse:
+      type: object
+      required: [totalSubmissions, avgScore, avgMaxScore, avgPercentage, materialInteractions]
+      properties:
+        totalSubmissions:
+          type: integer
+        avgScore:
+          type: number
+        avgMaxScore:
+          type: number
+        avgPercentage:
+          type: number
+        materialInteractions:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time

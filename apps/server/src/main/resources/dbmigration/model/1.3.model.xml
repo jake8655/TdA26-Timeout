@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="course_stats" identityType="external" pkName="pk_course_stats">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="course_uuid" type="uuid" notnull="true" references="courses.uuid" foreignKeyName="fk_course_stats_course_uuid" foreignKeyIndex="ix_course_stats_course_uuid"/>
+            <column name="total_submissions" type="integer" defaultValue="0" notnull="true"/>
+            <column name="total_score_sum" type="double" defaultValue="0" notnull="true"/>
+            <column name="total_max_score_sum" type="double" defaultValue="0" notnull="true"/>
+            <column name="total_percentage_sum" type="double" defaultValue="0" notnull="true"/>
+            <column name="material_interactions" type="integer" defaultValue="0" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <addColumn tableName="modules">
+            <column name="order_index" type="integer" defaultValue="0" notnull="true"/>
+        </addColumn>
+    </changeSet>
+</migration>

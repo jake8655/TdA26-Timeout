@@ -33,6 +33,10 @@ public class Module extends Model {
   @Column private String description;
 
   @Column(nullable = false)
+  @DbDefault("0")
+  private Integer orderIndex = 0;
+
+  @Column(nullable = false)
   @DbDefault("false")
   private Boolean visible = false;
 

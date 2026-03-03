@@ -243,13 +243,6 @@ export function CourseModulesSection({
 					</div>
 					<div className="text-muted-foreground text-xs">
 						{revealedModules.length}/{moduleList.length} revealed
-						{nextToReveal && (
-							<>
-								{" "}
-								&middot; Next:{" "}
-								<span className="text-foreground">{nextToReveal.title}</span>
-							</>
-						)}
 					</div>
 				</div>
 			)}
@@ -280,6 +273,7 @@ export function CourseModulesSection({
 									module={module}
 									courseStatus={courseStatus}
 									index={index}
+									nextToRevealId={nextToReveal?.uuid}
 								/>
 							))}
 						</div>
@@ -294,6 +288,7 @@ export function CourseModulesSection({
 							module={module}
 							courseStatus={courseStatus}
 							index={index}
+							nextToRevealId={nextToReveal?.uuid}
 						/>
 					))}
 				</div>
@@ -307,11 +302,13 @@ function SortableModuleCard({
 	module,
 	courseStatus,
 	index,
+	nextToRevealId,
 }: {
 	courseId: string;
 	module: Module;
 	courseStatus: CourseStatus;
 	index: number;
+	nextToRevealId?: string;
 }) {
 	const {
 		attributes,
@@ -336,6 +333,7 @@ function SortableModuleCard({
 				module={module}
 				courseStatus={courseStatus}
 				index={index}
+				nextToRevealId={nextToRevealId}
 				dragHandleProps={{ ...attributes, ...listeners }}
 			/>
 		</div>
@@ -347,12 +345,14 @@ function ModuleCard({
 	module,
 	courseStatus,
 	index,
+	nextToRevealId,
 	dragHandleProps,
 }: {
 	courseId: string;
 	module: Module;
 	courseStatus: CourseStatus;
 	index: number;
+	nextToRevealId?: string;
 	dragHandleProps?: Record<string, unknown>;
 }) {
 	const [expanded, setExpanded] = useState(false);
@@ -361,6 +361,10 @@ function ModuleCard({
 	const quizzes = module.quizzes ?? [];
 
 	const isDraft = courseStatus === "draft";
+	const isLive = courseStatus === "live";
+	const isArchived = courseStatus === "archived";
+	const isNextToReveal = isLive && nextToRevealId === module.uuid;
+	const showVisibilityBadge = !isDraft && !isArchived;
 
 	return (
 		<motion.div
@@ -384,15 +388,22 @@ function ModuleCard({
 							<h3 className="font-semibold text-base text-foreground">
 								{module.title}
 							</h3>
-							<span
-								className={`rounded-full px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide ${
-									module.visible
-										? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
-										: "border border-white/10 bg-white/5 text-muted-foreground"
-								}`}
-							>
-								{module.visible ? "Revealed" : "Hidden"}
-							</span>
+							{showVisibilityBadge && (
+								<span
+									className={`rounded-full px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide ${
+										module.visible
+											? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+											: "border border-white/10 bg-white/5 text-muted-foreground"
+									}`}
+								>
+									{module.visible ? "Revealed" : "Hidden"}
+								</span>
+							)}
+							{isNextToReveal && (
+								<span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-semibold text-[10px] text-primary uppercase tracking-wide">
+									Next
+								</span>
+							)}
 						</div>
 						<p className="mt-1 text-muted-foreground text-sm">
 							{module.description || (

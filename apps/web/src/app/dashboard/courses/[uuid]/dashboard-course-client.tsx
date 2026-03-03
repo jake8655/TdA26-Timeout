@@ -21,6 +21,7 @@ import { CourseActions } from "@/components/courses/course-actions";
 import { CourseFeed } from "@/components/courses/course-feed";
 import { CourseHeader } from "@/components/courses/course-header";
 import { CourseModulesSection } from "@/components/courses/course-modules-section";
+import { CourseStatsSection } from "@/components/courses/course-stats-section";
 import { DeleteFeedPostButton } from "@/components/courses/delete-feed-post-dialog";
 import {
 	CreateFeedPostButton,
@@ -186,6 +187,11 @@ export default function DashboardCourseClient() {
 							/>
 						</div>
 
+						<CourseStatsSection
+							courseId={uuid}
+							isLive={course.status === CourseStatus.LIVE}
+						/>
+
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -212,6 +218,7 @@ export default function DashboardCourseClient() {
 							)}
 							onKick={() => queryClient.invalidateQueries()}
 							onModuleReveal={() => queryClient.invalidateQueries()}
+							onModuleHidden={() => queryClient.invalidateQueries()}
 						/>
 
 						<CourseModulesSection

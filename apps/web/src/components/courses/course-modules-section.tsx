@@ -1,5 +1,21 @@
 "use client";
 
+import type { DragEndEvent, Modifier } from "@dnd-kit/core";
+import {
+	closestCenter,
+	DndContext,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import {
+	SortableContext,
+	sortableKeyboardCoordinates,
+	useSortable,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	ChartColumnDecreasing,
@@ -9,20 +25,24 @@ import {
 	Edit2,
 	ExternalLink,
 	Eye,
+	EyeOff,
+	GripVertical,
 	Loader2,
 	Plus,
 	Trash2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import {
 	deleteCoursesByCourseIdModulesByModuleIdMutation,
 	getCoursesByCourseIdModulesOptions,
 	postCoursesByCourseIdModulesMutation,
 	putCoursesByCourseIdModulesByModuleIdMutation,
-	putCoursesByCourseIdModulesByModuleIdRevealMutation,
+	putCoursesByCourseIdModulesHideLastMutation,
+	putCoursesByCourseIdModulesOrderMutation,
+	putCoursesByCourseIdModulesRevealNextMutation,
 } from "@/api-client/@tanstack/react-query.gen";
 import type {
 	CourseStatus,
@@ -56,6 +76,11 @@ import {
 	getMaterialIcon,
 } from "@/lib/material-utils";
 
+const restrictToVerticalAxis: Modifier = ({ transform }) => ({
+	...transform,
+	x: 0,
+});
+
 type Material = FileMaterial | UrlMaterial;
 
 export function CourseModulesSection({
@@ -75,6 +100,55 @@ export function CourseModulesSection({
 			path: { courseId },
 		}),
 	});
+
+	const [orderedModules, setOrderedModules] = useState<Module[]>([]);
+
+	useEffect(() => {
+		if (modules) {
+			setOrderedModules([...modules]);
+		}
+	}, [modules]);
+
+	const reorderMutation = useMutation({
+		...putCoursesByCourseIdModulesOrderMutation(),
+	});
+
+	const revealNextMutation = useMutation({
+		...putCoursesByCourseIdModulesRevealNextMutation(),
+	});
+
+	const hideLastMutation = useMutation({
+		...putCoursesByCourseIdModulesHideLastMutation(),
+	});
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: { distance: 5 },
+		}),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
+	);
+
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event;
+		if (!over || active.id === over.id) return;
+
+		const oldIndex = orderedModules.findIndex((m) => m.uuid === active.id);
+		const newIndex = orderedModules.findIndex((m) => m.uuid === over.id);
+		if (oldIndex === -1 || newIndex === -1) return;
+
+		const newOrder = [...orderedModules];
+		const [removed] = newOrder.splice(oldIndex, 1);
+		if (!removed) return;
+		newOrder.splice(newIndex, 0, removed);
+		setOrderedModules(newOrder);
+
+		reorderMutation.mutate({
+			path: { courseId },
+			body: { moduleIds: newOrder.map((m) => m.uuid) },
+		});
+	};
 
 	if (isPending) {
 		return (
@@ -98,7 +172,18 @@ export function CourseModulesSection({
 		);
 	}
 
-	const moduleList = modules ?? [];
+	const moduleList = orderedModules;
+	const isDraft = courseStatus === "draft";
+	const isLive = courseStatus === "live";
+
+	const revealedModules = moduleList.filter((m) => m.visible);
+	const unrevealedModules = moduleList.filter((m) => !m.visible);
+	const nextToReveal = unrevealedModules[0];
+	const lastRevealed = revealedModules[revealedModules.length - 1];
+	const nextIsEmpty =
+		nextToReveal &&
+		(nextToReveal.materials ?? []).length === 0 &&
+		(nextToReveal.quizzes ?? []).length === 0;
 
 	return (
 		<div className="space-y-4">
@@ -108,17 +193,59 @@ export function CourseModulesSection({
 					mode="create"
 					courseId={courseId}
 					trigger={
-						<Button
-							variant="accent"
-							size="sm"
-							disabled={courseStatus !== "draft"}
-						>
+						<Button variant="accent" size="sm" disabled={!isDraft}>
 							<Plus />
 							Create Module
 						</Button>
 					}
 				/>
 			</div>
+
+			{isLive && moduleList.length > 0 && (
+				<div className="flex flex-wrap items-center gap-3 rounded-none border border-white/5 bg-card/40 p-3 backdrop-blur-sm">
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={
+								!nextToReveal || nextIsEmpty || revealNextMutation.isPending
+							}
+							onClick={() =>
+								revealNextMutation.mutate({
+									path: { courseId },
+								})
+							}
+						>
+							{revealNextMutation.isPending ? (
+								<Loader2 className="size-3.5 animate-spin" />
+							) : (
+								<Eye className="size-3.5" />
+							)}
+							Reveal Next
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={!lastRevealed || hideLastMutation.isPending}
+							onClick={() =>
+								hideLastMutation.mutate({
+									path: { courseId },
+								})
+							}
+						>
+							{hideLastMutation.isPending ? (
+								<Loader2 className="size-3.5 animate-spin" />
+							) : (
+								<EyeOff className="size-3.5" />
+							)}
+							Hide Last
+						</Button>
+					</div>
+					<div className="text-muted-foreground text-xs">
+						{revealedModules.length}/{moduleList.length} revealed
+					</div>
+				</div>
+			)}
 
 			{moduleList.length === 0 ? (
 				<EmptyState
@@ -127,6 +254,31 @@ export function CourseModulesSection({
 					icon={<Plus className="size-7 text-primary" />}
 					className="border-dashed"
 				/>
+			) : isDraft ? (
+				<DndContext
+					sensors={sensors}
+					collisionDetection={closestCenter}
+					onDragEnd={handleDragEnd}
+					modifiers={[restrictToVerticalAxis]}
+				>
+					<SortableContext
+						items={moduleList.map((m) => m.uuid)}
+						strategy={verticalListSortingStrategy}
+					>
+						<div className="space-y-3">
+							{moduleList.map((module, index) => (
+								<SortableModuleCard
+									key={module.uuid}
+									courseId={courseId}
+									module={module}
+									courseStatus={courseStatus}
+									index={index}
+									nextToRevealId={nextToReveal?.uuid}
+								/>
+							))}
+						</div>
+					</SortableContext>
+				</DndContext>
 			) : (
 				<div className="space-y-3">
 					{moduleList.map((module, index) => (
@@ -136,10 +288,54 @@ export function CourseModulesSection({
 							module={module}
 							courseStatus={courseStatus}
 							index={index}
+							nextToRevealId={nextToReveal?.uuid}
 						/>
 					))}
 				</div>
 			)}
+		</div>
+	);
+}
+
+function SortableModuleCard({
+	courseId,
+	module,
+	courseStatus,
+	index,
+	nextToRevealId,
+}: {
+	courseId: string;
+	module: Module;
+	courseStatus: CourseStatus;
+	index: number;
+	nextToRevealId?: string;
+}) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: module.uuid });
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		opacity: isDragging ? 0.5 : 1,
+		zIndex: isDragging ? 50 : "auto",
+	};
+
+	return (
+		<div ref={setNodeRef} style={style as React.CSSProperties}>
+			<ModuleCard
+				courseId={courseId}
+				module={module}
+				courseStatus={courseStatus}
+				index={index}
+				nextToRevealId={nextToRevealId}
+				dragHandleProps={{ ...attributes, ...listeners }}
+			/>
 		</div>
 	);
 }
@@ -149,21 +345,26 @@ function ModuleCard({
 	module,
 	courseStatus,
 	index,
+	nextToRevealId,
+	dragHandleProps,
 }: {
 	courseId: string;
 	module: Module;
 	courseStatus: CourseStatus;
 	index: number;
+	nextToRevealId?: string;
+	dragHandleProps?: Record<string, unknown>;
 }) {
-	const [expanded, setExpanded] = useState(true);
-	const revealMutation = useMutation({
-		...putCoursesByCourseIdModulesByModuleIdRevealMutation(),
-	});
+	const [expanded, setExpanded] = useState(false);
 
 	const materials = (module.materials ?? []) as Material[];
 	const quizzes = module.quizzes ?? [];
-	const contentCount = materials.length + quizzes.length;
-	const isEmpty = contentCount === 0;
+
+	const isDraft = courseStatus === "draft";
+	const isLive = courseStatus === "live";
+	const isArchived = courseStatus === "archived";
+	const isNextToReveal = isLive && nextToRevealId === module.uuid;
+	const showVisibilityBadge = !isDraft && !isArchived;
 
 	return (
 		<motion.div
@@ -187,15 +388,22 @@ function ModuleCard({
 							<h3 className="font-semibold text-base text-foreground">
 								{module.title}
 							</h3>
-							<span
-								className={`rounded-full px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide ${
-									module.visible
-										? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
-										: "border border-white/10 bg-white/5 text-muted-foreground"
-								}`}
-							>
-								{module.visible ? "Revealed" : "Hidden"}
-							</span>
+							{showVisibilityBadge && (
+								<span
+									className={`rounded-full px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide ${
+										module.visible
+											? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+											: "border border-white/10 bg-white/5 text-muted-foreground"
+									}`}
+								>
+									{module.visible ? "Revealed" : "Hidden"}
+								</span>
+							)}
+							{isNextToReveal && (
+								<span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-semibold text-[10px] text-primary uppercase tracking-wide">
+									Next
+								</span>
+							)}
 						</div>
 						<p className="mt-1 text-muted-foreground text-sm">
 							{module.description || (
@@ -206,38 +414,12 @@ function ModuleCard({
 				</div>
 
 				<div className="flex flex-wrap items-center gap-2">
-					{courseStatus === "live" && !module.visible && (
-						<>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() =>
-									revealMutation.mutate({
-										path: { courseId, moduleId: module.uuid },
-									})
-								}
-								disabled={revealMutation.isPending || isEmpty}
-							>
-								<Eye className="size-3.5" />
-								Reveal
-							</Button>
-							{isEmpty && (
-								<span className="text-muted-foreground text-xs">
-									Add a material or quiz first
-								</span>
-							)}
-						</>
-					)}
 					<ModuleFormDialog
 						mode="edit"
 						courseId={courseId}
 						module={module}
 						trigger={
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								disabled={courseStatus !== "draft"}
-							>
+							<Button variant="ghost" size="icon-sm" disabled={!isDraft}>
 								<Edit2 />
 							</Button>
 						}
@@ -246,15 +428,20 @@ function ModuleCard({
 						courseId={courseId}
 						module={module}
 						trigger={
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								disabled={courseStatus !== "draft"}
-							>
+							<Button variant="ghost" size="icon-sm" disabled={!isDraft}>
 								<Trash2 />
 							</Button>
 						}
 					/>
+					{isDraft && dragHandleProps && (
+						<button
+							type="button"
+							className="flex size-8 cursor-grab touch-none items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
+							{...dragHandleProps}
+						>
+							<GripVertical className="size-4" />
+						</button>
+					)}
 				</div>
 			</div>
 
@@ -277,11 +464,7 @@ function ModuleCard({
 										courseId={courseId}
 										moduleId={module.uuid}
 										trigger={
-											<Button
-												variant="outline"
-												size="sm"
-												disabled={courseStatus !== "draft"}
-											>
+											<Button variant="outline" size="sm" disabled={!isDraft}>
 												<Plus className="size-3.5" />
 												Add Material
 											</Button>
@@ -368,7 +551,7 @@ function ModuleCard({
 															<Button
 																variant="ghost"
 																size="icon-sm"
-																disabled={courseStatus !== "draft"}
+																disabled={!isDraft}
 															>
 																<Edit2 />
 															</Button>
@@ -382,7 +565,7 @@ function ModuleCard({
 															<Button
 																variant="ghost"
 																size="icon-sm"
-																disabled={courseStatus !== "draft"}
+																disabled={!isDraft}
 															>
 																<Trash2 />
 															</Button>
@@ -405,11 +588,7 @@ function ModuleCard({
 										courseId={courseId}
 										moduleId={module.uuid}
 										trigger={
-											<Button
-												variant="outline"
-												size="sm"
-												disabled={courseStatus !== "draft"}
-											>
+											<Button variant="outline" size="sm" disabled={!isDraft}>
 												<Plus className="size-3.5" />
 												Add Quiz
 											</Button>
@@ -457,7 +636,7 @@ function ModuleCard({
 															<Button
 																variant="ghost"
 																size="icon-sm"
-																disabled={courseStatus !== "draft"}
+																disabled={!isDraft}
 															>
 																<Edit2 />
 															</Button>
@@ -471,7 +650,7 @@ function ModuleCard({
 															<Button
 																variant="ghost"
 																size="icon-sm"
-																disabled={courseStatus !== "draft"}
+																disabled={!isDraft}
 															>
 																<Trash2 />
 															</Button>

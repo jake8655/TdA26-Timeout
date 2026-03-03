@@ -59,6 +59,7 @@ public class CourseDuplicateController extends Controller {
       Module moduleCopy = new Module(clone, module.getTitle(), module.getDescription());
       moduleCopy.setVisible(false);
       moduleCopy.setRevealedAt(null);
+      moduleCopy.setOrderIndex(module.getOrderIndex());
       moduleCopy.save();
 
       for (FileAttachment attachment : module.getFileAttachments()) {

@@ -3,7 +3,9 @@ package eu.hypnomacka.timeout.server.controllers.course;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.CourseStats;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import io.ebean.DB;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -52,6 +54,12 @@ public class CourseDeleteController extends Controller {
             "{\"reason\":\"Course deleted by"
                 + " lecturer\",\"status\":\"DELETED\",\"effectiveAt\":\"%s\"}",
             Instant.now()));
+
+    CourseStats stats =
+        DB.find(CourseStats.class).where().eq("course.uuid", course.getUuid()).findOne();
+    if (stats != null) {
+      stats.delete();
+    }
 
     if (course.delete()) {
       return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

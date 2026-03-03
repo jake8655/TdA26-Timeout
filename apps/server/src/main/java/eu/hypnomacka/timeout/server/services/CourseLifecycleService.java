@@ -53,14 +53,10 @@ public class CourseLifecycleService {
   }
 
   public void transitionToLive(Course course, String reason) {
-    Status previousStatus = course.getStatus();
     course.setStatus(Status.LIVE);
     course.setLastWentLiveAt(Instant.now());
     course.setPausedAt(null);
     course.save();
-    if (previousStatus != Status.PAUSED) {
-      hideAllModules(course);
-    }
   }
 
   public void transitionToPaused(Course course, String reason) {
@@ -71,6 +67,7 @@ public class CourseLifecycleService {
   }
 
   public void transitionToScheduled(Course course, Instant startAt, Instant endAt, String reason) {
+    resetRevealStateIfNeeded(course);
     course.setStatus(Status.SCHEDULED);
     course.setScheduledStartAt(startAt);
     course.setScheduledEndAt(endAt);
@@ -79,6 +76,7 @@ public class CourseLifecycleService {
   }
 
   public void transitionToArchived(Course course, String reason) {
+    resetRevealStateIfNeeded(course);
     course.setStatus(Status.ARCHIVED);
     course.setArchivedAt(Instant.now());
     course.save();
@@ -106,6 +104,7 @@ public class CourseLifecycleService {
   }
 
   public void transitionToDraft(Course course, String reason) {
+    resetRevealStateIfNeeded(course);
     course.setStatus(Status.DRAFT);
     course.setScheduledStartAt(null);
     course.setScheduledEndAt(null);
@@ -129,6 +128,12 @@ public class CourseLifecycleService {
       module.setVisible(false);
       module.setRevealedAt(null);
       module.save();
+    }
+  }
+
+  private void resetRevealStateIfNeeded(Course course) {
+    if (course.getStatus() != Status.PAUSED) {
+      hideAllModules(course);
     }
   }
 

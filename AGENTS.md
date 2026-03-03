@@ -1,8 +1,12 @@
 # MUST
+- Be concise, use bullet points and sacrifice grammar for clarity
+
+## Git
 - Do not stage, commit, open PRs unless explicitly asked to
 - When asked to commit, use conventional commits with an optional short body and perform small atomic commits
 - When opening PRs, look at previous PRs for examples of good PR titles and descriptions
-- Be concise, use bullet points and sacrifice grammar for clarity
+- Prefer writing why and what over how in commit messages and PR descriptions, the code should show how
+- Do not mention files, functions, variable names in commit messages or PR descriptions, focus on the intent and impact of the change
 
 ## Project Structure
 - `apps/web` - Next.js 16 frontend (React 19, TypeScript, Tailwind)

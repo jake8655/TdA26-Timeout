@@ -355,7 +355,7 @@ function ModuleCard({
 	index: number;
 	dragHandleProps?: Record<string, unknown>;
 }) {
-	const [expanded, setExpanded] = useState(true);
+	const [expanded, setExpanded] = useState(false);
 
 	const materials = (module.materials ?? []) as Material[];
 	const quizzes = module.quizzes ?? [];
@@ -371,15 +371,6 @@ function ModuleCard({
 		>
 			<div className="flex flex-wrap items-start justify-between gap-4 p-4">
 				<div className="flex min-w-0 flex-1 items-start gap-3">
-					{isDraft && dragHandleProps && (
-						<button
-							type="button"
-							className="mt-0.5 cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-							{...dragHandleProps}
-						>
-							<GripVertical className="size-4" />
-						</button>
-					)}
 					<Button
 						variant="ghost"
 						size="icon-sm"
@@ -431,6 +422,15 @@ function ModuleCard({
 							</Button>
 						}
 					/>
+					{isDraft && dragHandleProps && (
+						<button
+							type="button"
+							className="flex size-8 cursor-grab touch-none items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
+							{...dragHandleProps}
+						>
+							<GripVertical className="size-4" />
+						</button>
+					)}
 				</div>
 			</div>
 

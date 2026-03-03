@@ -67,7 +67,7 @@ export function CourseStatsSection({
 			bg: "bg-blue-500/10",
 		},
 		{
-			label: "Avg Score",
+			label: "Averge Score",
 			value:
 				stats.totalSubmissions > 0
 					? `${stats.avgScore.toFixed(1)} / ${stats.avgMaxScore.toFixed(1)}`
@@ -77,7 +77,7 @@ export function CourseStatsSection({
 			bg: "bg-amber-500/10",
 		},
 		{
-			label: "Avg Percentage",
+			label: "Average Percentage",
 			value:
 				stats.totalSubmissions > 0
 					? `${stats.avgPercentage.toFixed(1)}%`
@@ -103,12 +103,7 @@ export function CourseStatsSection({
 			className="space-y-3"
 		>
 			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-3">
-					<BarChart3 className="size-5 text-primary" />
-					<h2 className="font-semibold text-foreground text-xl">
-						Course Stats
-					</h2>
-				</div>
+				<h2 className="font-semibold text-foreground text-xl">Course Stats</h2>
 				{isLive && isConnected && (
 					<div className="flex items-center gap-2 text-muted-foreground text-xs">
 						<div className="size-2 animate-pulse rounded-full bg-green-500" />

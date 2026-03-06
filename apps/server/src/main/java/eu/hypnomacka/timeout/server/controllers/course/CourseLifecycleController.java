@@ -52,21 +52,14 @@ public class CourseLifecycleController extends Controller {
     switch (status) {
       case DRAFT -> lifecycleService.transitionToDraft(course, "Course moved to draft");
       case SCHEDULED -> {
-        if (request.getScheduledStartAt() == null || request.getScheduledEndAt() == null) {
+        if (request.getScheduledStartAt() == null) {
           return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body(Map.of("status", "bad", "message", "schedule requires start and end"));
+              .body(Map.of("status", "bad", "message", "schedule requires start"));
         }
         lifecycleService.transitionToScheduled(
-            course,
-            Instant.parse(request.getScheduledStartAt()),
-            Instant.parse(request.getScheduledEndAt()),
-            "Course scheduled");
+            course, Instant.parse(request.getScheduledStartAt()), "Course scheduled");
       }
       case LIVE -> {
-        if (request.getScheduledEndAt() == null && course.getScheduledEndAt() == null) {
-          return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body(Map.of("status", "bad", "message", "live requires end time"));
-        }
         if (hasEmptyModules(course)) {
           return ResponseEntity.status(HttpStatus.BAD_REQUEST)
               .body(
@@ -75,9 +68,6 @@ public class CourseLifecycleController extends Controller {
                       "bad",
                       "message",
                       "all modules must have at least one material or one quiz"));
-        }
-        if (request.getScheduledEndAt() != null) {
-          course.setScheduledEndAt(Instant.parse(request.getScheduledEndAt()));
         }
         lifecycleService.transitionToLive(course, "Course started");
       }
@@ -111,10 +101,6 @@ public class CourseLifecycleController extends Controller {
           .body(Map.of("status", "bad", "message", "unauthorized"));
     }
 
-    if (request.getScheduledEndAt() == null) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "bad", "message", "end time required"));
-    }
     if (hasEmptyModules(course)) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(
@@ -125,7 +111,6 @@ public class CourseLifecycleController extends Controller {
                   "all modules must have at least one material or one quiz"));
     }
 
-    course.setScheduledEndAt(Instant.parse(request.getScheduledEndAt()));
     lifecycleService.transitionToLive(course, "Course started by lecturer");
 
     return ResponseEntity.ok(course);
@@ -151,10 +136,6 @@ public class CourseLifecycleController extends Controller {
     lifecycleService.kickCourseParticipants(course, "Course paused by lecturer", Status.PAUSED);
     if (request.getScheduledStartAt() != null) {
       course.setScheduledStartAt(Instant.parse(request.getScheduledStartAt()));
-      course.save();
-    }
-    if (request.getScheduledEndAt() != null) {
-      course.setScheduledEndAt(Instant.parse(request.getScheduledEndAt()));
       course.save();
     }
 
@@ -209,17 +190,13 @@ public class CourseLifecycleController extends Controller {
   public static class StatusRequest {
     private String status;
     private String scheduledStartAt;
-    private String scheduledEndAt;
   }
 
   @Data
-  public static class StartRequest {
-    private String scheduledEndAt;
-  }
+  public static class StartRequest {}
 
   @Data
   public static class PauseRequest {
     private String scheduledStartAt;
-    private String scheduledEndAt;
   }
 }

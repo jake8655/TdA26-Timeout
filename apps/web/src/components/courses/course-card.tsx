@@ -75,12 +75,6 @@ export function CourseCard({
 											</span>
 										</div>
 									)}
-								{course.scheduledEndAt && (
-									<div className="flex items-center gap-2">
-										<CalendarClock className="size-4" />
-										<span>Ends {formatCourseTime(course.scheduledEndAt)}</span>
-									</div>
-								)}
 							</div>
 						) : null}
 					</div>

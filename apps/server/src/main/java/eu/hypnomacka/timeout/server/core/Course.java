@@ -47,8 +47,6 @@ public class Course extends Model {
 
   @Column private Instant scheduledStartAt;
 
-  @Column private Instant scheduledEndAt;
-
   @Column private Instant pausedAt;
 
   @Column private Instant archivedAt;

@@ -2,11 +2,9 @@ package eu.hypnomacka.timeout.server.controllers.course.quizzes;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
-import eu.hypnomacka.timeout.server.core.CourseJoin;
 import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.QuizResult;
-import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import eu.hypnomacka.timeout.server.core.query.QQuizResult;
 import io.ebean.DB;
 import java.util.ArrayList;
@@ -51,12 +49,11 @@ public class QuizResultsGetController extends Controller {
 
     if (!isLecturer) {
       if (course.getStatus() == Course.Status.ARCHIVED) {
-        if (!isParticipant(course, studentSessionId)) {
-          return ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(Map.of("message", "course not found"));
-        }
-      } else if (course.getStatus() != Course.Status.LIVE
-          || !Boolean.TRUE.equals(module.getVisible())) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(Map.of("message", "course not found"));
+      }
+
+      if (course.getStatus() != Course.Status.LIVE || !Boolean.TRUE.equals(module.getVisible())) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(Map.of("message", "module not visible"));
       }
@@ -90,15 +87,6 @@ public class QuizResultsGetController extends Controller {
     }
 
     return ResponseEntity.ok(responses);
-  }
-
-  private boolean isParticipant(Course course, String studentSessionId) {
-    if (studentSessionId == null || studentSessionId.isBlank()) {
-      return false;
-    }
-    CourseJoin join =
-        new QCourseJoin().course.eq(course).sessionToken.eq(studentSessionId).findOne();
-    return join != null && Boolean.TRUE.equals(join.getHasSubmittedQuiz());
   }
 
   private Course findCourse(String courseId) {

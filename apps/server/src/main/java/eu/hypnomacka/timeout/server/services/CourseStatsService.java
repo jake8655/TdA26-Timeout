@@ -42,9 +42,19 @@ public class CourseStatsService {
     }
   }
 
-  public void recordMaterialInteraction(Course course) {
+  public void recordDownload(Course course) {
     CourseStats stats = getOrCreate(course);
-    stats.setMaterialInteractions(stats.getMaterialInteractions() + 1);
+    stats.setDownloads(stats.getDownloads() + 1);
+    stats.save();
+
+    if (course.getStatus() == Course.Status.LIVE) {
+      broadcastStats(course.getUuid(), stats);
+    }
+  }
+
+  public void recordSiteVisit(Course course) {
+    CourseStats stats = getOrCreate(course);
+    stats.setSiteVisits(stats.getSiteVisits() + 1);
     stats.save();
 
     if (course.getStatus() == Course.Status.LIVE) {
@@ -70,7 +80,8 @@ public class CourseStatsService {
                       stats.getTotalSubmissions() > 0
                           ? stats.getTotalPercentageSum() / stats.getTotalSubmissions()
                           : 0.0,
-                  "materialInteractions", stats.getMaterialInteractions(),
+                  "downloads", stats.getDownloads(),
+                  "siteVisits", stats.getSiteVisits(),
                   "updatedAt",
                       stats.getUpdatedAt() != null ? stats.getUpdatedAt().toString() : ""));
       statsSseService.broadcastMessage(courseId, "stats_update", data);

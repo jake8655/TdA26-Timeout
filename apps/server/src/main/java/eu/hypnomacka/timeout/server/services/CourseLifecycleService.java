@@ -4,13 +4,11 @@ import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Course.Status;
 import eu.hypnomacka.timeout.server.core.CourseJoin;
-import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,16 +38,6 @@ public class CourseLifecycleService {
         transitionToLive(course, "Course started automatically");
       }
     }
-
-    List<Course> endBoundCourses =
-        new QCourse().status.in(Status.LIVE, Status.PAUSED).scheduledEndAt.isNotNull().findList();
-    for (Course course : endBoundCourses) {
-      Instant endAt = course.getScheduledEndAt();
-      if (endAt != null && !endAt.isAfter(now)) {
-        transitionToArchived(course, "Course ended automatically");
-        deactivateJoinsAndKick(course, "Course ended automatically", Status.ARCHIVED);
-      }
-    }
   }
 
   public void transitionToLive(Course course, String reason) {
@@ -63,14 +51,12 @@ public class CourseLifecycleService {
     course.setStatus(Status.PAUSED);
     course.setPausedAt(Instant.now());
     course.save();
-    createSystemEvent(course, reason);
   }
 
-  public void transitionToScheduled(Course course, Instant startAt, Instant endAt, String reason) {
+  public void transitionToScheduled(Course course, Instant startAt, String reason) {
     resetRevealStateIfNeeded(course);
     course.setStatus(Status.SCHEDULED);
     course.setScheduledStartAt(startAt);
-    course.setScheduledEndAt(endAt);
     course.setPausedAt(null);
     course.save();
   }
@@ -80,7 +66,6 @@ public class CourseLifecycleService {
     course.setStatus(Status.ARCHIVED);
     course.setArchivedAt(Instant.now());
     course.save();
-    createSystemEvent(course, reason);
   }
 
   public void deactivateJoins(Course course) {
@@ -107,20 +92,9 @@ public class CourseLifecycleService {
     resetRevealStateIfNeeded(course);
     course.setStatus(Status.DRAFT);
     course.setScheduledStartAt(null);
-    course.setScheduledEndAt(null);
     course.setPausedAt(null);
     course.setArchivedAt(null);
     course.save();
-  }
-
-  public void createSystemEvent(Course course, String message) {
-    Event event = new Event();
-    event.setUuid(UUID.randomUUID());
-    event.setCourse(course);
-    event.setType(Event.Type.SYSTEM);
-    event.setMessage(message);
-    event.setEdited(false);
-    event.save();
   }
 
   private void hideAllModules(Course course) {

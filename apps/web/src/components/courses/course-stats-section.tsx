@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
 	BarChart3,
 	ClipboardCheck,
+	Download,
 	Loader2,
 	MousePointerClick,
 	Percent,
@@ -67,7 +68,7 @@ export function CourseStatsSection({
 			bg: "bg-blue-500/10",
 		},
 		{
-			label: "Averge Score",
+			label: "Average Score",
 			value:
 				stats.totalSubmissions > 0
 					? `${stats.avgScore.toFixed(1)} / ${stats.avgMaxScore.toFixed(1)}`
@@ -87,11 +88,18 @@ export function CourseStatsSection({
 			bg: "bg-emerald-500/10",
 		},
 		{
-			label: "Material Interactions",
-			value: stats.materialInteractions,
-			icon: MousePointerClick,
+			label: "Downloads",
+			value: stats.downloads,
+			icon: Download,
 			color: "text-violet-400",
 			bg: "bg-violet-500/10",
+		},
+		{
+			label: "Site Visits",
+			value: stats.siteVisits,
+			icon: MousePointerClick,
+			color: "text-cyan-400",
+			bg: "bg-cyan-500/10",
 		},
 	];
 
@@ -112,7 +120,7 @@ export function CourseStatsSection({
 				)}
 			</div>
 
-			<div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+			<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 				<AnimatePresence mode="popLayout">
 					{cards.map((card, i) => (
 						<motion.div

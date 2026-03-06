@@ -51,6 +51,11 @@ public class CourseFeedService {
       return;
     }
 
+    if (!isVisibleFeedEvent(event)) {
+      log.debug("Skipping visible feed broadcast for event: {}", event.getUuid());
+      return;
+    }
+
     String eventName = event.getType() == Event.Type.MANUAL ? "new_post" : "system_event";
 
     try {
@@ -104,5 +109,18 @@ public class CourseFeedService {
   public int getActiveConnectionCount(UUID courseId) {
     CopyOnWriteArrayList<SseEmitter> emitters = courseEmitters.get(courseId);
     return emitters != null ? emitters.size() : 0;
+  }
+
+  private boolean isVisibleFeedEvent(Event event) {
+    if (event.getType() == Event.Type.MANUAL) {
+      return true;
+    }
+
+    String message = event.getMessage();
+    if (message == null) {
+      return false;
+    }
+
+    return message.startsWith("Module revealed:") || message.startsWith("Module hidden:");
   }
 }

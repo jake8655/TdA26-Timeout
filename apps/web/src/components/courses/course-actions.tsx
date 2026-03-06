@@ -43,11 +43,8 @@ export function CourseActions({
 	deletePending = false,
 }: {
 	course: CourseDetail;
-	onSchedule: (payload: {
-		scheduledStartAt: string;
-		scheduledEndAt: string;
-	}) => void;
-	onStart: (endAt: string) => void;
+	onSchedule: (payload: { scheduledStartAt: string }) => void;
+	onStart: () => void;
 	onPause: () => void;
 	onArchive: () => void;
 	onMoveToDraft: () => void;
@@ -252,15 +249,13 @@ export function CourseActions({
 						{canSchedule && (
 							<CourseScheduleDialog
 								title="Schedule course"
-								description="Pick start and end times"
+								description="Pick when the course should go live"
 								initialStartAt={course.scheduledStartAt}
-								initialEndAt={course.scheduledEndAt}
 								confirmLabel="Schedule"
 								onConfirm={(payload) => {
 									if (payload.scheduledStartAt) {
 										onSchedule({
 											scheduledStartAt: payload.scheduledStartAt,
-											scheduledEndAt: payload.scheduledEndAt,
 										});
 									}
 								}}
@@ -273,20 +268,14 @@ export function CourseActions({
 							/>
 						)}
 						{canStart && (
-							<CourseScheduleDialog
-								mode="start"
-								title="Start the course"
-								description="Set the end time before going live"
-								initialEndAt={course.scheduledEndAt}
-								confirmLabel="Start Now"
-								onConfirm={(payload) => onStart(payload.scheduledEndAt)}
-								trigger={
-									<Button variant="accent" className="justify-start gap-2">
-										<Play className="size-4" />
-										Go Live Now
-									</Button>
-								}
-							/>
+							<Button
+								variant="accent"
+								className="justify-start gap-2"
+								onClick={() => onStart()}
+							>
+								<Play className="size-4" />
+								Go Live Now
+							</Button>
 						)}
 						{canPause && (
 							<Button

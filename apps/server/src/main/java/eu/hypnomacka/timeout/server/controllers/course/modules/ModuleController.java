@@ -3,6 +3,7 @@ package eu.hypnomacka.timeout.server.controllers.course.modules;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Quiz;
@@ -232,6 +233,8 @@ public class ModuleController extends Controller {
     module.setRevealedAt(Instant.now());
     module.save();
 
+    createModuleFeedEvent(course, "Module revealed: %s", module.getTitle());
+
     feedService.broadcastMessage(
         course.getUuid(),
         "module_revealed",
@@ -344,6 +347,8 @@ public class ModuleController extends Controller {
     next.setRevealedAt(Instant.now());
     next.save();
 
+    createModuleFeedEvent(course, "Module revealed: %s", next.getTitle());
+
     feedService.broadcastMessage(
         course.getUuid(),
         "module_revealed",
@@ -396,6 +401,8 @@ public class ModuleController extends Controller {
     last.setVisible(false);
     last.setRevealedAt(null);
     last.save();
+
+    createModuleFeedEvent(course, "Module hidden: %s", last.getTitle());
 
     feedService.broadcastMessage(
         course.getUuid(),
@@ -459,6 +466,16 @@ public class ModuleController extends Controller {
     } catch (IllegalArgumentException e) {
       return null;
     }
+  }
+
+  private void createModuleFeedEvent(Course course, String messageTemplate, String moduleTitle) {
+    Event event = new Event();
+    event.setUuid(UUID.randomUUID());
+    event.setCourse(course);
+    event.setType(Event.Type.SYSTEM);
+    event.setMessage(String.format(messageTemplate, moduleTitle));
+    event.setEdited(false);
+    event.save();
   }
 
   @Data

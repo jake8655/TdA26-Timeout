@@ -134,7 +134,6 @@ public class QuizSubmitController extends Controller {
               .findOne();
       if (join != null) {
         join.setActive(true);
-        join.setHasSubmittedQuiz(true);
         join.setLastSeenAt(Instant.now());
         join.save();
       }

@@ -3,11 +3,16 @@ package eu.hypnomacka.timeout.server.controllers.feed;
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Event;
+import eu.hypnomacka.timeout.server.core.query.QEvent;
 import io.ebean.DB;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,44 +31,45 @@ public class CourseFeedController extends Controller {
   }
 
   @GetMapping(value = "/{UUID}/feed", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> getFeed(
-      @PathVariable("UUID") String uuidStr,
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
-    UUID uuid;
-    try {
-      uuid = UUID.fromString(uuidStr);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+  public ResponseEntity<?> getFeed(@PathVariable("UUID") String uuidStr) {
+    UUID uuid = parseUuid(uuidStr);
+    if (uuid == null) {
+      return invalidUuidResponse();
     }
 
     Course course = DB.find(Course.class, uuid);
     if (course == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(Map.of("status", "bad", "message", "course not found"));
+      return courseNotFoundResponse();
     }
 
-    if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
+    if (course.getStatus() != Course.Status.LIVE) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
           .body(Map.of("status", "bad", "message", "course not live"));
     }
 
-    List<Event> events =
-        DB.find(Event.class).where().eq("course.uuid", uuid).orderBy().desc("createdAt").findList();
+    return ResponseEntity.ok(buildFeedResponse(uuid));
+  }
 
-    List<Map<String, Object>> response = new ArrayList<>();
-    for (Event event : events) {
-      Map<String, Object> eventMap = new LinkedHashMap<>();
-      eventMap.put("uuid", event.getUuid());
-      eventMap.put("type", event.getType().name().toLowerCase());
-      eventMap.put("message", event.getMessage());
-      eventMap.put("edited", event.getEdited());
-      eventMap.put("createdAt", event.getCreatedAt());
-      eventMap.put("updatedAt", event.getUpdatedAt());
-      response.add(eventMap);
+  @GetMapping(value = "/lecturer/{UUID}/feed", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> getLecturerFeed(
+      @PathVariable("UUID") String uuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "unauthorized"));
     }
 
-    return ResponseEntity.status(HttpStatus.OK).body(response);
+    UUID uuid = parseUuid(uuidStr);
+    if (uuid == null) {
+      return invalidUuidResponse();
+    }
+
+    Course course = DB.find(Course.class, uuid);
+    if (course == null) {
+      return courseNotFoundResponse();
+    }
+
+    return ResponseEntity.ok(buildFeedResponse(uuid));
   }
 
   @PostMapping(value = "/{UUID}/feed", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -71,19 +77,14 @@ public class CourseFeedController extends Controller {
       @PathVariable("UUID") String uuidStr,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @Valid @RequestBody CreatePostRequest request) {
-
-    UUID uuid;
-    try {
-      uuid = UUID.fromString(uuidStr);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+    UUID uuid = parseUuid(uuidStr);
+    if (uuid == null) {
+      return invalidUuidResponse();
     }
 
     Course course = DB.find(Course.class, uuid);
     if (course == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(Map.of("status", "bad", "message", "course not found"));
+      return courseNotFoundResponse();
     }
 
     if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.LIVE) {
@@ -99,25 +100,13 @@ public class CourseFeedController extends Controller {
     event.setEdited(false);
     event.save();
 
-    Map<String, Object> eventMap = new LinkedHashMap<>();
-    eventMap.put("uuid", event.getUuid());
-    eventMap.put("type", event.getType().name().toLowerCase());
-    eventMap.put("message", event.getMessage());
-    eventMap.put("edited", event.getEdited());
-    eventMap.put("createdAt", event.getCreatedAt());
-    eventMap.put("updatedAt", event.getUpdatedAt());
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(eventMap);
+    return ResponseEntity.status(HttpStatus.CREATED).body(buildEventResponse(event));
   }
 
   @GetMapping(value = "/{UUID}/feed/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public ResponseEntity<SseEmitter> streamFeed(
-      @PathVariable("UUID") String uuidStr,
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
-    UUID uuid;
-    try {
-      uuid = UUID.fromString(uuidStr);
-    } catch (IllegalArgumentException e) {
+  public ResponseEntity<SseEmitter> streamFeed(@PathVariable("UUID") String uuidStr) {
+    UUID uuid = parseUuid(uuidStr);
+    if (uuid == null) {
       return ResponseEntity.badRequest().build();
     }
 
@@ -126,27 +115,32 @@ public class CourseFeedController extends Controller {
       return ResponseEntity.notFound().build();
     }
 
-    if (course.getStatus() != Course.Status.LIVE && !isLecturerSession(sessionId)) {
+    if (course.getStatus() != Course.Status.LIVE) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-    SseEmitter emitter = new SseEmitter(1800000L);
+    return createFeedStream(uuid);
+  }
 
-    feedService.addEmitter(uuid, emitter);
-
-    emitter.onCompletion(() -> feedService.removeEmitter(uuid, emitter));
-    emitter.onTimeout(() -> feedService.removeEmitter(uuid, emitter));
-    emitter.onError((ex) -> feedService.removeEmitter(uuid, emitter));
-
-    try {
-      emitter.send(
-          SseEmitter.event().name("connected").data("{\"message\":\"Connected to course feed\"}"));
-    } catch (IOException e) {
-      feedService.removeEmitter(uuid, emitter);
-      return ResponseEntity.internalServerError().build();
+  @GetMapping(value = "/lecturer/{UUID}/feed/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  public ResponseEntity<SseEmitter> streamLecturerFeed(
+      @PathVariable("UUID") String uuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+    if (!isLecturerSession(sessionId)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    return ResponseEntity.ok().header("Content-Type", "text/event-stream").body(emitter);
+    UUID uuid = parseUuid(uuidStr);
+    if (uuid == null) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    Course course = DB.find(Course.class, uuid);
+    if (course == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    return createFeedStream(uuid);
   }
 
   @PutMapping(value = "/{UUID}/feed/{postUUID}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -155,21 +149,15 @@ public class CourseFeedController extends Controller {
       @PathVariable("postUUID") String postUuidStr,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @Valid @RequestBody UpdatePostRequest request) {
-
-    UUID uuid;
-    UUID postUuid;
-    try {
-      uuid = UUID.fromString(uuidStr);
-      postUuid = UUID.fromString(postUuidStr);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+    UUID uuid = parseUuid(uuidStr);
+    UUID postUuid = parseUuid(postUuidStr);
+    if (uuid == null || postUuid == null) {
+      return invalidUuidResponse();
     }
 
     Course course = DB.find(Course.class, uuid);
     if (course == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(Map.of("status", "bad", "message", "course not found"));
+      return courseNotFoundResponse();
     }
 
     if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.LIVE) {
@@ -196,15 +184,7 @@ public class CourseFeedController extends Controller {
     event.setEdited(request.getEdited());
     event.save();
 
-    Map<String, Object> eventMap = new LinkedHashMap<>();
-    eventMap.put("uuid", event.getUuid());
-    eventMap.put("type", event.getType().name().toLowerCase());
-    eventMap.put("message", event.getMessage());
-    eventMap.put("edited", event.getEdited());
-    eventMap.put("createdAt", event.getCreatedAt());
-    eventMap.put("updatedAt", event.getUpdatedAt());
-
-    return ResponseEntity.status(HttpStatus.OK).body(eventMap);
+    return ResponseEntity.ok(buildEventResponse(event));
   }
 
   @DeleteMapping(value = "/{UUID}/feed/{postUUID}")
@@ -212,21 +192,15 @@ public class CourseFeedController extends Controller {
       @PathVariable("UUID") String uuidStr,
       @PathVariable("postUUID") String postUuidStr,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
-
-    UUID uuid;
-    UUID postUuid;
-    try {
-      uuid = UUID.fromString(uuidStr);
-      postUuid = UUID.fromString(postUuidStr);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+    UUID uuid = parseUuid(uuidStr);
+    UUID postUuid = parseUuid(postUuidStr);
+    if (uuid == null || postUuid == null) {
+      return invalidUuidResponse();
     }
 
     Course course = DB.find(Course.class, uuid);
     if (course == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(Map.of("status", "bad", "message", "course not found"));
+      return courseNotFoundResponse();
     }
 
     if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.LIVE) {
@@ -252,6 +226,82 @@ public class CourseFeedController extends Controller {
     event.delete();
 
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  private UUID parseUuid(String uuidStr) {
+    try {
+      return UUID.fromString(uuidStr);
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private ResponseEntity<Map<String, String>> invalidUuidResponse() {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(Map.of("status", "bad", "message", "invalid UUID format"));
+  }
+
+  private ResponseEntity<Map<String, String>> courseNotFoundResponse() {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(Map.of("status", "bad", "message", "course not found"));
+  }
+
+  private List<Map<String, Object>> buildFeedResponse(UUID courseId) {
+    List<Event> events =
+        new QEvent()
+            .course.uuid.eq(courseId).orderBy().createdAt.desc().findList().stream()
+                .filter(this::isVisibleFeedEvent)
+                .toList();
+
+    List<Map<String, Object>> response = new ArrayList<>();
+    for (Event event : events) {
+      response.add(buildEventResponse(event));
+    }
+    return response;
+  }
+
+  private Map<String, Object> buildEventResponse(Event event) {
+    Map<String, Object> eventMap = new LinkedHashMap<>();
+    eventMap.put("uuid", event.getUuid());
+    eventMap.put("type", event.getType().name().toLowerCase());
+    eventMap.put("message", event.getMessage());
+    eventMap.put("edited", event.getEdited());
+    eventMap.put("createdAt", event.getCreatedAt());
+    eventMap.put("updatedAt", event.getUpdatedAt());
+    return eventMap;
+  }
+
+  private ResponseEntity<SseEmitter> createFeedStream(UUID courseId) {
+    SseEmitter emitter = new SseEmitter(1800000L);
+
+    feedService.addEmitter(courseId, emitter);
+
+    emitter.onCompletion(() -> feedService.removeEmitter(courseId, emitter));
+    emitter.onTimeout(() -> feedService.removeEmitter(courseId, emitter));
+    emitter.onError((ex) -> feedService.removeEmitter(courseId, emitter));
+
+    try {
+      emitter.send(
+          SseEmitter.event().name("connected").data("{\"message\":\"Connected to course feed\"}"));
+    } catch (IOException e) {
+      feedService.removeEmitter(courseId, emitter);
+      return ResponseEntity.internalServerError().build();
+    }
+
+    return ResponseEntity.ok().header("Content-Type", "text/event-stream").body(emitter);
+  }
+
+  private boolean isVisibleFeedEvent(Event event) {
+    if (event.getType() == Event.Type.MANUAL) {
+      return true;
+    }
+
+    String message = event.getMessage();
+    if (message == null) {
+      return false;
+    }
+
+    return message.startsWith("Module revealed:") || message.startsWith("Module hidden:");
   }
 
   @Data

@@ -11,7 +11,6 @@ import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import eu.hypnomacka.timeout.server.core.query.QEvent;
-import eu.hypnomacka.timeout.server.core.query.QQuizResult;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -32,33 +31,17 @@ public class CourseGetController extends Controller {
   public List<Map<String, Object>> root(
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
-    boolean isLecturer = isLecturerSession(sessionId);
-
-    List<Course> courses;
-    if (isLecturer) {
-      courses = new QCourse().orderBy().updatedAt.desc().findList();
-    } else {
-      courses =
-          new QCourse()
-              .status
-              .in(
-                  Course.Status.SCHEDULED,
-                  Course.Status.LIVE,
-                  Course.Status.PAUSED,
-                  Course.Status.ARCHIVED)
-              .orderBy()
-              .updatedAt
-              .desc()
-              .findList();
-    }
+    List<Course> courses =
+        new QCourse()
+            .status
+            .in(Course.Status.SCHEDULED, Course.Status.LIVE, Course.Status.PAUSED)
+            .orderBy()
+            .updatedAt
+            .desc()
+            .findList();
 
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
-      if (!isLecturer
-          && course.getStatus() == Course.Status.ARCHIVED
-          && !hasSubmittedQuiz(course, studentSessionId)) {
-        continue;
-      }
       result.add(buildCourseSummaryResponse(course, studentSessionId));
     }
     return result;
@@ -83,7 +66,6 @@ public class CourseGetController extends Controller {
   @GetMapping(value = "/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> byUUID(
       @PathVariable("UUID") String uuidStr,
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
     UUID uuid;
     try {
@@ -99,30 +81,19 @@ public class CourseGetController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    boolean isLecturer = isLecturerSession(sessionId);
-
-    if (!isLecturer
-        && (course.getStatus() == Course.Status.DRAFT
-            || (course.getStatus() == Course.Status.ARCHIVED
-                && !hasSubmittedQuiz(course, studentSessionId)))) {
+    if (course.getStatus() == Course.Status.DRAFT || course.getStatus() == Course.Status.ARCHIVED) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturer && course.getStatus() == Course.Status.ARCHIVED) {
-      return ResponseEntity.status(HttpStatus.OK)
-          .body(buildArchivedCourseResponse(course, studentSessionId));
-    }
-
-    if (!isLecturer
-        && (course.getStatus() == Course.Status.SCHEDULED
-            || course.getStatus() == Course.Status.PAUSED)) {
+    if (course.getStatus() == Course.Status.SCHEDULED
+        || course.getStatus() == Course.Status.PAUSED) {
       return ResponseEntity.status(HttpStatus.OK)
           .body(buildLimitedCourseResponse(course, studentSessionId));
     }
 
     return ResponseEntity.status(HttpStatus.OK)
-        .body(buildCourseDetailResponse(course, isLecturer, studentSessionId));
+        .body(buildCourseDetailResponse(course, false, studentSessionId));
   }
 
   @GetMapping(value = "/lecturer/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -160,7 +131,6 @@ public class CourseGetController extends Controller {
     response.put("updatedAt", course.getUpdatedAt());
     response.put("status", course.getStatus().name().toLowerCase());
     response.put("scheduledStartAt", course.getScheduledStartAt());
-    response.put("scheduledEndAt", course.getScheduledEndAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
     if (studentSessionId != null) {
@@ -183,7 +153,11 @@ public class CourseGetController extends Controller {
       moduleResponses.add(buildModuleResponse(module, true));
     }
 
-    List<Event> events = new QEvent().course.eq(course).orderBy().createdAt.desc().findList();
+    List<Event> events =
+        new QEvent()
+            .course.eq(course).orderBy().createdAt.desc().findList().stream()
+                .filter(this::isVisibleFeedEvent)
+                .toList();
     List<Map<String, Object>> feed = new ArrayList<>();
     for (Event event : events) {
       Map<String, Object> eventMap = new LinkedHashMap<>();
@@ -206,7 +180,6 @@ public class CourseGetController extends Controller {
     response.put("feed", feed);
     response.put("status", course.getStatus().name().toLowerCase());
     response.put("scheduledStartAt", course.getScheduledStartAt());
-    response.put("scheduledEndAt", course.getScheduledEndAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
     response.put("joined", isJoined(course, studentSessionId));
@@ -222,7 +195,6 @@ public class CourseGetController extends Controller {
     response.put("updatedAt", course.getUpdatedAt());
     response.put("status", course.getStatus().name().toLowerCase());
     response.put("scheduledStartAt", course.getScheduledStartAt());
-    response.put("scheduledEndAt", course.getScheduledEndAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
     response.put("joined", isJoined(course, studentSessionId));
@@ -238,68 +210,17 @@ public class CourseGetController extends Controller {
     return join != null && Boolean.TRUE.equals(join.getActive());
   }
 
-  private boolean hasSubmittedQuiz(Course course, String sessionId) {
-    if (sessionId == null || sessionId.isBlank()) {
-      return false;
-    }
-    CourseJoin join = new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
-    if (join != null && Boolean.TRUE.equals(join.getHasSubmittedQuiz())) {
+  private boolean isVisibleFeedEvent(Event event) {
+    if (event.getType() == Event.Type.MANUAL) {
       return true;
     }
-    return new QQuizResult().quiz.module.course.eq(course).sessionToken.eq(sessionId).findCount()
-        > 0;
-  }
 
-  private Map<String, Object> buildArchivedCourseResponse(Course course, String studentSessionId) {
-    Map<String, Object> response = new LinkedHashMap<>();
-    response.put("uuid", course.getUuid());
-    response.put("name", course.getName());
-    response.put("description", course.getDescription());
-    response.put("createdAt", course.getCreatedAt());
-    response.put("updatedAt", course.getUpdatedAt());
-    response.put("feed", List.of());
-    response.put("status", course.getStatus().name().toLowerCase());
-    response.put("scheduledStartAt", course.getScheduledStartAt());
-    response.put("scheduledEndAt", course.getScheduledEndAt());
-    response.put("pausedAt", course.getPausedAt());
-    response.put("archivedAt", course.getArchivedAt());
-    response.put("joined", isJoined(course, studentSessionId));
-    response.put("modules", filterArchivedModules(course, studentSessionId));
-    return response;
-  }
-
-  private List<Map<String, Object>> filterArchivedModules(Course course, String studentSessionId) {
-    if (studentSessionId == null || studentSessionId.isBlank()) {
-      return List.of();
+    String message = event.getMessage();
+    if (message == null) {
+      return false;
     }
 
-    List<Module> modules = new ArrayList<>(course.getModules());
-    modules.sort(Comparator.comparing(Module::getOrderIndex).thenComparing(Module::getCreatedAt));
-
-    List<Map<String, Object>> response = new ArrayList<>();
-    for (Module module : modules) {
-      List<Quiz> quizzes = new ArrayList<>(module.getQuizzes());
-      quizzes.sort(Comparator.comparing(Quiz::getUpdatedAt).reversed());
-      List<Quiz> submittedQuizzes =
-          quizzes.stream()
-              .filter(
-                  quiz ->
-                      new QQuizResult().quiz.eq(quiz).sessionToken.eq(studentSessionId).findCount()
-                          > 0)
-              .toList();
-
-      if (submittedQuizzes.isEmpty()) {
-        continue;
-      }
-
-      Map<String, Object> moduleMap = new LinkedHashMap<>();
-      moduleMap.put("uuid", module.getUuid());
-      moduleMap.put("title", module.getTitle());
-      moduleMap.put("quizzes", submittedQuizzes);
-      response.add(moduleMap);
-    }
-
-    return response;
+    return message.startsWith("Module revealed:") || message.startsWith("Module hidden:");
   }
 
   private Map<String, Object> buildModuleResponse(Module module, boolean includeDescription) {

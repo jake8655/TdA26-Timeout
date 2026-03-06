@@ -5,7 +5,6 @@ import {
 	ArrowLeft,
 	BookOpen,
 	CalendarClock,
-	ClipboardCheck,
 	Download,
 	ExternalLink,
 	Loader2,
@@ -29,7 +28,6 @@ import {
 } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
-import { CourseArchivedResults } from "@/components/courses/course-archived-results";
 import { CourseFeed } from "@/components/courses/course-feed";
 import { CourseKickDialog } from "@/components/courses/course-kick-dialog";
 import EmptyState from "@/components/empty-state";
@@ -41,6 +39,18 @@ import {
 	getMaterialIcon,
 } from "@/lib/material-utils";
 
+function isNotFoundError(error: unknown) {
+	if (!error || typeof error !== "object") {
+		return false;
+	}
+
+	const maybeError = error as {
+		response?: { status: number };
+	};
+
+	return maybeError.response?.status === 404;
+}
+
 export default function CourseDetailClient() {
 	const { uuid } = useParams<{ uuid: string }>();
 
@@ -48,7 +58,7 @@ export default function CourseDetailClient() {
 		open: boolean;
 		reason?: string;
 	}>({ open: false });
-	const { data, isPending, isError, refetch } = useQuery({
+	const { data, error, isPending, isError, refetch } = useQuery({
 		...getCoursesByCourseIdOptions({
 			path: { courseId: uuid },
 		}),
@@ -62,11 +72,17 @@ export default function CourseDetailClient() {
 
 	const queryClient = useQueryClient();
 
-	if (!isPending && !isError && !data) {
+	if (
+		(!isPending && !isError && !data) ||
+		(isError && isNotFoundError(error))
+	) {
 		notFound();
 	}
 
-	if (data?.status === CourseStatus.DRAFT) {
+	if (
+		data?.status === CourseStatus.DRAFT ||
+		data?.status === CourseStatus.ARCHIVED
+	) {
 		notFound();
 	}
 
@@ -144,18 +160,12 @@ export default function CourseDetailClient() {
 										"Course details will be available when it goes live."}
 								</p>
 								{data.status === CourseStatus.SCHEDULED &&
-									(data.scheduledStartAt || data.scheduledEndAt) && (
+									data.scheduledStartAt && (
 										<div className="mt-3 flex flex-wrap items-center gap-3 text-muted-foreground text-xs">
 											{data.scheduledStartAt && (
 												<span className="inline-flex items-center gap-2">
 													<CalendarClock className="size-3.5" />
 													Starts {formatCourseTime(data.scheduledStartAt)}
-												</span>
-											)}
-											{data.scheduledEndAt && (
-												<span className="inline-flex items-center gap-2">
-													<CalendarClock className="size-3.5" />
-													Ends {formatCourseTime(data.scheduledEndAt)}
 												</span>
 											)}
 										</div>
@@ -164,44 +174,6 @@ export default function CourseDetailClient() {
 						</div>
 						<div className="rounded-none border border-white/5 bg-card/50 p-6 text-muted-foreground">
 							This course is currently {data.status}.
-						</div>
-					</section>
-				) : data.status === CourseStatus.ARCHIVED ? (
-					<section className="border border-white/5 bg-card/40 p-8 backdrop-blur-sm md:p-12">
-						<div className="mb-8 flex items-center gap-6">
-							<div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10 md:size-20">
-								<Image
-									src="/icons/Idea/zarivka_idea_blue.svg"
-									alt="Course icon"
-									width={40}
-									height={40}
-									className="size-10 md:size-12"
-								/>
-							</div>
-							<div>
-								<h1 className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl">
-									{data.name}
-								</h1>
-								<p className="mt-2 text-muted-foreground">
-									{data.description || "This course has been archived."}
-								</p>
-							</div>
-						</div>
-						<div className="rounded-none border border-white/5 bg-card/50 p-6 text-muted-foreground">
-							This course is archived. You can review your submitted quiz
-							results grouped by module.
-						</div>
-						<div className="mt-8 border-white/5 border-t pt-8">
-							<div className="mb-6 flex items-center gap-3">
-								<ClipboardCheck className="size-5 text-primary" />
-								<h2 className="font-semibold text-foreground text-lg">
-									Your Quiz Results
-								</h2>
-							</div>
-							<CourseArchivedResults
-								courseId={uuid}
-								modules={data.modules ?? []}
-							/>
 						</div>
 					</section>
 				) : (
@@ -221,10 +193,10 @@ export default function CourseDetailClient() {
 									<h1 className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl">
 										{data.name}
 									</h1>
-									{data.scheduledEndAt && (
+									{data.scheduledStartAt && (
 										<span className="inline-flex items-center gap-2 text-muted-foreground text-xs">
 											<CalendarClock className="size-3.5" />
-											Ends {formatCourseTime(data.scheduledEndAt)}
+											Starts {formatCourseTime(data.scheduledStartAt)}
 										</span>
 									)}
 								</div>

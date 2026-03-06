@@ -36,13 +36,20 @@ function addMinutes(date: Date, minutes: number) {
 	return new Date(date.getTime() + minutes * 60000);
 }
 
+function isPastDate(date: Date) {
+	const startOfToday = new Date();
+	startOfToday.setHours(0, 0, 0, 0);
+	const candidate = new Date(date);
+	candidate.setHours(0, 0, 0, 0);
+	return candidate < startOfToday;
+}
+
 export function CourseScheduleDialog({
 	trigger,
 	title,
 	description,
 	mode = "schedule",
 	initialStartAt,
-	initialEndAt,
 	confirmLabel,
 	onConfirm,
 }: {
@@ -51,43 +58,25 @@ export function CourseScheduleDialog({
 	description: string;
 	mode?: "schedule" | "start";
 	initialStartAt?: string;
-	initialEndAt?: string;
 	confirmLabel: string;
-	onConfirm: (payload: {
-		scheduledStartAt?: string;
-		scheduledEndAt: string;
-	}) => void;
+	onConfirm: (payload: { scheduledStartAt?: string }) => void;
 }) {
 	const [open, setOpen] = useState(false);
 	const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-	const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 	const [startTime, setStartTime] = useState("");
-	const [endTime, setEndTime] = useState("");
 	const showStart = mode === "schedule";
-
-	const pastDates = Array.from({ length: new Date().getDate() - 1 }).map(
-		(_, i) => new Date(new Date().getFullYear(), new Date().getMonth(), i + 1),
-	);
 
 	useEffect(() => {
 		if (!open) return;
 
 		const now = new Date();
 		now.setSeconds(0, 0);
-		const defaultStart = addMinutes(now, 5);
-		const defaultEnd = addMinutes(defaultStart, 60);
-		const defaultLiveEnd = addMinutes(now, 60);
+		const defaultStart = addMinutes(now, showStart ? 5 : 0);
 		const resolvedStart = initialStartAt
 			? new Date(initialStartAt)
 			: defaultStart;
-		const resolvedEnd = initialEndAt
-			? new Date(initialEndAt)
-			: showStart
-				? defaultEnd
-				: defaultLiveEnd;
 
 		setStartDate(showStart ? resolvedStart : undefined);
-		setEndDate(resolvedEnd);
 		setStartTime(
 			showStart
 				? initialStartAt
@@ -95,12 +84,7 @@ export function CourseScheduleDialog({
 					: formatTimeInput(resolvedStart)
 				: "",
 		);
-		setEndTime(
-			initialEndAt
-				? (toLocalInput(initialEndAt).split("T")[1] ?? "")
-				: formatTimeInput(resolvedEnd),
-		);
-	}, [open, initialStartAt, initialEndAt, showStart]);
+	}, [open, initialStartAt, showStart]);
 
 	const scheduleStartAt = showStart
 		? toUtcIso(
@@ -108,36 +92,7 @@ export function CourseScheduleDialog({
 			)
 		: "";
 
-	const scheduleEndAt = toUtcIso(
-		endDate && endTime ? mergeDateTime(endDate, endTime) : "",
-	);
-
-	const canSubmit = showStart
-		? Boolean(scheduleStartAt && scheduleEndAt)
-		: Boolean(scheduleEndAt);
-
-	useEffect(() => {
-		if (!showStart || !startDate || !endDate || !startTime || !endTime) return;
-		const startIso = mergeDateTime(startDate, startTime);
-		const endIso = mergeDateTime(endDate, endTime);
-		const startUtc = toUtcIso(startIso);
-		const endUtc = toUtcIso(endIso);
-		const start = startUtc ? new Date(startUtc) : null;
-		const end = endUtc ? new Date(endUtc) : null;
-		if (
-			!start ||
-			!end ||
-			Number.isNaN(start.getTime()) ||
-			Number.isNaN(end.getTime())
-		) {
-			return;
-		}
-		if (end < start) {
-			const nextEnd = addMinutes(start, 60);
-			setEndDate(nextEnd);
-			setEndTime(formatTimeInput(nextEnd));
-		}
-	}, [startDate, startTime, endDate, endTime, showStart]);
+	const canSubmit = showStart ? Boolean(scheduleStartAt) : true;
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -149,7 +104,7 @@ export function CourseScheduleDialog({
 						{description} ({COURSE_TIMEZONE} timezone).
 					</DialogDescription>
 				</DialogHeader>
-				<div className={showStart ? "grid gap-4 sm:grid-cols-2" : "space-y-4"}>
+				<div className={showStart ? "space-y-4" : "space-y-0"}>
 					{showStart && (
 						<div className="space-y-2">
 							<p className="font-semibold text-foreground text-sm">Start</p>
@@ -160,7 +115,7 @@ export function CourseScheduleDialog({
 								className="w-full rounded-none border border-white/10 bg-white/5"
 								weekStartsOn={1}
 								startMonth={new Date()}
-								disabled={pastDates}
+								disabled={isPastDate}
 								fixedWeeks
 							/>
 							<InputGroup>
@@ -176,52 +131,22 @@ export function CourseScheduleDialog({
 							</InputGroup>
 						</div>
 					)}
-					<div className="space-y-2">
-						<p className="font-semibold text-foreground text-sm">End</p>
-						<Calendar
-							mode="single"
-							selected={endDate}
-							onSelect={setEndDate}
-							className="w-full rounded-none border border-white/10 bg-white/5"
-							weekStartsOn={1}
-							startMonth={new Date()}
-							disabled={pastDates}
-							fixedWeeks
-						/>
-						<InputGroup>
-							<InputGroupInput
-								type="time"
-								value={endTime}
-								onChange={(event) => setEndTime(event.target.value)}
-								className="h-10"
-							/>
-							<InputGroupAddon>
-								<Clock2 className="text-muted-foreground" />
-							</InputGroupAddon>
-						</InputGroup>
-					</div>
 				</div>
 				<DialogFooter>
 					<Button
 						variant="accent"
 						onClick={() => {
-							if (!scheduleEndAt) return;
-
 							const now = new Date();
 							const start = scheduleStartAt ? new Date(scheduleStartAt) : null;
-							const end = new Date(scheduleEndAt);
-							if (
-								end < now ||
-								(showStart && start && (start < now || end <= start))
-							) {
+							if (showStart && start && start < now) {
 								toast.error("Please select a valid date and time.");
 								return;
 							}
 
 							onConfirm({
-								scheduledStartAt:
-									showStart && scheduleStartAt ? scheduleStartAt : undefined,
-								scheduledEndAt: scheduleEndAt,
+								scheduledStartAt: showStart
+									? scheduleStartAt || undefined
+									: undefined,
 							});
 							setOpen(false);
 						}}

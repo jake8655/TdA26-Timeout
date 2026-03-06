@@ -20,7 +20,10 @@ type ModuleHiddenPayload = {
 	hiddenAt?: string;
 };
 
-export function useCourseFeedStream(courseId: string) {
+export function useCourseFeedStream(
+	courseId: string,
+	{ isLecturer = false }: { isLecturer?: boolean } = {},
+) {
 	const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
 	const [isConnected, setIsConnected] = useState(false);
 	const [kickPayload, setKickPayload] = useState<KickPayload | null>(null);
@@ -34,7 +37,9 @@ export function useCourseFeedStream(courseId: string) {
 		let mounted = true;
 
 		const baseUrl = client.getConfig().baseUrl;
-		const url = `${baseUrl}/courses/${courseId}/feed/stream`;
+		const url = isLecturer
+			? `${baseUrl}/courses/lecturer/${courseId}/feed/stream`
+			: `${baseUrl}/courses/${courseId}/feed/stream`;
 		const eventSource = new EventSource(url, { withCredentials: true });
 
 		eventSource.onopen = () => {
@@ -53,6 +58,13 @@ export function useCourseFeedStream(courseId: string) {
 			if (!mounted) return;
 			try {
 				const data = JSON.parse(event.data) as FeedItem;
+				if (
+					data.type === "system" &&
+					!data.message.startsWith("Module revealed:") &&
+					!data.message.startsWith("Module hidden:")
+				) {
+					return;
+				}
 				setFeedItems((prev) => {
 					const existingIndex = prev.findIndex(
 						(item) => item.uuid === data.uuid,
@@ -115,7 +127,7 @@ export function useCourseFeedStream(courseId: string) {
 			mounted = false;
 			eventSource.close();
 		};
-	}, [courseId]);
+	}, [courseId, isLecturer]);
 
 	const clearKick = () => setKickPayload(null);
 	const clearModuleReveal = () => setModuleRevealPayload(null);

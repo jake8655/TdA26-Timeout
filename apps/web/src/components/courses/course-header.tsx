@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, Clock } from "lucide-react";
+import { CalendarClock } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import type { CourseDetail } from "@/api-client/types.gen";
@@ -42,12 +42,6 @@ export function CourseHeader({ course }: { course: CourseDetail }) {
 								<span className="inline-flex items-center gap-2 text-muted-foreground text-xs">
 									<CalendarClock className="size-3.5" />
 									Starts {formatCourseTime(course.scheduledStartAt)}
-								</span>
-							)}
-							{course.scheduledEndAt && (
-								<span className="inline-flex items-center gap-2 text-muted-foreground text-xs">
-									<Clock className="size-3.5" />
-									Ends {formatCourseTime(course.scheduledEndAt)}
 								</span>
 							)}
 						</div>

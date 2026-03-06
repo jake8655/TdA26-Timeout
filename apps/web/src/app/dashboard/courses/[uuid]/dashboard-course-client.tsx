@@ -141,14 +141,13 @@ export default function DashboardCourseClient() {
 										body: {
 											status: "scheduled",
 											scheduledStartAt: payload.scheduledStartAt,
-											scheduledEndAt: payload.scheduledEndAt,
 										},
 									})
 								}
-								onStart={(endAt) =>
+								onStart={() =>
 									startMutation.mutate({
 										path: { courseId: uuid },
-										body: { scheduledEndAt: endAt },
+										body: {},
 									})
 								}
 								onPause={() =>
@@ -210,6 +209,7 @@ export default function DashboardCourseClient() {
 						<CourseFeed
 							courseId={uuid}
 							showActions
+							isLecturer
 							editTrigger={(item) => (
 								<EditFeedPostButton post={item} courseId={uuid} />
 							)}

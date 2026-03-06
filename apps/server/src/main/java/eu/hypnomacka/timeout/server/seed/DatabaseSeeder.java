@@ -1,7 +1,6 @@
 package eu.hypnomacka.timeout.server.seed;
 
 import eu.hypnomacka.timeout.server.core.Course;
-import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Lecturer;
 import eu.hypnomacka.timeout.server.core.Module;
@@ -54,7 +53,6 @@ public class DatabaseSeeder {
 
     createCourse1Materials(module);
     createCourse1Quiz(module);
-    createManualPosts(course);
   }
 
   private void createCourse1Materials(Module module) {
@@ -138,8 +136,6 @@ public class DatabaseSeeder {
     q1.setCorrectIndex(1);
     q1.setPosition(0);
     q1.save();
-
-    createManualPosts(course);
   }
 
   private void createCourse3(Lecturer lecturer) {
@@ -182,16 +178,5 @@ public class DatabaseSeeder {
     q1.setCorrectIndex(0);
     q1.setPosition(0);
     q1.save();
-
-    createManualPosts(course);
-  }
-
-  private void createManualPosts(Course course) {
-    Event post1 = new Event();
-    post1.setCourse(course);
-    post1.setType(Event.Type.MANUAL);
-    post1.setMessage(
-        "Welcome. Module content is prepared and will be revealed during LIVE session.");
-    post1.save();
   }
 }

@@ -87,7 +87,10 @@ export function QuizStatsQuestion({
 
 					return (
 						<div
-							key={`${questionStats.questionUuid}-${index}`}
+							key={`${questionStats.questionUuid}-${
+								// biome-ignore lint/suspicious/noArrayIndexKey: needed for correctness
+								index
+							}`}
 							className={cn(
 								"relative overflow-hidden rounded-none border p-3 transition-colors duration-200",
 								getOptionStyle(index),

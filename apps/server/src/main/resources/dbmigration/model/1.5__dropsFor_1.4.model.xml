@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply" dropsFor="1.4">
+        <dropColumn columnName="scheduled_end_at" tableName="courses"/>
+        <dropColumn columnName="has_submitted_quiz" tableName="course_joins"/>
+        <dropColumn columnName="material_interactions" tableName="course_stats"/>
+    </changeSet>
+</migration>

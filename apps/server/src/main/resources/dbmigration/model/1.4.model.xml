@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="course_stats">
+            <column name="downloads" type="integer" defaultValue="0" notnull="true"/>
+            <column name="site_visits" type="integer" defaultValue="0" notnull="true"/>
+        </addColumn>
+    </changeSet>
+    <changeSet type="pendingDrops">
+        <dropColumn columnName="scheduled_end_at" tableName="courses"/>
+        <dropColumn columnName="has_submitted_quiz" tableName="course_joins"/>
+        <dropColumn columnName="material_interactions" tableName="course_stats"/>
+    </changeSet>
+</migration>

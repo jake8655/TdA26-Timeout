@@ -400,35 +400,38 @@ function ModuleMaterialRow({
 
 	if (material.type === "url") {
 		return (
-			<div className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30">
-				<div className="flex min-w-0 items-center gap-3">
-					<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-						{material.faviconUrl ? (
-							<Image
-								src={material.faviconUrl}
-								alt={material.name}
-								width={20}
-								height={20}
-								className="size-5"
-								unoptimized
-							/>
-						) : (
-							<Icon className="size-5 text-primary" />
-						)}
-					</div>
-					<div className="min-w-0">
-						<p className="truncate font-medium text-foreground">
-							{material.name}
+			<div className="grid grid-cols-1 gap-2 rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+					{material.faviconUrl ? (
+						<Image
+							src={material.faviconUrl}
+							alt={material.name}
+							width={20}
+							height={20}
+							className="size-5"
+							unoptimized
+						/>
+					) : (
+						<Icon className="size-5 text-primary" />
+					)}
+				</div>
+				<div className="min-w-0">
+					<p className="wrap-break-word font-medium text-foreground">
+						{material.name}
+					</p>
+					{material.description && (
+						<p className="wrap-break-word mt-0.5 whitespace-pre-wrap text-muted-foreground text-xs">
+							{material.description}
 						</p>
-						<p className="truncate text-muted-foreground text-xs">
-							{material.url}
-						</p>
-					</div>
+					)}
+					<p className="mt-1 break-all text-muted-foreground text-xs">
+						{material.url}
+					</p>
 				</div>
 				<Button
 					variant="outline"
 					size="sm"
-					className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+					className="gap-1.5 justify-self-start border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary sm:justify-self-end"
 					onClick={() => handleInteraction(material.url)}
 				>
 					<ExternalLink className="size-3.5" />
@@ -439,27 +442,28 @@ function ModuleMaterialRow({
 	}
 
 	return (
-		<div className="flex items-center justify-between rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30">
-			<div className="flex min-w-0 items-center gap-3">
-				<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-					<Icon className="size-5 text-primary" />
-				</div>
-				<div className="min-w-0">
-					<p className="truncate font-medium text-foreground">
-						{material.name}
+		<div className="grid grid-cols-1 gap-2 rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3">
+			<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+				<Icon className="size-5 text-primary" />
+			</div>
+			<div className="min-w-0">
+				<p className="wrap-break-word font-medium text-foreground">
+					{material.name}
+				</p>
+				{material.description && (
+					<p className="wrap-break-word mt-0.5 whitespace-pre-wrap text-muted-foreground text-xs">
+						{material.description}
 					</p>
-					<p className="truncate text-muted-foreground text-xs">
-						{getFileTypeLabel(material.mimeType)}
-						{material.sizeBytes
-							? ` • ${formatFileSize(material.sizeBytes)}`
-							: ""}
-					</p>
-				</div>
+				)}
+				<p className="wrap-break-word mt-1 text-muted-foreground text-xs">
+					{getFileTypeLabel(material.mimeType)}
+					{material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}
+				</p>
 			</div>
 			<Button
 				variant="outline"
 				size="sm"
-				className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+				className="gap-1.5 justify-self-start border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary sm:justify-self-end"
 				onClick={() => handleInteraction(material.fileUrl)}
 			>
 				<Download className="size-3.5" />

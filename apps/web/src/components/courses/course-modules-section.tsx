@@ -480,35 +480,38 @@ function ModuleCard({
 										{materials.map((material) => (
 											<div
 												key={material.uuid}
-												className="flex items-center justify-between gap-3 rounded-none border border-white/5 bg-background/20 p-3"
+												className="grid grid-cols-1 gap-2 rounded-none border border-white/5 bg-background/20 p-3 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3"
 											>
-												<div className="flex min-w-0 items-center gap-3">
-													<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-														{material.type === "url" && material.faviconUrl ? (
-															<Image
-																src={material.faviconUrl}
-																alt={material.name}
-																width={20}
-																height={20}
-																className="size-5"
-																unoptimized
-															/>
-														) : (
-															<MaterialTypeIcon material={material} />
-														)}
-													</div>
-													<div className="min-w-0">
-														<p className="truncate font-medium text-foreground text-sm">
-															{material.name}
-														</p>
-														<p className="text-muted-foreground text-xs">
-															{material.type === "file"
-																? `${getFileTypeLabel(material.mimeType)}${material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}`
-																: new URL(material.url).hostname}
-														</p>
-													</div>
+												<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+													{material.type === "url" && material.faviconUrl ? (
+														<Image
+															src={material.faviconUrl}
+															alt={material.name}
+															width={20}
+															height={20}
+															className="size-5"
+															unoptimized
+														/>
+													) : (
+														<MaterialTypeIcon material={material} />
+													)}
 												</div>
-												<div className="flex gap-1">
+												<div className="min-w-0">
+													<p className="wrap-break-word font-medium text-foreground text-sm">
+														{material.name}
+													</p>
+													{material.description && (
+														<p className="wrap-break-word mt-0.5 whitespace-pre-wrap text-muted-foreground text-xs">
+															{material.description}
+														</p>
+													)}
+													<p className="wrap-break-word mt-1 text-muted-foreground text-xs">
+														{material.type === "file"
+															? `${getFileTypeLabel(material.mimeType)}${material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}`
+															: new URL(material.url).hostname}
+													</p>
+												</div>
+												<div className="flex gap-1 justify-self-start sm:justify-self-end">
 													{material.type === "url" ? (
 														<Button
 															variant="outline"

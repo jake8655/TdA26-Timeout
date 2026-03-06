@@ -85,12 +85,12 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 				<Icon className="size-6 text-primary" />
 			</div>
 
-			<div className="flex-1 overflow-hidden">
-				<h3 className="font-semibold text-foreground text-sm">
+			<div className="min-w-0 flex-1">
+				<h3 className="line-clamp-2 font-semibold text-foreground text-sm">
 					{material.name}
 				</h3>
 				{material.description && (
-					<p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
+					<p className="wrap-break-word mt-1 whitespace-pre-wrap text-muted-foreground text-xs">
 						{material.description}
 					</p>
 				)}

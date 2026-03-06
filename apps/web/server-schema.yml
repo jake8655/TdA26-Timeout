@@ -558,6 +558,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/FeedItem'
 
+  /courses/lecturer/{courseId}/feed:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      summary: Get lecturer course feed
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedItem'
+
   /courses/{courseId}/feed/{postId}:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -588,6 +603,19 @@ paths:
       - $ref: '#/components/parameters/CourseId'
     get:
       summary: Stream course feed
+      responses:
+        '200':
+          description: Event stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /courses/lecturer/{courseId}/feed/stream:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      summary: Stream lecturer course feed
       responses:
         '200':
           description: Event stream
@@ -719,9 +747,6 @@ components:
         scheduledStartAt:
           type: string
           format: date-time
-        scheduledEndAt:
-          type: string
-          format: date-time
         pausedAt:
           type: string
           format: date-time
@@ -772,9 +797,6 @@ components:
         scheduledStartAt:
           type: string
           format: date-time
-        scheduledEndAt:
-          type: string
-          format: date-time
         pausedAt:
           type: string
           format: date-time
@@ -797,25 +819,15 @@ components:
         scheduledStartAt:
           type: string
           format: date-time
-        scheduledEndAt:
-          type: string
-          format: date-time
 
     CourseStartRequest:
       type: object
-      required: [scheduledEndAt]
-      properties:
-        scheduledEndAt:
-          type: string
-          format: date-time
+      properties: {}
 
     CoursePauseRequest:
       type: object
       properties:
         scheduledStartAt:
-          type: string
-          format: date-time
-        scheduledEndAt:
           type: string
           format: date-time
 
@@ -1201,7 +1213,7 @@ components:
 
     CourseStatsResponse:
       type: object
-      required: [totalSubmissions, avgScore, avgMaxScore, avgPercentage, materialInteractions]
+      required: [totalSubmissions, avgScore, avgMaxScore, avgPercentage, downloads, siteVisits]
       properties:
         totalSubmissions:
           type: integer
@@ -1211,7 +1223,9 @@ components:
           type: number
         avgPercentage:
           type: number
-        materialInteractions:
+        downloads:
+          type: integer
+        siteVisits:
           type: integer
         updatedAt:
           type: string

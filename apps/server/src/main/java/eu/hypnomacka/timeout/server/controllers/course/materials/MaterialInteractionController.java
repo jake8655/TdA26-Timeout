@@ -47,34 +47,41 @@ public class MaterialInteractionController extends Controller {
           .body(Map.of("status", "bad", "message", "invalid material UUID"));
     }
 
-    boolean found = false;
+    boolean isFileMaterial = false;
+    boolean isUrlMaterial = false;
     for (Module module : course.getModules()) {
       if (!Boolean.TRUE.equals(module.getVisible())) {
         continue;
       }
       for (FileAttachment fa : module.getFileAttachments()) {
         if (fa.getUuid().equals(matUuid)) {
-          found = true;
+          isFileMaterial = true;
           break;
         }
       }
-      if (!found) {
+      if (!isFileMaterial) {
         for (UrlAttachment ua : module.getUrlAttachments()) {
           if (ua.getUuid().equals(matUuid)) {
-            found = true;
+            isUrlMaterial = true;
             break;
           }
         }
       }
-      if (found) break;
+      if (isFileMaterial || isUrlMaterial) {
+        break;
+      }
     }
 
-    if (!found) {
+    if (!isFileMaterial && !isUrlMaterial) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(Map.of("status", "bad", "message", "material not found in visible modules"));
     }
 
-    statsService.recordMaterialInteraction(course);
+    if (isFileMaterial) {
+      statsService.recordDownload(course);
+    } else {
+      statsService.recordSiteVisit(course);
+    }
 
     return ResponseEntity.ok(Map.of("status", "ok"));
   }

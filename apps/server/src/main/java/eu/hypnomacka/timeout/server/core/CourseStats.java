@@ -42,7 +42,11 @@ public class CourseStats extends Model {
 
   @Column(nullable = false)
   @DbDefault("0")
-  private Integer materialInteractions = 0;
+  private Integer downloads = 0;
+
+  @Column(nullable = false)
+  @DbDefault("0")
+  private Integer siteVisits = 0;
 
   @WhenCreated private Instant createdAt;
 

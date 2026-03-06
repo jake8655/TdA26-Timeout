@@ -103,7 +103,8 @@ public class CourseStatsController extends Controller {
         stats.getTotalSubmissions() > 0
             ? stats.getTotalPercentageSum() / stats.getTotalSubmissions()
             : 0.0);
-    response.put("materialInteractions", stats.getMaterialInteractions());
+    response.put("downloads", stats.getDownloads());
+    response.put("siteVisits", stats.getSiteVisits());
     response.put("updatedAt", stats.getUpdatedAt());
     return response;
   }

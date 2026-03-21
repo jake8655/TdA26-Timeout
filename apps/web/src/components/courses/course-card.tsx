@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, CalendarClock, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CalendarClock } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -48,15 +48,7 @@ export function CourseCard({
 							className="size-7"
 						/>
 					</div>
-					<div className="flex flex-col items-end gap-2">
-						<CourseStatusBadge status={course.status} />
-						{course.joined && (
-							<span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-semibold text-[11px] text-emerald-200 uppercase tracking-wide">
-								<CheckCircle2 className="size-3.5" />
-								Joined
-							</span>
-						)}
-					</div>
+					<CourseStatusBadge status={course.status} />
 				</div>
 				<h3 className="mb-2 font-bold text-foreground text-lg">
 					{course.name}
@@ -93,7 +85,7 @@ export function CourseCard({
 							course.status === CourseStatus.PAUSED && "hidden",
 						)}
 					>
-						<p className="text-sm">{course.joined ? "Continue" : "View"}</p>
+						<p className="text-sm">Open</p>
 						<ArrowRight className="size-4 transition-all group-hover:-rotate-45" />
 					</div>
 				</div>

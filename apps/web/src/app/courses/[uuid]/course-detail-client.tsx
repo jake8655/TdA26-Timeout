@@ -14,10 +14,9 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	getCoursesByCourseIdOptions,
-	postCoursesByCourseIdJoinMutation,
 	postCoursesByCourseIdMaterialsByMaterialIdInteractionsMutation,
 	postCoursesByCourseIdSessionMutation,
 } from "@/api-client/@tanstack/react-query.gen";
@@ -58,19 +57,44 @@ export default function CourseDetailClient() {
 		open: boolean;
 		reason?: string;
 	}>({ open: false });
+	const [autoJoinFailed, setAutoJoinFailed] = useState(false);
 	const { data, error, isPending, isError, refetch } = useQuery({
 		...getCoursesByCourseIdOptions({
 			path: { courseId: uuid },
 		}),
 	});
-	const joinMutation = useMutation({
-		...postCoursesByCourseIdJoinMutation(),
-	});
 	const sessionMutation = useMutation({
 		...postCoursesByCourseIdSessionMutation(),
 	});
+	const hasAutoJoinedRef = useRef(false);
 
 	const queryClient = useQueryClient();
+
+	const startSession = () => {
+		hasAutoJoinedRef.current = true;
+		setAutoJoinFailed(false);
+		sessionMutation.mutate(
+			{ path: { courseId: uuid } },
+			{
+				onError: () => {
+					setAutoJoinFailed(true);
+				},
+			},
+		);
+	};
+
+	useEffect(() => {
+		if (
+			!data ||
+			data.status !== CourseStatus.LIVE ||
+			hasAutoJoinedRef.current
+		) {
+			return;
+		}
+
+		startSession();
+		// biome-ignore lint/correctness/useExhaustiveDependencies: Handled by React Compiler
+	}, [data, startSession]);
 
 	if (
 		(!isPending && !isError && !data) ||
@@ -200,94 +224,72 @@ export default function CourseDetailClient() {
 										</span>
 									)}
 								</div>
-								<div className="ml-auto">
-									{!data.joined && !joinMutation.isSuccess && (
-										<Button
-											variant="accent"
-											disabled={
-												joinMutation.isPending || sessionMutation.isPending
-											}
-											onClick={() => {
-												sessionMutation.mutate(
-													{ path: { courseId: uuid } },
-													{
-														onSuccess: () =>
-															joinMutation.mutate({ path: { courseId: uuid } }),
-													},
-												);
-											}}
-										>
-											{joinMutation.isPending || sessionMutation.isPending ? (
-												<>
-													<Loader2 className="size-4 animate-spin" />
-													Joining
-												</>
-											) : (
-												"Join course"
-											)}
-										</Button>
-									)}
-									{(data.joined || joinMutation.isSuccess) && (
-										<span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-semibold text-[11px] text-emerald-200 uppercase tracking-wide">
-											Joined
-										</span>
-									)}
-								</div>
 							</div>
 						</div>
 
-						{data.joined || joinMutation.isSuccess ? (
-							<>
-								<div className="border-white/5 border-t pt-8">
-									<h2 className="mb-4 font-semibold text-foreground text-lg">
-										About this course
-									</h2>
-									<p className="max-w-2xl text-muted-foreground leading-relaxed">
-										{data.description || (
-											<span className="italic">No description available</span>
-										)}
-									</p>
-								</div>
-
-								<div className="mt-8">
-									<div className="mb-6 flex items-center gap-3">
-										<BookOpen className="size-5 text-primary" />
-										<h2 className="font-semibold text-foreground text-lg">
-											Course Feed
-										</h2>
-									</div>
-									<CourseFeed
-										courseId={uuid}
-										onKick={(payload) =>
-											setKickDialog({
-												open: true,
-												reason: payload.reason,
-											})
-										}
-										onModuleReveal={() => queryClient.invalidateQueries()}
-										onModuleHidden={() => queryClient.invalidateQueries()}
-									/>
-								</div>
-
-								<div className="mt-8 border-white/5 border-t pt-8">
-									<div className="mb-6 flex items-center gap-3">
-										<BookOpen className="size-5 text-primary" />
-										<h2 className="font-semibold text-foreground text-lg">
-											Modules
-										</h2>
-									</div>
-									<LiveModules modules={data.modules ?? []} courseId={uuid} />
-								</div>
-							</>
-						) : (
-							<div className="border-white/5 border-t pt-8">
-								<EmptyState
-									title="Join to view course content"
-									description="Once you join, the feed and modules will unlock."
-									icon={<BookOpen className="size-7 text-primary" />}
-								/>
+						{sessionMutation.isPending && (
+							<div className="mb-6 rounded-none border border-primary/20 bg-primary/5 px-4 py-3 text-muted-foreground text-sm">
+								Preparing your course session...
 							</div>
 						)}
+
+						{autoJoinFailed && (
+							<div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-none border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm">
+								<p className="text-muted-foreground">
+									We could not start your session. Some live actions may not
+									work.
+								</p>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => startSession()}
+									disabled={sessionMutation.isPending}
+								>
+									Retry session
+								</Button>
+							</div>
+						)}
+
+						<div className="border-white/5 border-t pt-8">
+							<h2 className="mb-4 font-semibold text-foreground text-lg">
+								About this course
+							</h2>
+							<p className="max-w-2xl text-muted-foreground leading-relaxed">
+								{data.description || (
+									<span className="italic">No description available</span>
+								)}
+							</p>
+						</div>
+
+						<div className="mt-8">
+							<div className="mb-6 flex items-center gap-3">
+								<BookOpen className="size-5 text-primary" />
+								<h2 className="font-semibold text-foreground text-lg">
+									Course Feed
+								</h2>
+							</div>
+							<CourseFeed
+								courseId={uuid}
+								onKick={(payload) =>
+									setKickDialog({
+										open: true,
+										reason: payload.reason,
+									})
+								}
+								onModuleReveal={() => queryClient.invalidateQueries()}
+								onModuleHidden={() => queryClient.invalidateQueries()}
+							/>
+						</div>
+
+						<div className="mt-8 border-white/5 border-t pt-8">
+							<div className="mb-6 flex items-center gap-3">
+								<BookOpen className="size-5 text-primary" />
+								<h2 className="font-semibold text-foreground text-lg">
+									Modules
+								</h2>
+							</div>
+							<LiveModules modules={data.modules ?? []} courseId={uuid} />
+						</div>
 					</section>
 				)}
 			</main>

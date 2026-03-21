@@ -18,6 +18,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+	BookOpen,
 	ChartColumnDecreasing,
 	ChevronDown,
 	ChevronRight,
@@ -251,7 +252,7 @@ export function CourseModulesSection({
 				<EmptyState
 					title="No modules yet"
 					description="Create modules and bundle materials and quizzes together."
-					icon={<Plus className="size-7 text-primary" />}
+					icon={<BookOpen className="size-7 text-primary" />}
 					className="border-dashed"
 				/>
 			) : isDraft ? (

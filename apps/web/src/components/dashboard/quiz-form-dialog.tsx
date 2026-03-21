@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
+
 import {
 	deleteCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdMutation,
 	postCoursesByCourseIdModulesByModuleIdQuizzesMutation,
@@ -31,6 +32,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAppForm } from "@/hooks/form";
+
 import { Switch } from "../ui/switch";
 
 const quizFormSchema = z.object({
@@ -71,13 +73,7 @@ interface QuizFormDialogProps {
 	trigger: React.ReactElement;
 }
 
-function QuizFormDialog({
-	mode,
-	courseId,
-	moduleId,
-	quiz,
-	trigger,
-}: QuizFormDialogProps) {
+function QuizFormDialog({ mode, courseId, moduleId, quiz, trigger }: QuizFormDialogProps) {
 	const [open, setOpen] = useState(false);
 
 	const createMutation = useMutation({
@@ -136,9 +132,7 @@ function QuizFormDialog({
 			<DialogTrigger render={trigger} />
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader>
-					<DialogTitle>
-						{mode === "create" ? "Create New Quiz" : "Edit Quiz"}
-					</DialogTitle>
+					<DialogTitle>{mode === "create" ? "Create New Quiz" : "Edit Quiz"}</DialogTitle>
 					<DialogDescription>
 						{mode === "create"
 							? "Add a quiz to your course with questions and answer options."
@@ -155,12 +149,7 @@ function QuizFormDialog({
 					className="space-y-6"
 				>
 					<form.AppField name="title">
-						{(field) => (
-							<field.TextField
-								label="Quiz Title"
-								placeholder="Enter quiz title"
-							/>
-						)}
+						{(field) => <field.TextField label="Quiz Title" placeholder="Enter quiz title" />}
 					</form.AppField>
 
 					<div className="space-y-4">
@@ -168,38 +157,29 @@ function QuizFormDialog({
 							{(questions) => (
 								<div className="space-y-4">
 									{questions.map((q, index) => (
-										<Card
-											key={q.uuid}
-											className="relative border-border/50 bg-card/50 py-4"
-										>
+										<Card key={q.uuid} className="border-border/50 bg-card/50 relative py-4">
 											<CardContent className="space-y-4">
 												<div className="flex items-start justify-between gap-4">
 													<div className="flex-1 space-y-1">
 														<div className="mb-2 flex items-center justify-between">
-															<Label className="font-medium text-muted-foreground text-xs">
+															<Label className="text-muted-foreground text-xs font-medium">
 																Question {index + 1}
 															</Label>
 															<div className="ml-auto flex items-center gap-2">
 																<Label
 																	htmlFor={`question-type-${index}`}
-																	className="font-normal text-muted-foreground text-xs"
+																	className="text-muted-foreground text-xs font-normal"
 																>
 																	Multiple Choice
 																</Label>
-																<form.AppField
-																	name={`questions[${index}].type`}
-																>
+																<form.AppField name={`questions[${index}].type`}>
 																	{(field) => (
 																		<Switch
 																			id={`question-type-${index}`}
-																			checked={
-																				field.state.value === "multipleChoice"
-																			}
+																			checked={field.state.value === "multipleChoice"}
 																			onCheckedChange={(checked) => {
 																				field.handleChange(
-																					checked
-																						? "multipleChoice"
-																						: "singleChoice",
+																					checked ? "multipleChoice" : "singleChoice",
 																				);
 
 																				if (checked) {
@@ -208,10 +188,7 @@ function QuizFormDialog({
 																						[0],
 																					);
 																				} else {
-																					form.setFieldValue(
-																						`questions[${index}].correctIndex`,
-																						0,
-																					);
+																					form.setFieldValue(`questions[${index}].correctIndex`, 0);
 																				}
 																			}}
 																		/>
@@ -227,51 +204,37 @@ function QuizFormDialog({
 																		current.filter((_, i) => i !== index),
 																	);
 																}}
-																className="ml-4 shrink-0 text-muted-foreground hover:text-destructive"
+																className="text-muted-foreground hover:text-destructive ml-4 shrink-0"
 																aria-label={`Remove question ${index + 1}`}
 															>
 																<Trash2 />
 															</Button>
 														</div>
-														<form.AppField
-															name={`questions[${index}].question`}
-														>
-															{(field) => (
-																<field.TextField placeholder="Enter question text" />
-															)}
+														<form.AppField name={`questions[${index}].question`}>
+															{(field) => <field.TextField placeholder="Enter question text" />}
 														</form.AppField>
 													</div>
 												</div>
 
 												<div className="space-y-2">
-													<form.Subscribe
-														selector={(state) => state.values.questions}
-													>
+													<form.Subscribe selector={(state) => state.values.questions}>
 														{(qValues) => {
 															const qType = qValues[index]?.type;
 															const options = qValues[index]?.options ?? [];
 															const correctIndex =
 																qType === "singleChoice"
-																	? (qValues[index] as SingleChoiceQuestion)
-																			.correctIndex
+																	? (qValues[index] as SingleChoiceQuestion).correctIndex
 																	: undefined;
 
 															const renderOptionRow = (
 																optIndex: number,
 																control: React.ReactNode,
 															) => (
-																<div
-																	key={optIndex}
-																	className="flex items-center gap-2"
-																>
+																<div key={optIndex} className="flex items-center gap-2">
 																	{control}
-																	<form.AppField
-																		name={`questions[${index}].options[${optIndex}]`}
-																	>
+																	<form.AppField name={`questions[${index}].options[${optIndex}]`}>
 																		{(field) => (
-																			<field.TextField
-																				placeholder={`Option ${optIndex + 1}`}
-																			/>
+																			<field.TextField placeholder={`Option ${optIndex + 1}`} />
 																		)}
 																	</form.AppField>
 																	{options.length > 2 && (
@@ -280,25 +243,20 @@ function QuizFormDialog({
 																			variant="ghost"
 																			size="icon-sm"
 																			onClick={() => {
-																				form.setFieldValue(
-																					"questions",
-																					(current) => {
-																						const question = current[
-																							index
-																						] as Question;
+																				form.setFieldValue("questions", (current) => {
+																					const question = current[index] as Question;
 
-																						current[index] = {
-																							...question,
-																							options: question.options.filter(
-																								(_, i) => i !== optIndex,
-																							),
-																						};
+																					current[index] = {
+																						...question,
+																						options: question.options.filter(
+																							(_, i) => i !== optIndex,
+																						),
+																					};
 
-																						return structuredClone(current);
-																					},
-																				);
+																					return structuredClone(current);
+																				});
 																			}}
-																			className="shrink-0 text-muted-foreground hover:text-destructive"
+																			className="text-muted-foreground hover:text-destructive shrink-0"
 																		>
 																			<X className="size-3.5" />
 																		</Button>
@@ -338,25 +296,17 @@ function QuizFormDialog({
 																			optIndex,
 																			<Checkbox
 																				checked={(
-																					(
-																						qValues[
-																							index
-																						] as MultipleChoiceQuestion
-																					)?.correctIndices ?? []
+																					(qValues[index] as MultipleChoiceQuestion)
+																						?.correctIndices ?? []
 																				).includes(optIndex)}
 																				onCheckedChange={(checked) => {
 																					const current =
-																						(
-																							qValues[
-																								index
-																							] as MultipleChoiceQuestion
-																						)?.correctIndices ?? [];
+																						(qValues[index] as MultipleChoiceQuestion)
+																							?.correctIndices ?? [];
 
 																					const updated = checked
 																						? [...current, optIndex]
-																						: current.filter(
-																								(i) => i !== optIndex,
-																							);
+																						: current.filter((i) => i !== optIndex);
 
 																					form.setFieldValue(
 																						`questions[${index}].correctIndices`,
@@ -371,17 +321,13 @@ function QuizFormDialog({
 														}}
 													</form.Subscribe>
 
-													<form.Subscribe
-														selector={(state) => state.values.questions}
-													>
+													<form.Subscribe selector={(state) => state.values.questions}>
 														{(qValues) => (
 															<Button
 																type="button"
 																variant="ghost"
 																size="sm"
-																disabled={
-																	(qValues[index]?.options.length ?? 0) >= 6
-																}
+																disabled={(qValues[index]?.options.length ?? 0) >= 6}
 																onClick={() => {
 																	form.setFieldValue("questions", (current) => {
 																		const question = current[index] as Question;
@@ -393,7 +339,7 @@ function QuizFormDialog({
 																		return structuredClone(current);
 																	});
 																}}
-																className="gap-1 text-muted-foreground text-xs hover:text-foreground"
+																className="text-muted-foreground hover:text-foreground gap-1 text-xs"
 															>
 																<Plus className="size-3" />
 																Add Option
@@ -440,9 +386,7 @@ function QuizFormDialog({
 							}
 						/>
 						<form.AppForm>
-							<form.SubscribeButton
-								label={mode === "create" ? "Create Quiz" : "Save Changes"}
-							/>
+							<form.SubscribeButton label={mode === "create" ? "Create Quiz" : "Save Changes"} />
 						</form.AppForm>
 					</DialogFooter>
 				</form>
@@ -484,20 +428,15 @@ function DeleteQuizDialog({
 				<DialogHeader>
 					<DialogTitle>Delete Quiz</DialogTitle>
 					<DialogDescription>
-						Are you sure you want to delete "
-						<span className="text-accent">{quiz.title}</span>"? This action
-						cannot be undone.
+						Are you sure you want to delete "<span className="text-accent">{quiz.title}</span>"?
+						This action cannot be undone.
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
 					<DialogClose render={<Button variant="outline">Cancel</Button>} />
-					<Button
-						variant="destructive"
-						disabled={deleteMutation.isPending}
-						onClick={handleDelete}
-					>
+					<Button variant="destructive" disabled={deleteMutation.isPending} onClick={handleDelete}>
 						{deleteMutation.isPending ? (
-							<Loader2 className="animate-spin text-muted-foreground" />
+							<Loader2 className="text-muted-foreground animate-spin" />
 						) : (
 							"Delete"
 						)}

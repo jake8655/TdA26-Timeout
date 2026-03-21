@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
+
 import { deleteCoursesByCourseIdFeedByPostIdMutation } from "@/api-client/@tanstack/react-query.gen";
 import type { FeedItem } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
@@ -23,11 +24,7 @@ interface DeleteFeedPostDialogProps {
 	trigger: React.ReactElement;
 }
 
-export function DeleteFeedPostDialog({
-	courseId,
-	post,
-	trigger,
-}: DeleteFeedPostDialogProps) {
+export function DeleteFeedPostDialog({ courseId, post, trigger }: DeleteFeedPostDialogProps) {
 	const [open, setOpen] = useState(false);
 
 	const deleteMutation = useMutation({
@@ -44,11 +41,10 @@ export function DeleteFeedPostDialog({
 				<DialogHeader>
 					<DialogTitle>Delete Post</DialogTitle>
 					<DialogDescription>
-						Are you sure you want to delete this post? This action cannot be
-						undone.
+						Are you sure you want to delete this post? This action cannot be undone.
 					</DialogDescription>
 				</DialogHeader>
-				<div className="border-white/5 border-t pt-4">
+				<div className="border-t border-white/5 pt-4">
 					<p className="text-muted-foreground text-sm">{post.message}</p>
 				</div>
 				<DialogFooter>
@@ -63,7 +59,7 @@ export function DeleteFeedPostDialog({
 						}
 					>
 						{deleteMutation.isPending ? (
-							<Loader2 className="animate-spin text-muted-foreground" />
+							<Loader2 className="text-muted-foreground animate-spin" />
 						) : (
 							"Delete"
 						)}
@@ -74,13 +70,7 @@ export function DeleteFeedPostDialog({
 	);
 }
 
-export function DeleteFeedPostButton({
-	post,
-	courseId,
-}: {
-	post: FeedItem;
-	courseId: string;
-}) {
+export function DeleteFeedPostButton({ post, courseId }: { post: FeedItem; courseId: string }) {
 	return (
 		<DeleteFeedPostDialog
 			courseId={courseId}
@@ -89,7 +79,7 @@ export function DeleteFeedPostButton({
 				<Button
 					variant="ghost"
 					size="icon-sm"
-					className="size-8 text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10"
+					className="text-muted-foreground hover:text-destructive dark:hover:bg-destructive/10 size-8"
 				>
 					<Trash2 />
 				</Button>

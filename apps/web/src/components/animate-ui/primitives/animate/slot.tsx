@@ -2,6 +2,7 @@
 
 import { type HTMLMotionProps, isMotionComponent, motion } from "motion/react";
 import * as React from "react";
+
 import { cn } from "@/lib/utils";
 
 type AnyProps = Record<string, unknown>;
@@ -16,13 +17,10 @@ type WithAsChild<Base extends object> =
 	| (Base & { asChild?: false | undefined });
 
 type SlotProps<T extends HTMLElement = HTMLElement> = {
-	// biome-ignore lint/suspicious/noExplicitAny: No better type available
 	children?: any;
 } & DOMMotionProps<T>;
 
-function mergeRefs<T>(
-	...refs: (React.Ref<T> | undefined)[]
-): React.RefCallback<T> {
+function mergeRefs<T>(...refs: (React.Ref<T> | undefined)[]): React.RefCallback<T> {
 	return (node) => {
 		refs.forEach((ref) => {
 			if (!ref) return;
@@ -42,10 +40,7 @@ function mergeProps<T extends HTMLElement>(
 	const merged: AnyProps = { ...childProps, ...slotProps };
 
 	if (childProps.className || slotProps.className) {
-		merged.className = cn(
-			childProps.className as string,
-			slotProps.className as string,
-		);
+		merged.className = cn(childProps.className as string, slotProps.className as string);
 	}
 
 	if (childProps.style || slotProps.style) {
@@ -58,15 +53,9 @@ function mergeProps<T extends HTMLElement>(
 	return merged;
 }
 
-function Slot<T extends HTMLElement = HTMLElement>({
-	children,
-	ref,
-	...props
-}: SlotProps<T>) {
+function Slot<T extends HTMLElement = HTMLElement>({ children, ref, ...props }: SlotProps<T>) {
 	const isAlreadyMotion =
-		typeof children.type === "object" &&
-		children.type !== null &&
-		isMotionComponent(children.type);
+		typeof children.type === "object" && children.type !== null && isMotionComponent(children.type);
 
 	const Base = isAlreadyMotion
 		? (children.type as React.ElementType)
@@ -78,15 +67,7 @@ function Slot<T extends HTMLElement = HTMLElement>({
 
 	const mergedProps = mergeProps(childProps, props);
 
-	return (
-		<Base {...mergedProps} ref={mergeRefs(childRef as React.Ref<T>, ref)} />
-	);
+	return <Base {...mergedProps} ref={mergeRefs(childRef as React.Ref<T>, ref)} />;
 }
 
-export {
-	Slot,
-	type SlotProps,
-	type WithAsChild,
-	type DOMMotionProps,
-	type AnyProps,
-};
+export { Slot, type SlotProps, type WithAsChild, type DOMMotionProps, type AnyProps };

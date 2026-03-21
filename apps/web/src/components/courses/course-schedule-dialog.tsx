@@ -3,6 +3,7 @@
 import { Clock2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -14,17 +15,8 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupInput,
-} from "@/components/ui/input-group";
-import {
-	COURSE_TIMEZONE,
-	mergeDateTime,
-	toLocalInput,
-	toUtcIso,
-} from "@/lib/course-date-utils";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { COURSE_TIMEZONE, mergeDateTime, toLocalInput, toUtcIso } from "@/lib/course-date-utils";
 
 function formatTimeInput(date: Date) {
 	const hours = String(date.getHours()).padStart(2, "0");
@@ -72,9 +64,7 @@ export function CourseScheduleDialog({
 		const now = new Date();
 		now.setSeconds(0, 0);
 		const defaultStart = addMinutes(now, showStart ? 5 : 0);
-		const resolvedStart = initialStartAt
-			? new Date(initialStartAt)
-			: defaultStart;
+		const resolvedStart = initialStartAt ? new Date(initialStartAt) : defaultStart;
 
 		setStartDate(showStart ? resolvedStart : undefined);
 		setStartTime(
@@ -87,9 +77,7 @@ export function CourseScheduleDialog({
 	}, [open, initialStartAt, showStart]);
 
 	const scheduleStartAt = showStart
-		? toUtcIso(
-				startDate && startTime ? mergeDateTime(startDate, startTime) : "",
-			)
+		? toUtcIso(startDate && startTime ? mergeDateTime(startDate, startTime) : "")
 		: "";
 
 	const canSubmit = showStart ? Boolean(scheduleStartAt) : true;
@@ -107,7 +95,7 @@ export function CourseScheduleDialog({
 				<div className={showStart ? "space-y-4" : "space-y-0"}>
 					{showStart && (
 						<div className="space-y-2">
-							<p className="font-semibold text-foreground text-sm">Start</p>
+							<p className="text-foreground text-sm font-semibold">Start</p>
 							<Calendar
 								mode="single"
 								selected={startDate}
@@ -144,9 +132,7 @@ export function CourseScheduleDialog({
 							}
 
 							onConfirm({
-								scheduledStartAt: showStart
-									? scheduleStartAt || undefined
-									: undefined,
+								scheduledStartAt: showStart ? scheduleStartAt || undefined : undefined,
 							});
 							setOpen(false);
 						}}

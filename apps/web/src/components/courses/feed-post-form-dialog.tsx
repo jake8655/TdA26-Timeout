@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { MessageSquarePlus, Pencil } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
+
 import {
 	postCoursesByCourseIdFeedMutation,
 	putCoursesByCourseIdFeedByPostIdMutation,
@@ -33,12 +34,7 @@ interface FeedPostFormDialogProps {
 	trigger: React.ReactElement;
 }
 
-export function FeedPostFormDialog({
-	mode,
-	courseId,
-	post,
-	trigger,
-}: FeedPostFormDialogProps) {
+export function FeedPostFormDialog({ mode, courseId, post, trigger }: FeedPostFormDialogProps) {
 	const [open, setOpen] = useState(false);
 
 	const createMutation = useMutation({
@@ -83,9 +79,7 @@ export function FeedPostFormDialog({
 			<DialogTrigger render={trigger} />
 			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
-					<DialogTitle>
-						{mode === "add" ? "Create Post" : "Edit Post"}
-					</DialogTitle>
+					<DialogTitle>{mode === "add" ? "Create Post" : "Edit Post"}</DialogTitle>
 					<DialogDescription>
 						{mode === "add"
 							? "Share an update with your students."
@@ -102,21 +96,13 @@ export function FeedPostFormDialog({
 					className="space-y-4"
 				>
 					<form.AppField name="message">
-						{(field) => (
-							<field.TextareaField
-								label="Message"
-								placeholder="What's new?"
-								rows={5}
-							/>
-						)}
+						{(field) => <field.TextareaField label="Message" placeholder="What's new?" rows={5} />}
 					</form.AppField>
 
 					<DialogFooter>
 						<DialogClose render={<Button variant="outline">Cancel</Button>} />
 						<form.AppForm>
-							<form.SubscribeButton
-								label={mode === "add" ? "Post" : "Save Changes"}
-							/>
+							<form.SubscribeButton label={mode === "add" ? "Post" : "Save Changes"} />
 						</form.AppForm>
 					</DialogFooter>
 				</form>
@@ -146,13 +132,7 @@ export function CreateFeedPostButton({
 	);
 }
 
-export function EditFeedPostButton({
-	post,
-	courseId,
-}: {
-	post: FeedItem;
-	courseId: string;
-}) {
+export function EditFeedPostButton({ post, courseId }: { post: FeedItem; courseId: string }) {
 	return (
 		<FeedPostFormDialog
 			mode="edit"
@@ -162,7 +142,7 @@ export function EditFeedPostButton({
 				<Button
 					variant="ghost"
 					size="icon-sm"
-					className="size-8 text-muted-foreground hover:text-primary dark:hover:bg-primary/10"
+					className="text-muted-foreground hover:text-primary dark:hover:bg-primary/10 size-8"
 				>
 					<Pencil />
 				</Button>

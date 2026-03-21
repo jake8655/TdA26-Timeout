@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+
 import { deleteCoursesByCourseIdModulesByModuleIdMaterialsByMaterialIdMutation } from "@/api-client/@tanstack/react-query.gen";
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
@@ -48,9 +49,8 @@ export function DeleteMaterialDialog({
 				<DialogHeader>
 					<DialogTitle>Delete Material</DialogTitle>
 					<DialogDescription>
-						Are you sure you want to delete "
-						<span className="text-accent">{material.name}</span>"? This action
-						cannot be undone.
+						Are you sure you want to delete "<span className="text-accent">{material.name}</span>"?
+						This action cannot be undone.
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
@@ -71,7 +71,7 @@ export function DeleteMaterialDialog({
 						}
 					>
 						{deleteMutation.isPending ? (
-							<Loader2 className="animate-spin text-muted-foreground" />
+							<Loader2 className="text-muted-foreground animate-spin" />
 						) : (
 							"Delete"
 						)}

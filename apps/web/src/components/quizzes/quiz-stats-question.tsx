@@ -2,6 +2,7 @@
 
 import { CheckCircle } from "lucide-react";
 import { motion } from "motion/react";
+
 import type {
 	MultipleChoiceQuestion,
 	Question,
@@ -29,9 +30,9 @@ export function QuizStatsQuestion({
 	const isSingleChoice = question.type === "singleChoice";
 	const isMultipleChoice = question.type === "multipleChoice";
 
-	const optionCountsValues = Object.values(
-		questionStats.optionCounts || {},
-	).map((v) => v) as number[];
+	const optionCountsValues = Object.values(questionStats.optionCounts || {}).map(
+		(v) => v,
+	) as number[];
 	const totalSubmissions: number = optionCountsValues.reduce(
 		(sum: number, count: number) => sum + count,
 		0,
@@ -61,36 +62,29 @@ export function QuizStatsQuestion({
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.3 }}
-			className="border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
+			className="bg-card/40 border border-white/5 p-6 backdrop-blur-sm"
 		>
 			<div className="mb-4 flex items-start justify-between gap-4">
 				<div className="flex-1">
-					<div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">
+					<div className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
 						<span className="font-medium">Question {questionIndex + 1}</span>
 						<span>•</span>
-						<span>
-							{isMultipleChoice ? "Multiple choice" : "Single choice"}
-						</span>
+						<span>{isMultipleChoice ? "Multiple choice" : "Single choice"}</span>
 					</div>
-					<p className="text-foreground text-sm leading-relaxed">
-						{questionText}
-					</p>
+					<p className="text-foreground text-sm leading-relaxed">{questionText}</p>
 				</div>
 			</div>
 
 			<div className="mt-4 space-y-2">
 				{options.map((option, index) => {
 					const count = questionStats.optionCounts?.[String(index)] || 0;
-					const percentage =
-						totalSubmissions > 0 ? (count / totalSubmissions) * 100 : 0;
+					const percentage = totalSubmissions > 0 ? (count / totalSubmissions) * 100 : 0;
 					const correct = isCorrect(index);
 
 					return (
 						<div
-							key={`${questionStats.questionUuid}-${
-								// biome-ignore lint/suspicious/noArrayIndexKey: needed for correctness
-								index
-							}`}
+							// oxlint-disable-next-line react/no-array-index-key
+							key={`${questionStats.questionUuid}-${index}`}
 							className={cn(
 								"relative overflow-hidden rounded-none border p-3 transition-colors duration-200",
 								getOptionStyle(index),
@@ -98,7 +92,7 @@ export function QuizStatsQuestion({
 						>
 							<div
 								className={cn(
-									"absolute top-0 left-0 h-full bg-primary/20 transition-all duration-500",
+									"bg-primary/20 absolute top-0 left-0 h-full transition-all duration-500",
 									{
 										"bg-green-500/20": correct,
 									},
@@ -107,18 +101,12 @@ export function QuizStatsQuestion({
 							/>
 							<div className="relative flex items-center justify-between gap-3">
 								<div className="flex items-center gap-3">
-									<span className="text-foreground text-sm leading-relaxed">
-										{option}
-									</span>
+									<span className="text-foreground text-sm leading-relaxed">{option}</span>
 									{correct && <CheckCircle className="size-4 text-green-500" />}
 								</div>
 								<div className="flex items-center gap-2">
-									<span className="font-medium text-foreground text-sm">
-										{count}
-									</span>
-									<span className="text-muted-foreground text-xs">
-										({percentage.toFixed(1)}%)
-									</span>
+									<span className="text-foreground text-sm font-medium">{count}</span>
+									<span className="text-muted-foreground text-xs">({percentage.toFixed(1)}%)</span>
 								</div>
 							</div>
 						</div>

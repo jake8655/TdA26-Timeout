@@ -21,7 +21,8 @@
 ## Editor Setup
 
 I recommend using [VSCode](https://code.visualstudio.com/) with the following extensions:
-- [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) - linter, formatter, and code action tool.
+
+- [Oxc](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) - linter, formatter, and code action tool.
 - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 
 Make sure format on save is enabled in your editor settings to automatically format your code with Biome.
@@ -33,6 +34,7 @@ Make sure biome and typescript checks pass before opening a PR.
 You can check them with:
 
 ```bash
-bun check
+bun fmt
+bun lint
 bun types
 ```

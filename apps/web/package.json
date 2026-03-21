@@ -2,16 +2,17 @@
 	"$schema": "https://json.schemastore.org/package",
 	"name": "web",
 	"version": "0.1.0",
-	"type": "module",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"dev": "next dev --port 3001",
 		"build": "next build",
 		"openapi:generate": "openapi-ts",
 		"start": "next start",
-		"check": "biome check .",
-		"check:write": "biome check --write .",
-		"check:unsafe": "biome check --write --unsafe .",
+		"fmt": "oxfmt .",
+		"fmt:check": "oxfmt --check .",
+		"lint": "oxlint --fix .",
+		"lint:check": "oxlint .",
 		"types": "tsc --noEmit"
 	},
 	"dependencies": {
@@ -36,13 +37,15 @@
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.6",
 		"@hey-api/openapi-ts": "0.94.0",
 		"@tailwindcss/postcss": "^4.2.1",
 		"@types/node": "^22.19.15",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"babel-plugin-react-compiler": "^1.0.0",
+		"eslint-plugin-react-hooks": "^7.0.1",
+		"oxfmt": "^0.41.0",
+		"oxlint": "^1.56.0",
 		"postcss": "^8.5.8",
 		"tailwindcss": "^4.2.1",
 		"tw-animate-css": "^1.4.0",

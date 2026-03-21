@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+
 import { CourseStatus } from "@/api-client";
 
 export const CourseAction = {
@@ -24,27 +25,18 @@ export function courseStatusActions(
 ) {
 	switch (status) {
 		case CourseStatus.DRAFT:
-			return makeArray([CourseAction.SCHEDULE, CourseAction.START]).includes(
-				action,
-			);
+			return makeArray([CourseAction.SCHEDULE, CourseAction.START]).includes(action);
 
 		case CourseStatus.SCHEDULED:
-			return makeArray([
-				CourseAction.START,
-				CourseAction.MOVE_TO_DRAFT,
-			]).includes(action);
+			return makeArray([CourseAction.START, CourseAction.MOVE_TO_DRAFT]).includes(action);
 
 		case CourseStatus.PAUSED:
-			return makeArray([
-				CourseAction.SCHEDULE,
-				CourseAction.START,
-				CourseAction.ARCHIVE,
-			]).includes(action);
-
-		case CourseStatus.LIVE:
-			return makeArray([CourseAction.PAUSE, CourseAction.ARCHIVE]).includes(
+			return makeArray([CourseAction.SCHEDULE, CourseAction.START, CourseAction.ARCHIVE]).includes(
 				action,
 			);
+
+		case CourseStatus.LIVE:
+			return makeArray([CourseAction.PAUSE, CourseAction.ARCHIVE]).includes(action);
 
 		case CourseStatus.ARCHIVED:
 			return false;

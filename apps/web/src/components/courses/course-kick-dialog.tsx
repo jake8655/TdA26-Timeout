@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import {
 	Dialog,
@@ -34,10 +35,7 @@ export function CourseKickDialog({
 			}}
 			disablePointerDismissal
 		>
-			<DialogContent
-				className="overflow-hidden sm:max-w-md"
-				showCloseButton={false}
-			>
+			<DialogContent className="overflow-hidden sm:max-w-md" showCloseButton={false}>
 				<motion.div
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -51,7 +49,7 @@ export function CourseKickDialog({
 								"This course is no longer available right now. Come back when it goes live again."}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="rounded-none border border-white/5 bg-card/50 p-4 text-muted-foreground text-sm">
+					<div className="bg-card/50 text-muted-foreground rounded-none border border-white/5 p-4 text-sm">
 						If this seems wrong, return to Courses and try opening it again.
 					</div>
 					<div className="flex justify-end">

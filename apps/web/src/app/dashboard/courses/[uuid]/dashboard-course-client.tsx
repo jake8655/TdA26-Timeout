@@ -5,6 +5,7 @@ import { ArrowLeft, HelpCircle, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
+
 import {
 	deleteCoursesByCourseIdMutation,
 	getCoursesLecturerByCourseIdOptions,
@@ -110,26 +111,22 @@ export default function DashboardCourseClient() {
 						animate={{ opacity: 1 }}
 						className="flex justify-center py-12"
 					>
-						<Loader2 className="size-16 animate-spin text-primary" />
+						<Loader2 className="text-primary size-16 animate-spin" />
 					</motion.div>
 				) : courseError ? (
 					<EmptyState
 						title="Unable to load course"
 						description="Please try again in a moment."
-						icon={<HelpCircle className="size-7 text-primary" />}
+						icon={<HelpCircle className="text-primary size-7" />}
 						action={
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => refetchCourse()}
-							>
+							<Button variant="outline" size="sm" onClick={() => refetchCourse()}>
 								Retry
 							</Button>
 						}
 					/>
 				) : course ? (
 					<>
-						<div className="space-y-4 border border-white/5 bg-card/40 p-6 backdrop-blur-sm">
+						<div className="bg-card/40 space-y-4 border border-white/5 p-6 backdrop-blur-sm">
 							<CourseHeader course={course} />
 							<CourseActions
 								course={course}
@@ -186,10 +183,7 @@ export default function DashboardCourseClient() {
 							/>
 						</div>
 
-						<CourseStatsSection
-							courseId={uuid}
-							isLive={course.status === CourseStatus.LIVE}
-						/>
+						<CourseStatsSection courseId={uuid} isLive={course.status === CourseStatus.LIVE} />
 
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
@@ -197,9 +191,7 @@ export default function DashboardCourseClient() {
 							transition={{ duration: 0.5, delay: 0.1 }}
 							className="flex items-center justify-between"
 						>
-							<h2 className="font-semibold text-foreground text-xl">
-								Course Feed
-							</h2>
+							<h2 className="text-foreground text-xl font-semibold">Course Feed</h2>
 							<CreateFeedPostButton
 								courseId={uuid}
 								disabled={course.status !== CourseStatus.LIVE}
@@ -210,12 +202,8 @@ export default function DashboardCourseClient() {
 							courseId={uuid}
 							showActions
 							isLecturer
-							editTrigger={(item) => (
-								<EditFeedPostButton post={item} courseId={uuid} />
-							)}
-							deleteTrigger={(item) => (
-								<DeleteFeedPostButton post={item} courseId={uuid} />
-							)}
+							editTrigger={(item) => <EditFeedPostButton post={item} courseId={uuid} />}
+							deleteTrigger={(item) => <DeleteFeedPostButton post={item} courseId={uuid} />}
 							onKick={() => queryClient.invalidateQueries()}
 							onModuleReveal={() => queryClient.invalidateQueries()}
 							onModuleHidden={() => queryClient.invalidateQueries()}

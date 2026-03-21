@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
+
 import { Button } from "../animate-ui/components/buttons/button";
 import BackgroundGrid from "../background-grid";
 
@@ -23,7 +24,7 @@ export default function Hero() {
 								repeat: Number.POSITIVE_INFINITY,
 								repeatType: "reverse",
 							}}
-							className="absolute -inset-10 rounded-full bg-primary/10 blur-2xl"
+							className="bg-primary/10 absolute -inset-10 rounded-full blur-2xl"
 						/>
 						<Image
 							src="/logo/logo.svg"
@@ -37,33 +38,32 @@ export default function Hero() {
 				</div>
 
 				<div>
-					<h1 className="mb-8 font-bold text-5xl tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+					<h1 className="mb-8 text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
 						<span className="text-foreground">Think </span>
-						<span className="bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent">
+						<span className="from-primary bg-linear-to-r to-blue-400 bg-clip-text text-transparent">
 							different
 						</span>
 						<span className="text-foreground">.</span>
 						<br />
-						<span className="bg-linear-to-r from-accent to-green-400 bg-clip-text text-transparent">
+						<span className="from-accent bg-linear-to-r to-green-400 bg-clip-text text-transparent">
 							Learn
 						</span>
 						<span className="text-foreground"> different.</span>
 					</h1>
 				</div>
 
-				<p className="mx-auto mb-12 max-w-2xl text-base text-muted-foreground sm:text-lg md:text-xl">
-					An educational platform that proves learning doesn't have to mean
-					endless reading. It can be{" "}
-					<span className="font-semibold text-accent">engaging</span>,{" "}
-					<span className="font-semibold text-primary">interactive</span>, and{" "}
-					<span className="font-semibold text-foreground">fully online</span>.
+				<p className="text-muted-foreground mx-auto mb-12 max-w-2xl text-base sm:text-lg md:text-xl">
+					An educational platform that proves learning doesn't have to mean endless reading. It can
+					be <span className="text-accent font-semibold">engaging</span>,{" "}
+					<span className="text-primary font-semibold">interactive</span>, and{" "}
+					<span className="text-foreground font-semibold">fully online</span>.
 				</p>
 
 				<div className="flex flex-col items-center justify-center gap-6 sm:flex-row">
 					<Button
 						variant="accent"
 						size="lg"
-						className="h-14 min-w-[200px] border-none bg-accent text-accent-foreground text-lg hover:bg-accent/90"
+						className="bg-accent text-accent-foreground hover:bg-accent/90 h-14 min-w-[200px] border-none text-lg"
 						asChild
 					>
 						<Link href="/courses">Explore Courses</Link>
@@ -71,7 +71,7 @@ export default function Hero() {
 					<Button
 						variant="outline"
 						size="lg"
-						className="h-14 min-w-[200px] border-muted-foreground/20 text-lg hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+						className="border-muted-foreground/20 hover:border-primary/50 hover:bg-primary/5 hover:text-primary h-14 min-w-[200px] text-lg"
 						asChild
 					>
 						<Link href="#about">Learn More</Link>

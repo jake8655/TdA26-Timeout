@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import type React from "react";
+
 import { cn } from "@/lib/utils";
 
 export default function EmptyState({
@@ -25,25 +26,23 @@ export default function EmptyState({
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.4 }}
 			className={cn(
-				"rounded-none border border-white/10 bg-card/40 p-8 text-center backdrop-blur-sm",
+				"bg-card/40 rounded-none border border-white/10 p-8 text-center backdrop-blur-sm",
 				className,
 			)}
 		>
 			{icon && (
 				<div
 					className={cn(
-						"mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10",
+						"bg-primary/10 mx-auto mb-4 flex size-16 items-center justify-center rounded-full",
 						iconClassName,
 					)}
 				>
 					{icon}
 				</div>
 			)}
-			<h3 className="font-semibold text-foreground text-lg">{title}</h3>
+			<h3 className="text-foreground text-lg font-semibold">{title}</h3>
 			{description && (
-				<p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-					{description}
-				</p>
+				<p className="text-muted-foreground mt-2 text-sm leading-relaxed">{description}</p>
 			)}
 			{action && <div className="mt-6 flex justify-center">{action}</div>}
 		</motion.div>

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+
 import "@/styles/globals.css";
 import localFont from "next/font/local";
+
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { Providers } from "@/components/providers";
@@ -52,11 +54,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html
-			lang="en"
-			className={fontSans.variable}
-			style={{ colorScheme: "dark" }}
-		>
+		<html lang="en" className={fontSans.variable} style={{ colorScheme: "dark" }}>
 			<body className="dark antialiased">
 				<Providers>
 					<Header />

@@ -19,18 +19,16 @@
 
 ### Commands
 ```bash
-bun dev              # Start dev server on port 3001
-bun build            # Production build
-bun check            # Check formatting/linting
-bun check:write      # Auto-fix safe issues
-bun check:unsafe     # Auto-fix including unsafe fixes
+bun run build        # Production build
+bun fmt              # Format
+bun lint             # Auto-fix lint
 bun types            # Typecheck
 bun openapi:generate # Generate API client from OpenAPI spec
 ```
 
 ### Code Style
 - Use bun/bunx instead of npm/npx
-- DO NOT manually format/sort imports - use biome scripts
+- DO NOT manually format/sort imports - use oxfmt/oxlint scripts
 - Tabs for indentation, double quotes
 - Kebab-case for file/folder names
 - Prefer implicit return types (explicit only for complex types)
@@ -75,7 +73,7 @@ just db              # Start MySQL container
 
 ## Common Patterns
 
-### Import Order (handled by Biome)
+### Import Order (handled by oxfmt)
 1. External packages
 2. Internal aliases (`@/`)
 3. Relative imports

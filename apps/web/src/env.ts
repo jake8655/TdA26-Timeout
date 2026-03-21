@@ -3,9 +3,7 @@ import z from "zod";
 
 export const env = createEnv({
 	server: {
-		NODE_ENV: z
-			.enum(["development", "test", "production"])
-			.default("development"),
+		NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 	},
 	client: {
 		NEXT_PUBLIC_API_BASE: z.string().min(1),

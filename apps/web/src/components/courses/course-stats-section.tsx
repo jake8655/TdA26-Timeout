@@ -11,18 +11,13 @@ import {
 	Trophy,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+
 import { getCoursesByCourseIdStatsOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { CourseStatsResponse } from "@/api-client/types.gen";
 import EmptyState from "@/components/empty-state";
 import { useCourseStatsStream } from "@/hooks/use-course-stats-stream";
 
-export function CourseStatsSection({
-	courseId,
-	isLive,
-}: {
-	courseId: string;
-	isLive: boolean;
-}) {
+export function CourseStatsSection({ courseId, isLive }: { courseId: string; isLive: boolean }) {
 	const {
 		data: initialStats,
 		isPending,
@@ -42,7 +37,7 @@ export function CourseStatsSection({
 	if (isPending) {
 		return (
 			<div className="flex justify-center py-8">
-				<Loader2 className="size-6 animate-spin text-primary" />
+				<Loader2 className="text-primary size-6 animate-spin" />
 			</div>
 		);
 	}
@@ -52,7 +47,7 @@ export function CourseStatsSection({
 			<EmptyState
 				title="Unable to load stats"
 				description="Stats could not be loaded."
-				icon={<BarChart3 className="size-7 text-primary" />}
+				icon={<BarChart3 className="text-primary size-7" />}
 			/>
 		);
 	}
@@ -79,10 +74,7 @@ export function CourseStatsSection({
 		},
 		{
 			label: "Average Percentage",
-			value:
-				stats.totalSubmissions > 0
-					? `${stats.avgPercentage.toFixed(1)}%`
-					: "--",
+			value: stats.totalSubmissions > 0 ? `${stats.avgPercentage.toFixed(1)}%` : "--",
 			icon: Percent,
 			color: "text-emerald-400",
 			bg: "bg-emerald-500/10",
@@ -111,9 +103,9 @@ export function CourseStatsSection({
 			className="space-y-3"
 		>
 			<div className="flex items-center justify-between">
-				<h2 className="font-semibold text-foreground text-xl">Course Stats</h2>
+				<h2 className="text-foreground text-xl font-semibold">Course Stats</h2>
 				{isLive && isConnected && (
-					<div className="flex items-center gap-2 text-muted-foreground text-xs">
+					<div className="text-muted-foreground flex items-center gap-2 text-xs">
 						<div className="size-2 animate-pulse rounded-full bg-green-500" />
 						<span>Live</span>
 					</div>
@@ -129,24 +121,20 @@ export function CourseStatsSection({
 							initial={{ opacity: 0, scale: 0.95 }}
 							animate={{ opacity: 1, scale: 1 }}
 							transition={{ duration: 0.3, delay: i * 0.05 }}
-							className="flex flex-col gap-2 border border-white/5 bg-card/40 p-4 backdrop-blur-sm"
+							className="bg-card/40 flex flex-col gap-2 border border-white/5 p-4 backdrop-blur-sm"
 						>
 							<div className="flex items-center gap-2">
-								<div
-									className={`flex size-8 items-center justify-center rounded-lg ${card.bg}`}
-								>
+								<div className={`flex size-8 items-center justify-center rounded-lg ${card.bg}`}>
 									<card.icon className={`size-4 ${card.color}`} />
 								</div>
-								<span className="text-muted-foreground text-xs">
-									{card.label}
-								</span>
+								<span className="text-muted-foreground text-xs">{card.label}</span>
 							</div>
 							<motion.p
 								key={String(card.value)}
 								initial={{ opacity: 0, y: 4 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ duration: 0.2 }}
-								className="font-bold text-foreground text-xl tabular-nums"
+								className="text-foreground text-xl font-bold tabular-nums"
 							>
 								{card.value}
 							</motion.p>

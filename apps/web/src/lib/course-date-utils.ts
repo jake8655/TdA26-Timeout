@@ -3,20 +3,14 @@ import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 export const COURSE_TIMEZONE = "Europe/Bratislava";
 
-export function formatCourseTime(
-	value: string,
-	timeZone: string = COURSE_TIMEZONE,
-) {
+export function formatCourseTime(value: string, timeZone: string = COURSE_TIMEZONE) {
 	if (!value) return value;
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) return value;
 	return formatInTimeZone(date, timeZone, "EEE, MMM d, HH:mm");
 }
 
-export function toLocalInput(
-	value: string,
-	timeZone: string = COURSE_TIMEZONE,
-) {
+export function toLocalInput(value: string, timeZone: string = COURSE_TIMEZONE) {
 	if (!value) return value;
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) return value;

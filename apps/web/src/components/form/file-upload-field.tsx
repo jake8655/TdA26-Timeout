@@ -1,8 +1,10 @@
 import { useStore } from "@tanstack/react-form";
 import { Upload, X } from "lucide-react";
 import { useRef } from "react";
+
 import { useFieldContext } from "@/hooks/form-context";
 import { formatFileSize, MAX_FILE_SIZE } from "@/lib/material-utils";
+
 import { Button } from "../ui/button";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 
@@ -56,9 +58,9 @@ export default function FileUploadField({
 			<FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 			<div className="flex flex-col gap-2">
 				{currentFile ? (
-					<div className="flex items-center justify-between gap-2 border border-input bg-input/30 px-3 py-2">
+					<div className="border-input bg-input/30 flex items-center justify-between gap-2 border px-3 py-2">
 						<div className="flex min-w-0 flex-col">
-							<span className="truncate font-medium text-foreground text-xs">
+							<span className="text-foreground truncate text-xs font-medium">
 								{currentFile.name}
 							</span>
 							<span className="text-muted-foreground text-xs">
@@ -70,7 +72,7 @@ export default function FileUploadField({
 							variant="ghost"
 							size="icon-sm"
 							onClick={handleRemove}
-							className="shrink-0 text-muted-foreground hover:text-destructive"
+							className="text-muted-foreground hover:text-destructive shrink-0"
 						>
 							<X />
 						</Button>
@@ -78,12 +80,10 @@ export default function FileUploadField({
 				) : (
 					<label
 						htmlFor={field.name}
-						className="flex cursor-pointer flex-col items-center justify-center gap-2 border border-input border-dashed bg-input/10 px-4 py-6 transition-colors hover:border-primary hover:bg-input/20"
+						className="border-input bg-input/10 hover:border-primary hover:bg-input/20 flex cursor-pointer flex-col items-center justify-center gap-2 border border-dashed px-4 py-6 transition-colors"
 					>
-						<Upload className="size-6 text-muted-foreground" />
-						<span className="text-muted-foreground text-xs">
-							Click to upload or drag and drop
-						</span>
+						<Upload className="text-muted-foreground size-6" />
+						<span className="text-muted-foreground text-xs">Click to upload or drag and drop</span>
 						<span className="text-muted-foreground/70 text-xs">
 							PDF, DOCX, TXT, PNG, JPG, GIF, MP4, MP3 (max 30MB)
 						</span>
@@ -104,10 +104,7 @@ export default function FileUploadField({
 			{field.state.meta.isTouched && !field.state.meta.isValid && (
 				<FieldError>
 					{errors
-						.filter(
-							(err): err is { message: string } =>
-								err !== undefined && "message" in err,
-						)
+						.filter((err): err is { message: string } => err !== undefined && "message" in err)
 						.map((err) => err.message)
 						.join(", ")}
 				</FieldError>

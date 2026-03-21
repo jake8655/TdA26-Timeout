@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Clock, Loader2, Maximize2, MessageSquare } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+
 import {
 	getCoursesByCourseIdFeedOptions,
 	getCoursesLecturerByCourseIdFeedOptions,
@@ -36,21 +37,9 @@ export function CourseFeed({
 	editTrigger?: (item: FeedItem) => React.ReactNode;
 	deleteTrigger?: (item: FeedItem) => React.ReactNode;
 	viewTrigger?: (item: FeedItem) => React.ReactNode;
-	onKick?: (payload: {
-		reason?: string;
-		status?: string;
-		effectiveAt?: string;
-	}) => void;
-	onModuleReveal?: (payload: {
-		moduleId: string;
-		title?: string;
-		revealedAt?: string;
-	}) => void;
-	onModuleHidden?: (payload: {
-		moduleId: string;
-		title?: string;
-		hiddenAt?: string;
-	}) => void;
+	onKick?: (payload: { reason?: string; status?: string; effectiveAt?: string }) => void;
+	onModuleReveal?: (payload: { moduleId: string; title?: string; revealedAt?: string }) => void;
+	onModuleHidden?: (payload: { moduleId: string; title?: string; hiddenAt?: string }) => void;
 }) {
 	const {
 		feedItems: streamItems,
@@ -104,9 +93,7 @@ export function CourseFeed({
 
 		const combined = [...initialItems];
 		for (const streamItem of streamItems) {
-			const existingIndex = combined.findIndex(
-				(item) => item.uuid === streamItem.uuid,
-			);
+			const existingIndex = combined.findIndex((item) => item.uuid === streamItem.uuid);
 			if (existingIndex >= 0) {
 				combined[existingIndex] = streamItem;
 			} else {
@@ -131,7 +118,7 @@ export function CourseFeed({
 	if (isPending) {
 		return (
 			<div className="flex justify-center py-12">
-				<Loader2 className="size-8 animate-spin text-primary" />
+				<Loader2 className="text-primary size-8 animate-spin" />
 			</div>
 		);
 	}
@@ -153,7 +140,7 @@ export function CourseFeed({
 	return (
 		<div className="flex flex-col gap-3">
 			{isConnected && (
-				<div className="flex items-center gap-2 text-muted-foreground text-xs">
+				<div className="text-muted-foreground flex items-center gap-2 text-xs">
 					<div className="size-2 animate-pulse rounded-full bg-green-500" />
 					<span>Live updates enabled</span>
 				</div>
@@ -167,7 +154,7 @@ export function CourseFeed({
 							? "Share updates, announcements, or resources with your students."
 							: "There are no posts in this feed yet."
 					}
-					icon={<MessageSquare className="size-7 text-primary" />}
+					icon={<MessageSquare className="text-primary size-7" />}
 					className="border-dashed"
 				/>
 			) : (
@@ -228,7 +215,7 @@ function FeedItemCard({
 				exit={{ opacity: 0, scale: 0.95 }}
 				transition={{ duration: 0.3, delay: index * 0.03 }}
 				className={cn(
-					"group flex gap-3 rounded-none border bg-card/40 p-4 backdrop-blur-sm transition-colors duration-200",
+					"group bg-card/40 flex gap-3 rounded-none border p-4 backdrop-blur-sm transition-colors duration-200",
 					isSystem ? "border-white/5" : "border-white/5",
 				)}
 			>
@@ -238,17 +225,13 @@ function FeedItemCard({
 						isSystem ? "bg-primary/10" : "bg-accent/10",
 					)}
 				>
-					<MessageSquare
-						className={cn("size-5", isSystem ? "text-primary" : "text-accent")}
-					/>
+					<MessageSquare className={cn("size-5", isSystem ? "text-primary" : "text-accent")} />
 				</div>
 
 				<div className="flex-1 space-y-2">
 					<div className="flex items-start justify-between gap-2">
 						<div className="flex-1">
-							<p className="text-foreground leading-relaxed">
-								{truncatedMessage}
-							</p>
+							<p className="text-foreground leading-relaxed">{truncatedMessage}</p>
 						</div>
 
 						<div className="flex gap-1 transition-opacity group-hover:opacity-100 lg:opacity-0">
@@ -258,7 +241,7 @@ function FeedItemCard({
 								<Button
 									variant="ghost"
 									size="icon-sm"
-									className="size-8 text-muted-foreground hover:text-foreground dark:hover:bg-white/5"
+									className="text-muted-foreground hover:text-foreground size-8 dark:hover:bg-white/5"
 									onClick={() => setIsDialogOpen(true)}
 								>
 									<Maximize2 />
@@ -273,7 +256,7 @@ function FeedItemCard({
 						</div>
 					</div>
 
-					<div className="flex items-center gap-2 text-muted-foreground text-xs">
+					<div className="text-muted-foreground flex items-center gap-2 text-xs">
 						<Clock className="size-3" />
 						<span>{formatDate(item.createdAt)}</span>
 						{item.edited && (
@@ -296,14 +279,12 @@ function FeedItemCard({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="max-h-[60vh] overflow-y-auto py-2">
-						<p className="whitespace-pre-wrap text-base text-foreground leading-relaxed">
+						<p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">
 							{item.message}
 						</p>
 					</div>
 					{item.edited && (
-						<div className="text-muted-foreground text-sm italic">
-							This post was edited
-						</div>
+						<div className="text-muted-foreground text-sm italic">This post was edited</div>
 					)}
 				</DialogContent>
 			</Dialog>

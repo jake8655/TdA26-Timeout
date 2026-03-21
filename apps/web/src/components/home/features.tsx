@@ -2,13 +2,8 @@
 
 import { motion } from "motion/react";
 import Image from "next/image";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const features = [
@@ -69,7 +64,7 @@ function FeatureCard({
 			viewport={{ once: true }}
 			whileHover={{ y: -5 }}
 		>
-			<Card className="h-full border-white/5 bg-card/40 backdrop-blur-sm transition-colors duration-200">
+			<Card className="bg-card/40 h-full border-white/5 backdrop-blur-sm transition-colors duration-200">
 				<CardHeader>
 					<div
 						className={cn(
@@ -79,17 +74,11 @@ function FeatureCard({
 								: "bg-accent/10 shadow-accent/10",
 						)}
 					>
-						<Image
-							src={icon}
-							alt={alt}
-							width={36}
-							height={36}
-							className="size-9"
-						/>
+						<Image src={icon} alt={alt} width={36} height={36} className="size-9" />
 					</div>
 					<CardTitle
 						className={cn(
-							"font-bold text-xl",
+							"text-xl font-bold",
 							color === "primary" ? "text-primary" : "text-accent",
 						)}
 					>
@@ -97,7 +86,7 @@ function FeatureCard({
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<CardDescription className="text-base text-muted-foreground leading-relaxed">
+					<CardDescription className="text-muted-foreground text-base leading-relaxed">
 						{description}
 					</CardDescription>
 				</CardContent>
@@ -110,8 +99,8 @@ export default function Features() {
 	return (
 		<section className="relative py-24">
 			<div className="pointer-events-none absolute inset-0">
-				<div className="absolute top-0 right-0 h-[500px] w-1/2 bg-linear-to-b from-primary/5 to-transparent blur-3xl" />
-				<div className="absolute bottom-0 left-0 h-[500px] w-1/2 bg-linear-to-t from-accent/5 to-transparent blur-3xl" />
+				<div className="from-primary/5 absolute top-0 right-0 h-[500px] w-1/2 bg-linear-to-b to-transparent blur-3xl" />
+				<div className="from-accent/5 absolute bottom-0 left-0 h-[500px] w-1/2 bg-linear-to-t to-transparent blur-3xl" />
 			</div>
 
 			<div className="relative z-10 mx-auto max-w-7xl px-6">
@@ -120,7 +109,7 @@ export default function Features() {
 						initial={{ opacity: 0, y: 20 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
-						className="mb-6 font-bold text-3xl tracking-tight sm:text-4xl"
+						className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl"
 					>
 						Why <span className="text-primary">Think different</span> Academy?
 					</motion.h2>
@@ -129,10 +118,9 @@ export default function Features() {
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
 						transition={{ delay: 0.2 }}
-						className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg"
+						className="text-muted-foreground mx-auto max-w-2xl text-base sm:text-lg"
 					>
-						We're revolutionizing education by making learning an adventure, not
-						a chore.
+						We're revolutionizing education by making learning an adventure, not a chore.
 					</motion.p>
 				</div>
 

@@ -8,25 +8,25 @@ paths:
     get:
       summary: Root endpoint
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationResponse'
+                $ref: "#/components/schemas/OrganizationResponse"
 
   /courses:
     get:
       summary: List all courses
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CourseSummary'
+                  $ref: "#/components/schemas/CourseSummary"
     post:
       summary: Create a new course
       requestBody:
@@ -34,55 +34,55 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CourseCreateRequest'
+              $ref: "#/components/schemas/CourseCreateRequest"
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseSummary'
+                $ref: "#/components/schemas/CourseSummary"
 
   /courses/lecturer:
     get:
       summary: List lecturer courses
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CourseSummary'
+                  $ref: "#/components/schemas/CourseSummary"
 
   /courses/lecturer/{courseId}:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: Get lecturer course details
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseDetail'
+                $ref: "#/components/schemas/CourseDetail"
 
   /courses/{courseId}:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: Get course details
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseDetail'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/CourseDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
     put:
       summary: Update course
       requestBody:
@@ -90,23 +90,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CourseUpdateRequest'
+              $ref: "#/components/schemas/CourseUpdateRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseSummary'
+                $ref: "#/components/schemas/CourseSummary"
     delete:
       summary: Delete course
       responses:
-        '204':
+        "204":
           description: No content
 
   /courses/{courseId}/status:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     put:
       summary: Update course status
       requestBody:
@@ -114,18 +114,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CourseStatusUpdateRequest'
+              $ref: "#/components/schemas/CourseStatusUpdateRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseDetail'
+                $ref: "#/components/schemas/CourseDetail"
 
   /courses/{courseId}/start:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     post:
       summary: Start course now
       requestBody:
@@ -133,18 +133,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CourseStartRequest'
+              $ref: "#/components/schemas/CourseStartRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseDetail'
+                $ref: "#/components/schemas/CourseDetail"
 
   /courses/{courseId}/pause:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     post:
       summary: Pause course
       requestBody:
@@ -152,70 +152,70 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CoursePauseRequest'
+              $ref: "#/components/schemas/CoursePauseRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseDetail'
+                $ref: "#/components/schemas/CourseDetail"
 
   /courses/{courseId}/archive:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     post:
       summary: Archive course
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseDetail'
+                $ref: "#/components/schemas/CourseDetail"
 
   /courses/{courseId}/join:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     post:
       summary: Join course
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseJoinResponse'
+                $ref: "#/components/schemas/CourseJoinResponse"
 
   /courses/{courseId}/session:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     post:
       summary: Create course session
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseSessionResponse'
+                $ref: "#/components/schemas/CourseSessionResponse"
 
   /courses/{courseId}/leave:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     post:
       summary: Leave course
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseJoinResponse'
+                $ref: "#/components/schemas/CourseJoinResponse"
 
   /courses/{courseId}/duplicate:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     post:
       summary: Duplicate course
       requestBody:
@@ -223,29 +223,29 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CourseDuplicateRequest'
+              $ref: "#/components/schemas/CourseDuplicateRequest"
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseDetail'
+                $ref: "#/components/schemas/CourseDetail"
 
   /courses/{courseId}/modules:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: List modules
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Module'
+                  $ref: "#/components/schemas/Module"
     post:
       summary: Create module
       requestBody:
@@ -253,19 +253,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModuleCreateRequest'
+              $ref: "#/components/schemas/ModuleCreateRequest"
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Module'
+                $ref: "#/components/schemas/Module"
 
   /courses/{courseId}/modules/{moduleId}:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
     put:
       summary: Update module
       requestBody:
@@ -273,37 +273,37 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModuleUpdateRequest'
+              $ref: "#/components/schemas/ModuleUpdateRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Module'
+                $ref: "#/components/schemas/Module"
     delete:
       summary: Delete module
       responses:
-        '204':
+        "204":
           description: No content
 
   /courses/{courseId}/modules/{moduleId}/reveal:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
     put:
       summary: Reveal module
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Module'
+                $ref: "#/components/schemas/Module"
 
   /courses/{courseId}/modules/order:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     put:
       summary: Reorder modules (draft only)
       requestBody:
@@ -311,56 +311,56 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReorderModulesRequest'
+              $ref: "#/components/schemas/ReorderModulesRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatusResponse'
+                $ref: "#/components/schemas/StatusResponse"
 
   /courses/{courseId}/modules/reveal-next:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     put:
       summary: Reveal next module in order (LIVE only)
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Module'
+                $ref: "#/components/schemas/Module"
 
   /courses/{courseId}/modules/hide-last:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     put:
       summary: Hide last revealed module (LIVE only)
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Module'
+                $ref: "#/components/schemas/Module"
 
   /courses/{courseId}/modules/{moduleId}/materials:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
     get:
       summary: List module materials
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Material'
+                  $ref: "#/components/schemas/Material"
     post:
       summary: Add material
       requestBody:
@@ -368,23 +368,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UrlMaterialCreateRequest'
+              $ref: "#/components/schemas/UrlMaterialCreateRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/FileMaterialCreateRequest'
+              $ref: "#/components/schemas/FileMaterialCreateRequest"
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Material'
+                $ref: "#/components/schemas/Material"
 
   /courses/{courseId}/modules/{moduleId}/materials/{materialId}:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
-      - $ref: '#/components/parameters/MaterialId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
+      - $ref: "#/components/parameters/MaterialId"
     put:
       summary: Update material
       requestBody:
@@ -392,38 +392,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UrlMaterialUpdateRequest'
+              $ref: "#/components/schemas/UrlMaterialUpdateRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/FileMaterialUpdateRequest'
+              $ref: "#/components/schemas/FileMaterialUpdateRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Material'
+                $ref: "#/components/schemas/Material"
     delete:
       summary: Delete material
       responses:
-        '204':
+        "204":
           description: No content
 
   /courses/{courseId}/modules/{moduleId}/quizzes:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
     get:
       summary: List module quizzes
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Quiz'
+                  $ref: "#/components/schemas/Quiz"
     post:
       summary: Create quiz
       requestBody:
@@ -431,29 +431,29 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Quiz'
+              $ref: "#/components/schemas/Quiz"
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Quiz'
+                $ref: "#/components/schemas/Quiz"
 
   /courses/{courseId}/modules/{moduleId}/quizzes/{quizId}:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
-      - $ref: '#/components/parameters/QuizId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
+      - $ref: "#/components/parameters/QuizId"
     get:
       summary: Get quiz
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Quiz'
+                $ref: "#/components/schemas/Quiz"
     put:
       summary: Update quiz
       requestBody:
@@ -461,25 +461,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Quiz'
+              $ref: "#/components/schemas/Quiz"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Quiz'
+                $ref: "#/components/schemas/Quiz"
     delete:
       summary: Delete quiz
       responses:
-        '204':
+        "204":
           description: No content
 
   /courses/{courseId}/modules/{moduleId}/quizzes/{quizId}/submit:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
-      - $ref: '#/components/parameters/QuizId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
+      - $ref: "#/components/parameters/QuizId"
     post:
       summary: Submit quiz answers
       requestBody:
@@ -487,61 +487,61 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QuizSubmitRequest'
+              $ref: "#/components/schemas/QuizSubmitRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuizSubmitResponse'
+                $ref: "#/components/schemas/QuizSubmitResponse"
 
   /courses/{courseId}/modules/{moduleId}/quizzes/{quizId}/stats:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
-      - $ref: '#/components/parameters/QuizId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
+      - $ref: "#/components/parameters/QuizId"
     get:
       summary: Get quiz stats
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuizStatsResponse'
+                $ref: "#/components/schemas/QuizStatsResponse"
 
   /courses/{courseId}/modules/{moduleId}/quizzes/{quizId}/results:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/ModuleId'
-      - $ref: '#/components/parameters/QuizId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/ModuleId"
+      - $ref: "#/components/parameters/QuizId"
     get:
       summary: Get quiz results
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/QuizSubmitResponse'
+                  $ref: "#/components/schemas/QuizSubmitResponse"
 
   /courses/{courseId}/feed:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: Get course feed
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/FeedItem'
+                  $ref: "#/components/schemas/FeedItem"
     post:
       summary: Add feed post
       requestBody:
@@ -549,38 +549,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FeedCreateRequest'
+              $ref: "#/components/schemas/FeedCreateRequest"
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FeedItem'
+                $ref: "#/components/schemas/FeedItem"
 
   /courses/lecturer/{courseId}/feed:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: Get lecturer course feed
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/FeedItem'
+                  $ref: "#/components/schemas/FeedItem"
 
   /courses/{courseId}/feed/{postId}:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/PostId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/PostId"
     delete:
       summary: Delete feed post
       responses:
-        '204':
+        "204":
           description: No content
     put:
       summary: Update feed post
@@ -589,22 +589,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FeedUpdateRequest'
+              $ref: "#/components/schemas/FeedUpdateRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FeedItem'
+                $ref: "#/components/schemas/FeedItem"
 
   /courses/{courseId}/feed/stream:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: Stream course feed
       responses:
-        '200':
+        "200":
           description: Event stream
           content:
             text/event-stream:
@@ -613,11 +613,11 @@ paths:
 
   /courses/lecturer/{courseId}/feed/stream:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: Stream lecturer course feed
       responses:
-        '200':
+        "200":
           description: Event stream
           content:
             text/event-stream:
@@ -626,24 +626,24 @@ paths:
 
   /courses/{courseId}/stats:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: Get course stats (lecturer only)
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseStatsResponse'
+                $ref: "#/components/schemas/CourseStatsResponse"
 
   /courses/{courseId}/stats/stream:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
+      - $ref: "#/components/parameters/CourseId"
     get:
       summary: Stream course stats (lecturer only)
       responses:
-        '200':
+        "200":
           description: Event stream
           content:
             text/event-stream:
@@ -652,17 +652,17 @@ paths:
 
   /courses/{courseId}/materials/{materialId}/interactions:
     parameters:
-      - $ref: '#/components/parameters/CourseId'
-      - $ref: '#/components/parameters/MaterialId'
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/MaterialId"
     post:
       summary: Record material interaction
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatusResponse'
+                $ref: "#/components/schemas/StatusResponse"
 
 components:
   parameters:
@@ -708,7 +708,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
 
   schemas:
     OrganizationResponse:
@@ -743,7 +743,7 @@ components:
           type: string
           format: date-time
         status:
-          $ref: '#/components/schemas/CourseStatus'
+          $ref: "#/components/schemas/CourseStatus"
         scheduledStartAt:
           type: string
           format: date-time
@@ -787,13 +787,13 @@ components:
         modules:
           type: array
           items:
-            $ref: '#/components/schemas/Module'
+            $ref: "#/components/schemas/Module"
         feed:
           type: array
           items:
-            $ref: '#/components/schemas/FeedItem'
+            $ref: "#/components/schemas/FeedItem"
         status:
-          $ref: '#/components/schemas/CourseStatus'
+          $ref: "#/components/schemas/CourseStatus"
         scheduledStartAt:
           type: string
           format: date-time
@@ -876,11 +876,11 @@ components:
         materials:
           type: array
           items:
-            $ref: '#/components/schemas/Material'
+            $ref: "#/components/schemas/Material"
         quizzes:
           type: array
           items:
-            $ref: '#/components/schemas/Quiz'
+            $ref: "#/components/schemas/Quiz"
         createdAt:
           type: string
           format: date-time
@@ -907,13 +907,13 @@ components:
 
     Material:
       oneOf:
-        - $ref: '#/components/schemas/FileMaterial'
-        - $ref: '#/components/schemas/UrlMaterial'
+        - $ref: "#/components/schemas/FileMaterial"
+        - $ref: "#/components/schemas/UrlMaterial"
       discriminator:
         propertyName: type
         mapping:
-          file: '#/components/schemas/FileMaterial'
-          url: '#/components/schemas/UrlMaterial'
+          file: "#/components/schemas/FileMaterial"
+          url: "#/components/schemas/UrlMaterial"
 
     FileMaterial:
       type: object
@@ -1020,17 +1020,17 @@ components:
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/Question'
+            $ref: "#/components/schemas/Question"
 
     Question:
       oneOf:
-        - $ref: '#/components/schemas/SingleChoiceQuestion'
-        - $ref: '#/components/schemas/MultipleChoiceQuestion'
+        - $ref: "#/components/schemas/SingleChoiceQuestion"
+        - $ref: "#/components/schemas/MultipleChoiceQuestion"
       discriminator:
         propertyName: type
         mapping:
-          singleChoice: '#/components/schemas/SingleChoiceQuestion'
-          multipleChoice: '#/components/schemas/MultipleChoiceQuestion'
+          singleChoice: "#/components/schemas/SingleChoiceQuestion"
+          multipleChoice: "#/components/schemas/MultipleChoiceQuestion"
 
     SingleChoiceQuestion:
       type: object
@@ -1079,7 +1079,7 @@ components:
         answers:
           type: array
           items:
-            $ref: '#/components/schemas/QuizAnswer'
+            $ref: "#/components/schemas/QuizAnswer"
 
     QuizAnswer:
       type: object
@@ -1129,7 +1129,7 @@ components:
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/QuestionStats'
+            $ref: "#/components/schemas/QuestionStats"
 
     QuestionStats:
       type: object

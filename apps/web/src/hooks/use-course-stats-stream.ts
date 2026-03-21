@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+
 import { client } from "@/api-client/client.gen";
 import type { CourseStatsResponse } from "@/api-client/types.gen";
 

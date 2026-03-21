@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import About from "@/components/home/about";
 import CallToAction from "@/components/home/cta";
 import Features from "@/components/home/features";

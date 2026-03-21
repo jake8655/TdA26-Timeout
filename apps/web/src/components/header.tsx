@@ -5,7 +5,9 @@ import { LayoutDashboard, Loader2, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import { logout, useAuth } from "@/hooks/use-auth";
+
 import AboutLink from "./about-link";
 import { Button } from "./animate-ui/components/buttons/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
@@ -32,7 +34,7 @@ export default function Header() {
 	});
 
 	return (
-		<header className="fixed top-0 right-0 left-0 z-50 border-white/5 border-b bg-background/80 backdrop-blur-md transition-all duration-300">
+		<header className="bg-background/80 fixed top-0 right-0 left-0 z-50 border-b border-white/5 backdrop-blur-md transition-all duration-300">
 			<div className="relative mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
 				<Link
 					href="/"
@@ -45,19 +47,17 @@ export default function Header() {
 						height={40}
 						className="size-10"
 					/>
-					<span className="font-semibold text-lg text-white">
-						Think different Academy
-					</span>
+					<span className="text-lg font-semibold text-white">Think different Academy</span>
 				</Link>
 
 				<nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
 					<Link
 						href="/courses"
-						className="font-medium text-muted-foreground text-sm transition-colors hover:text-primary"
+						className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
 					>
 						Courses
 					</Link>
-					<AboutLink className="font-medium text-muted-foreground text-sm transition-colors hover:text-primary">
+					<AboutLink className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors">
 						About
 					</AboutLink>
 				</nav>
@@ -75,22 +75,15 @@ export default function Header() {
 							<DropdownMenuContent align="end" className="w-40">
 								<DropdownMenuGroup>
 									<DropdownMenuLabel className="flex items-center gap-2">
-										<User className="size-4 shrink-0 text-muted-foreground" />
+										<User className="text-muted-foreground size-4 shrink-0" />
 										<div className="flex flex-col">
-											<span className="font-medium text-foreground text-sm">
-												{data.username}
-											</span>
-											<span className="text-muted-foreground text-xs">
-												Lecturer
-											</span>
+											<span className="text-foreground text-sm font-medium">{data.username}</span>
+											<span className="text-muted-foreground text-xs">Lecturer</span>
 										</div>
 									</DropdownMenuLabel>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem className="p-0">
-										<Link
-											href="/dashboard"
-											className="flex w-full items-center gap-2 p-2"
-										>
+										<Link href="/dashboard" className="flex w-full items-center gap-2 p-2">
 											<LayoutDashboard />
 											Dashboard
 										</Link>
@@ -103,7 +96,7 @@ export default function Header() {
 									>
 										{logoutMutation.isPending ? (
 											<>
-												<Loader2 className="animate-spin text-muted-foreground" />
+												<Loader2 className="text-muted-foreground animate-spin" />
 												Logging out...
 											</>
 										) : (
@@ -121,7 +114,7 @@ export default function Header() {
 							<Button
 								variant="outline"
 								size="sm"
-								className="hidden border-primary/20 text-primary hover:border-primary hover:bg-primary/10 hover:text-primary sm:inline-flex"
+								className="border-primary/20 text-primary hover:border-primary hover:bg-primary/10 hover:text-primary hidden sm:inline-flex"
 								asChild
 							>
 								<Link href="/login">Lecturer Login</Link>

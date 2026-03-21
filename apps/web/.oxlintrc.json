@@ -1,0 +1,19 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["react", "nextjs", "typescript", "jsx-a11y"],
+	"categories": {
+		"correctness": "error",
+		"suspicious": "warn",
+		"perf": "warn"
+	},
+	"rules": {
+		"eslint/no-unknown-at-rule": "off",
+		"react/react-in-jsx-scope": "off",
+		"eslint/no-shadow": "off"
+	},
+	"settings": {
+		"next": {
+			"rootDir": "."
+		}
+	}
+}

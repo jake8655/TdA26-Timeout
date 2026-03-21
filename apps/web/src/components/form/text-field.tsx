@@ -1,5 +1,7 @@
 import { useStore } from "@tanstack/react-form";
+
 import { useFieldContext } from "@/hooks/form-context";
+
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 
@@ -21,9 +23,7 @@ export default function TextField({
 	const errors = useStore(field.store, (state) => state.meta.errors);
 
 	return (
-		<Field
-			data-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
-		>
+		<Field data-invalid={field.state.meta.isTouched && !field.state.meta.isValid}>
 			{label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 			<Input
 				id={field.name}
@@ -40,10 +40,7 @@ export default function TextField({
 			{field.state.meta.isTouched && !field.state.meta.isValid && (
 				<FieldError>
 					{errors
-						.filter(
-							(err): err is { message: string } =>
-								err !== undefined && "message" in err,
-						)
+						.filter((err): err is { message: string } => err !== undefined && "message" in err)
 						.map((err) => err.message)
 						.join(", ")}
 				</FieldError>

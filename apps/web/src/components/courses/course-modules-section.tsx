@@ -36,6 +36,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { z } from "zod";
+
 import {
 	deleteCoursesByCourseIdModulesByModuleIdMutation,
 	getCoursesByCourseIdModulesOptions,
@@ -45,19 +46,11 @@ import {
 	putCoursesByCourseIdModulesOrderMutation,
 	putCoursesByCourseIdModulesRevealNextMutation,
 } from "@/api-client/@tanstack/react-query.gen";
-import type {
-	CourseStatus,
-	FileMaterial,
-	Module,
-	UrlMaterial,
-} from "@/api-client/types.gen";
+import type { CourseStatus, FileMaterial, Module, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { DeleteMaterialDialog } from "@/components/dashboard/delete-material-dialog";
 import { MaterialFormDialog } from "@/components/dashboard/material-form-dialog";
-import {
-	DeleteQuizDialog,
-	QuizFormDialog,
-} from "@/components/dashboard/quiz-form-dialog";
+import { DeleteQuizDialog, QuizFormDialog } from "@/components/dashboard/quiz-form-dialog";
 import EmptyState from "@/components/empty-state";
 import { QuizStatsDialog } from "@/components/quizzes/quiz-stats-dialog";
 import {
@@ -71,11 +64,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/hooks/form";
-import {
-	formatFileSize,
-	getFileTypeLabel,
-	getMaterialIcon,
-} from "@/lib/material-utils";
+import { formatFileSize, getFileTypeLabel, getMaterialIcon } from "@/lib/material-utils";
 
 const restrictToVerticalAxis: Modifier = ({ transform }) => ({
 	...transform,
@@ -154,7 +143,7 @@ export function CourseModulesSection({
 	if (isPending) {
 		return (
 			<div className="flex justify-center py-12">
-				<Loader2 className="size-8 animate-spin text-primary" />
+				<Loader2 className="text-primary size-8 animate-spin" />
 			</div>
 		);
 	}
@@ -189,7 +178,7 @@ export function CourseModulesSection({
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
-				<h2 className="font-semibold text-foreground text-xl">Modules</h2>
+				<h2 className="text-foreground text-xl font-semibold">Modules</h2>
 				<ModuleFormDialog
 					mode="create"
 					courseId={courseId}
@@ -203,14 +192,12 @@ export function CourseModulesSection({
 			</div>
 
 			{isLive && moduleList.length > 0 && (
-				<div className="flex flex-wrap items-center gap-3 rounded-none border border-white/5 bg-card/40 p-3 backdrop-blur-sm">
+				<div className="bg-card/40 flex flex-wrap items-center gap-3 rounded-none border border-white/5 p-3 backdrop-blur-sm">
 					<div className="flex items-center gap-2">
 						<Button
 							variant="outline"
 							size="sm"
-							disabled={
-								!nextToReveal || nextIsEmpty || revealNextMutation.isPending
-							}
+							disabled={!nextToReveal || nextIsEmpty || revealNextMutation.isPending}
 							onClick={() =>
 								revealNextMutation.mutate({
 									path: { courseId },
@@ -252,7 +239,7 @@ export function CourseModulesSection({
 				<EmptyState
 					title="No modules yet"
 					description="Create modules and bundle materials and quizzes together."
-					icon={<BookOpen className="size-7 text-primary" />}
+					icon={<BookOpen className="text-primary size-7" />}
 					className="border-dashed"
 				/>
 			) : isDraft ? (
@@ -311,14 +298,9 @@ function SortableModuleCard({
 	index: number;
 	nextToRevealId?: string;
 }) {
-	const {
-		attributes,
-		listeners,
-		setNodeRef,
-		transform,
-		transition,
-		isDragging,
-	} = useSortable({ id: module.uuid });
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+		id: module.uuid,
+	});
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
@@ -372,7 +354,7 @@ function ModuleCard({
 			initial={{ opacity: 0, y: 12 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.3, delay: index * 0.03 }}
-			className="rounded-none border border-white/5 bg-card/40 backdrop-blur-sm"
+			className="bg-card/40 rounded-none border border-white/5 backdrop-blur-sm"
 		>
 			<div className="flex flex-wrap items-start justify-between gap-4 p-4">
 				<div className="flex min-w-0 flex-1 items-start gap-3">
@@ -386,30 +368,26 @@ function ModuleCard({
 					</Button>
 					<div className="min-w-0">
 						<div className="flex flex-wrap items-center gap-2">
-							<h3 className="font-semibold text-base text-foreground">
-								{module.title}
-							</h3>
+							<h3 className="text-foreground text-base font-semibold">{module.title}</h3>
 							{showVisibilityBadge && (
 								<span
-									className={`rounded-full px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide ${
+									className={`rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${
 										module.visible
 											? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
-											: "border border-white/10 bg-white/5 text-muted-foreground"
+											: "text-muted-foreground border border-white/10 bg-white/5"
 									}`}
 								>
 									{module.visible ? "Revealed" : "Hidden"}
 								</span>
 							)}
 							{isNextToReveal && (
-								<span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-semibold text-[10px] text-primary uppercase tracking-wide">
+								<span className="border-primary/20 bg-primary/10 text-primary rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
 									Next
 								</span>
 							)}
 						</div>
-						<p className="mt-1 text-muted-foreground text-sm">
-							{module.description || (
-								<span className="italic">No description</span>
-							)}
+						<p className="text-muted-foreground mt-1 text-sm">
+							{module.description || <span className="italic">No description</span>}
 						</p>
 					</div>
 				</div>
@@ -437,7 +415,7 @@ function ModuleCard({
 					{isDraft && dragHandleProps && (
 						<button
 							type="button"
-							className="flex size-8 cursor-grab touch-none items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
+							className="text-muted-foreground hover:text-foreground flex size-8 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
 							{...dragHandleProps}
 						>
 							<GripVertical className="size-4" />
@@ -452,14 +430,12 @@ function ModuleCard({
 						initial={{ height: 0, opacity: 0 }}
 						animate={{ height: "auto", opacity: 1 }}
 						exit={{ height: 0, opacity: 0 }}
-						className="overflow-hidden border-white/5 border-t"
+						className="overflow-hidden border-t border-white/5"
 					>
 						<div className="space-y-5 p-4">
 							<div>
 								<div className="mb-3 flex items-center justify-between">
-									<h4 className="font-semibold text-foreground text-sm">
-										Materials
-									</h4>
+									<h4 className="text-foreground text-sm font-semibold">Materials</h4>
 									<MaterialFormDialog
 										mode="add"
 										courseId={courseId}
@@ -473,17 +449,15 @@ function ModuleCard({
 									/>
 								</div>
 								{materials.length === 0 ? (
-									<p className="text-muted-foreground text-xs italic">
-										No materials yet.
-									</p>
+									<p className="text-muted-foreground text-xs italic">No materials yet.</p>
 								) : (
 									<div className="space-y-2">
 										{materials.map((material) => (
 											<div
 												key={material.uuid}
-												className="grid grid-cols-1 gap-2 rounded-none border border-white/5 bg-background/20 p-3 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3"
+												className="bg-background/20 grid grid-cols-1 gap-2 rounded-none border border-white/5 p-3 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3"
 											>
-												<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+												<div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-lg">
 													{material.type === "url" && material.faviconUrl ? (
 														<Image
 															src={material.faviconUrl}
@@ -498,15 +472,15 @@ function ModuleCard({
 													)}
 												</div>
 												<div className="min-w-0">
-													<p className="wrap-break-word font-medium text-foreground text-sm">
+													<p className="text-foreground text-sm font-medium wrap-break-word">
 														{material.name}
 													</p>
 													{material.description && (
-														<p className="wrap-break-word mt-0.5 whitespace-pre-wrap text-muted-foreground text-xs">
+														<p className="text-muted-foreground mt-0.5 text-xs wrap-break-word whitespace-pre-wrap">
 															{material.description}
 														</p>
 													)}
-													<p className="wrap-break-word mt-1 text-muted-foreground text-xs">
+													<p className="text-muted-foreground mt-1 text-xs wrap-break-word">
 														{material.type === "file"
 															? `${getFileTypeLabel(material.mimeType)}${material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}`
 															: new URL(material.url).hostname}
@@ -517,14 +491,10 @@ function ModuleCard({
 														<Button
 															variant="outline"
 															size="sm"
-															className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+															className="text-muted-foreground hover:border-primary/30 hover:text-primary shrink-0 gap-1.5 border-white/10"
 															asChild
 														>
-															<a
-																href={material.url}
-																target="_blank"
-																rel="noopener noreferrer"
-															>
+															<a href={material.url} target="_blank" rel="noopener noreferrer">
 																<ExternalLink className="size-3.5" />
 																Visit Site
 															</a>
@@ -533,14 +503,10 @@ function ModuleCard({
 														<Button
 															variant="outline"
 															size="sm"
-															className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+															className="text-muted-foreground hover:border-primary/30 hover:text-primary shrink-0 gap-1.5 border-white/10"
 															asChild
 														>
-															<a
-																href={material.fileUrl}
-																target="_blank"
-																rel="noopener noreferrer"
-															>
+															<a href={material.fileUrl} target="_blank" rel="noopener noreferrer">
 																<Download className="size-3.5" />
 																Download
 															</a>
@@ -552,11 +518,7 @@ function ModuleCard({
 														moduleId={module.uuid}
 														material={material}
 														trigger={
-															<Button
-																variant="ghost"
-																size="icon-sm"
-																disabled={!isDraft}
-															>
+															<Button variant="ghost" size="icon-sm" disabled={!isDraft}>
 																<Edit2 />
 															</Button>
 														}
@@ -566,11 +528,7 @@ function ModuleCard({
 														moduleId={module.uuid}
 														material={material}
 														trigger={
-															<Button
-																variant="ghost"
-																size="icon-sm"
-																disabled={!isDraft}
-															>
+															<Button variant="ghost" size="icon-sm" disabled={!isDraft}>
 																<Trash2 />
 															</Button>
 														}
@@ -584,9 +542,7 @@ function ModuleCard({
 
 							<div>
 								<div className="mb-3 flex items-center justify-between">
-									<h4 className="font-semibold text-foreground text-sm">
-										Quizzes
-									</h4>
+									<h4 className="text-foreground text-sm font-semibold">Quizzes</h4>
 									<QuizFormDialog
 										mode="create"
 										courseId={courseId}
@@ -600,18 +556,16 @@ function ModuleCard({
 									/>
 								</div>
 								{quizzes.length === 0 ? (
-									<p className="text-muted-foreground text-xs italic">
-										No quizzes yet.
-									</p>
+									<p className="text-muted-foreground text-xs italic">No quizzes yet.</p>
 								) : (
 									<div className="space-y-2">
 										{quizzes.map((quiz) => (
 											<div
 												key={quiz.uuid ?? quiz.title}
-												className="flex items-center justify-between gap-3 rounded-none border border-white/5 bg-background/20 p-3"
+												className="bg-background/20 flex items-center justify-between gap-3 rounded-none border border-white/5 p-3"
 											>
 												<div className="min-w-0">
-													<p className="truncate font-medium text-foreground text-sm">
+													<p className="text-foreground truncate text-sm font-medium">
 														{quiz.title}
 													</p>
 													<p className="text-muted-foreground text-xs">
@@ -637,11 +591,7 @@ function ModuleCard({
 														moduleId={module.uuid}
 														quiz={quiz}
 														trigger={
-															<Button
-																variant="ghost"
-																size="icon-sm"
-																disabled={!isDraft}
-															>
+															<Button variant="ghost" size="icon-sm" disabled={!isDraft}>
 																<Edit2 />
 															</Button>
 														}
@@ -651,11 +601,7 @@ function ModuleCard({
 														moduleId={module.uuid}
 														quiz={quiz}
 														trigger={
-															<Button
-																variant="ghost"
-																size="icon-sm"
-																disabled={!isDraft}
-															>
+															<Button variant="ghost" size="icon-sm" disabled={!isDraft}>
 																<Trash2 />
 															</Button>
 														}
@@ -677,7 +623,7 @@ function ModuleCard({
 function MaterialTypeIcon({ material }: { material: Material }) {
 	const Icon = getMaterialIcon(material);
 
-	return <Icon className="size-5 text-primary" />;
+	return <Icon className="text-primary size-5" />;
 }
 
 function ModuleFormDialog({
@@ -749,9 +695,7 @@ function ModuleFormDialog({
 			<DialogTrigger render={trigger} />
 			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
-					<DialogTitle>
-						{mode === "create" ? "Create Module" : "Edit Module"}
-					</DialogTitle>
+					<DialogTitle>{mode === "create" ? "Create Module" : "Edit Module"}</DialogTitle>
 					<DialogDescription>
 						{mode === "create"
 							? "Bundle materials and quizzes into a single module."
@@ -767,9 +711,7 @@ function ModuleFormDialog({
 					className="space-y-4"
 				>
 					<form.AppField name="title">
-						{(field) => (
-							<field.TextField label="Title" placeholder="Module title" />
-						)}
+						{(field) => <field.TextField label="Title" placeholder="Module title" />}
 					</form.AppField>
 					<form.AppField name="description">
 						{(field) => (
@@ -783,9 +725,7 @@ function ModuleFormDialog({
 					<DialogFooter>
 						<DialogClose render={<Button variant="outline">Cancel</Button>} />
 						<form.AppForm>
-							<form.SubscribeButton
-								label={mode === "create" ? "Create Module" : "Save Changes"}
-							/>
+							<form.SubscribeButton label={mode === "create" ? "Create Module" : "Save Changes"} />
 						</form.AppForm>
 					</DialogFooter>
 				</form>
@@ -816,9 +756,8 @@ function DeleteModuleDialog({
 				<DialogHeader>
 					<DialogTitle>Delete Module</DialogTitle>
 					<DialogDescription>
-						Are you sure you want to delete "
-						<span className="text-accent">{module.title}</span>"? This action
-						cannot be undone.
+						Are you sure you want to delete "<span className="text-accent">{module.title}</span>"?
+						This action cannot be undone.
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
@@ -833,7 +772,7 @@ function DeleteModuleDialog({
 						}
 					>
 						{deleteMutation.isPending ? (
-							<Loader2 className="animate-spin text-muted-foreground" />
+							<Loader2 className="text-muted-foreground animate-spin" />
 						) : (
 							"Delete"
 						)}

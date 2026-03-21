@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
 import z from "zod";
+
 import {
 	getCoursesLecturerOptions,
 	postCoursesMutation,
@@ -16,13 +17,7 @@ import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import EmptyState from "@/components/empty-state";
 import LoadingPlaceholder from "@/components/loading-placeholder";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogClose,
@@ -93,9 +88,7 @@ function CourseFormDialog({
 			<DialogTrigger render={trigger} />
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>
-						{mode === "add" ? "Add New Course" : "Edit Course"}
-					</DialogTitle>
+					<DialogTitle>{mode === "add" ? "Add New Course" : "Edit Course"}</DialogTitle>
 					<DialogDescription>
 						{mode === "add"
 							? "Create a new course for your students."
@@ -133,9 +126,7 @@ function CourseFormDialog({
 					<DialogFooter>
 						<DialogClose render={<Button variant="outline">Cancel</Button>} />
 						<form.AppForm>
-							<form.SubscribeButton
-								label={mode === "add" ? "Add Course" : "Save Changes"}
-							/>
+							<form.SubscribeButton label={mode === "add" ? "Add Course" : "Save Changes"} />
 						</form.AppForm>
 					</DialogFooter>
 				</form>
@@ -144,13 +135,7 @@ function CourseFormDialog({
 	);
 }
 
-function CourseCard({
-	course,
-	index,
-}: {
-	course: CourseSummary;
-	index: number;
-}) {
+function CourseCard({ course, index }: { course: CourseSummary; index: number }) {
 	return (
 		<motion.div
 			layout
@@ -161,17 +146,13 @@ function CourseCard({
 			className="h-full"
 		>
 			<Link href={`/dashboard/courses/${course.uuid}`} className="block h-full">
-				<Card className="group h-full border-white/5 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl">
+				<Card className="group bg-card/40 h-full border-white/5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl">
 					<CardHeader className="pb-2">
-						<CardTitle className="font-bold text-lg text-primary">
-							{course.name}
-						</CardTitle>
+						<CardTitle className="text-primary text-lg font-bold">{course.name}</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<CardDescription className="line-clamp-2 min-h-12 text-muted-foreground text-sm leading-relaxed">
-							{course.description || (
-								<span className="italic">No description available</span>
-							)}
+						<CardDescription className="text-muted-foreground line-clamp-2 min-h-12 text-sm leading-relaxed">
+							{course.description || <span className="italic">No description available</span>}
 						</CardDescription>
 					</CardContent>
 				</Card>
@@ -206,13 +187,13 @@ export default function DashboardClient() {
 					transition={{ duration: 0.5 }}
 					className="mb-12"
 				>
-					<h1 className="mb-2 font-bold text-3xl text-foreground sm:text-4xl">
+					<h1 className="text-foreground mb-2 text-3xl font-bold sm:text-4xl">
 						Welcome back,{" "}
-						<span className="bg-linear-to-r from-primary to-accent-4 bg-clip-text text-transparent">
+						<span className="from-primary to-accent-4 bg-linear-to-r bg-clip-text text-transparent">
 							{data.username}
 						</span>
 					</h1>
-					<p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
+					<p className="text-muted-foreground max-w-2xl text-base sm:text-lg">
 						Manage your courses and track student progress.
 					</p>
 				</motion.div>
@@ -223,9 +204,7 @@ export default function DashboardClient() {
 					transition={{ duration: 0.5, delay: 0.1 }}
 					className="mb-8 flex items-center justify-between"
 				>
-					<h2 className="font-semibold text-foreground text-xl">
-						Your Courses
-					</h2>
+					<h2 className="text-foreground text-xl font-semibold">Your Courses</h2>
 					<CourseFormDialog
 						mode="add"
 						trigger={
@@ -238,12 +217,12 @@ export default function DashboardClient() {
 				</motion.div>
 
 				{isPending ? (
-					<Loader2 className="mx-auto size-16 animate-spin text-primary" />
+					<Loader2 className="text-primary mx-auto size-16 animate-spin" />
 				) : isError ? (
 					<EmptyState
 						title="Unable to load courses"
 						description="Please try again in a moment."
-						icon={<Rocket className="size-7 text-primary" />}
+						icon={<Rocket className="text-primary size-7" />}
 						action={
 							<Button variant="outline" size="sm" onClick={() => refetch()}>
 								Retry
@@ -269,7 +248,7 @@ export default function DashboardClient() {
 							<EmptyState
 								title="No courses yet"
 								description="Create your first course to get started."
-								icon={<Plus className="size-7 text-primary" />}
+								icon={<Plus className="text-primary size-7" />}
 								action={
 									<CourseFormDialog
 										mode="add"

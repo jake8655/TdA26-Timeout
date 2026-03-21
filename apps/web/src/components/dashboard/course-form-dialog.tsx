@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import z from "zod";
+
 import {
 	postCoursesMutation,
 	putCoursesByCourseIdMutation,
@@ -78,9 +79,7 @@ export function CourseFormDialog({
 			<DialogTrigger render={trigger} />
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>
-						{mode === "add" ? "Add New Course" : "Edit Course"}
-					</DialogTitle>
+					<DialogTitle>{mode === "add" ? "Add New Course" : "Edit Course"}</DialogTitle>
 					<DialogDescription>
 						{mode === "add"
 							? "Create a new course for your students."
@@ -118,9 +117,7 @@ export function CourseFormDialog({
 					<DialogFooter>
 						<DialogClose render={<Button variant="outline">Cancel</Button>} />
 						<form.AppForm>
-							<form.SubscribeButton
-								label={mode === "add" ? "Add Course" : "Save Changes"}
-							/>
+							<form.SubscribeButton label={mode === "add" ? "Add Course" : "Save Changes"} />
 						</form.AppForm>
 					</DialogFooter>
 				</form>

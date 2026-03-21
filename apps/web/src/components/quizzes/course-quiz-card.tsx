@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { HelpCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
+
 import { postCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdSubmitMutation } from "@/api-client/@tanstack/react-query.gen";
 import type {
 	Quiz,
@@ -12,12 +13,8 @@ import type {
 	QuizSubmitResponse,
 } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
 import { QuizPlayer } from "./quiz-player";
 
 export function CourseQuizCard({
@@ -45,9 +42,7 @@ export function CourseQuizCard({
 		postCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdSubmitMutation(),
 	);
 
-	const handleSubmitAnswers = async (
-		answers: QuizAnswer[],
-	): Promise<QuizSubmitResponse> => {
+	const handleSubmitAnswers = async (answers: QuizAnswer[]): Promise<QuizSubmitResponse> => {
 		if (!quiz.uuid) {
 			throw new Error("Quiz UUID is required");
 		}
@@ -69,15 +64,15 @@ export function CourseQuizCard({
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.4 }}
-			className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-primary/30"
+			className="group bg-card/40 hover:border-primary/30 flex items-start gap-4 rounded-none border border-white/5 p-4 backdrop-blur-sm transition-colors duration-300"
 		>
-			<div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-				<HelpCircle className="size-6 text-primary" />
+			<div className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-lg">
+				<HelpCircle className="text-primary size-6" />
 			</div>
 
 			<div className="flex-1 overflow-hidden">
-				<h3 className="font-semibold text-foreground text-sm">{quiz.title}</h3>
-				<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
+				<h3 className="text-foreground text-sm font-semibold">{quiz.title}</h3>
+				<div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
 					<span>
 						{quiz.questions.length} question
 						{quiz.questions.length !== 1 ? "s" : ""}
@@ -100,7 +95,7 @@ export function CourseQuizCard({
 						<Button
 							variant="outline"
 							size="sm"
-							className="shrink-0 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+							className="text-muted-foreground hover:border-primary/30 hover:text-primary shrink-0 border-white/10"
 						>
 							{existingResult ? "View Results" : "Start Quiz"}
 						</Button>
@@ -115,12 +110,8 @@ export function CourseQuizCard({
 						quizUuid={quiz.uuid ?? ""}
 						courseId={courseId}
 						moduleId={moduleId}
-						initialSubmittedResult={
-							existingResult ? JSON.parse(existingResult) : null
-						}
-						initialAnswers={
-							existingAnswers ? JSON.parse(existingAnswers) : null
-						}
+						initialSubmittedResult={existingResult ? JSON.parse(existingResult) : null}
+						initialAnswers={existingAnswers ? JSON.parse(existingAnswers) : null}
 						onCancel={() => setIsPlaying(false)}
 						onSubmitComplete={(result: QuizSubmitResponse) => {
 							onSaveResult(result);

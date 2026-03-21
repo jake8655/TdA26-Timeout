@@ -3,18 +3,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
+
 import {
 	getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdOptions,
 	getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdStatsOptions,
 } from "@/api-client/@tanstack/react-query.gen";
 import EmptyState from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
 import { QuizStatsQuestion } from "./quiz-stats-question";
 
 export function QuizStatsDialog({
@@ -58,7 +55,7 @@ export function QuizStatsDialog({
 				<DialogTrigger render={trigger} />
 				<DialogContent showCloseButton={false} className="sm:max-w-2xl">
 					<div className="flex justify-center py-12">
-						<Loader2 className="size-8 animate-spin text-primary" />
+						<Loader2 className="text-primary size-8 animate-spin" />
 					</div>
 				</DialogContent>
 			</Dialog>
@@ -108,15 +105,13 @@ export function QuizStatsDialog({
 
 				<div className="mb-4 flex items-start justify-between gap-4">
 					<div className="flex-1">
-						<div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">
+						<div className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
 							<BarChart3 className="size-3.5" />
 							<span>Quiz Statistics</span>
 						</div>
-						<h2 className="font-semibold text-foreground text-lg">
-							{quizTitle}
-						</h2>
+						<h2 className="text-foreground text-lg font-semibold">{quizTitle}</h2>
 						{statsData && (
-							<p className="mt-1 text-muted-foreground text-sm">
+							<p className="text-muted-foreground mt-1 text-sm">
 								{statsData.totalSubmissions} submission
 								{statsData.totalSubmissions !== 1 ? "s" : ""}
 							</p>
@@ -145,6 +140,7 @@ export function QuizStatsDialog({
 
 								return (
 									<QuizStatsQuestion
+										// oxlint-disable-next-line react/no-array-index-key
 										key={question.uuid ?? index}
 										question={question}
 										questionIndex={index}

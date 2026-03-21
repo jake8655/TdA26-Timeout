@@ -2,6 +2,7 @@
 
 import { CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "motion/react";
+
 import type {
 	MultipleChoiceQuestion,
 	Question,
@@ -75,9 +76,7 @@ export function QuizQuestion({
 			}
 		}
 
-		return checked
-			? "border-primary/40 bg-primary/10"
-			: "border-white/10 hover:border-white/20";
+		return checked ? "border-primary/40 bg-primary/10" : "border-white/10 hover:border-white/20";
 	};
 
 	const questionText = "question" in question ? question.question : "";
@@ -89,20 +88,16 @@ export function QuizQuestion({
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -20 }}
 			transition={{ duration: 0.3 }}
-			className="border border-white/5 bg-card/40 p-6 backdrop-blur-sm"
+			className="bg-card/40 border border-white/5 p-6 backdrop-blur-sm"
 		>
 			<div className="mb-4 flex items-start justify-between gap-4">
 				<div className="flex-1">
-					<div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">
+					<div className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
 						<span className="font-medium">Question {questionIndex + 1}</span>
 						<span>•</span>
-						<span>
-							{isMultipleChoice ? "Multiple choice" : "Single choice"}
-						</span>
+						<span>{isMultipleChoice ? "Multiple choice" : "Single choice"}</span>
 					</div>
-					<p className="max-w-2xl text-foreground text-sm leading-relaxed">
-						{questionText}
-					</p>
+					<p className="text-foreground max-w-2xl text-sm leading-relaxed">{questionText}</p>
 				</div>
 			</div>
 
@@ -134,32 +129,24 @@ export function QuizQuestion({
 								className="flex w-full items-center gap-3"
 							>
 								{isSingleChoice ? (
-									<RadioGroupItem
-										id={inputId}
-										value={index.toString()}
-										disabled={isReadOnly}
-									/>
+									<RadioGroupItem id={inputId} value={index.toString()} disabled={isReadOnly} />
 								) : (
 									<Checkbox
 										id={inputId}
 										checked={checked}
-										onCheckedChange={(checked) =>
-											handleMultipleChoiceChange(index, checked)
-										}
+										onCheckedChange={(checked) => handleMultipleChoiceChange(index, checked)}
 										disabled={isReadOnly}
 									/>
 								)}
-								<span className="text-foreground text-sm leading-relaxed">
-									{option}
-								</span>
+								<span className="text-foreground text-sm leading-relaxed">{option}</span>
 								{isReadOnly && correct === true && (
-									<span className="ml-auto inline-flex items-center gap-1 text-green-400 text-xs">
+									<span className="ml-auto inline-flex items-center gap-1 text-xs text-green-400">
 										<CheckCircle2 className="size-3.5" />
 										Correct
 									</span>
 								)}
 								{isReadOnly && correct === false && checked && (
-									<span className="ml-auto inline-flex items-center gap-1 text-red-400 text-xs">
+									<span className="ml-auto inline-flex items-center gap-1 text-xs text-red-400">
 										<XCircle className="size-3.5" />
 										Incorrect
 									</span>

@@ -3,13 +3,10 @@
 import { Download, ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
+
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
-import {
-	formatFileSize,
-	getFileTypeLabel,
-	getMaterialIcon,
-} from "@/lib/material-utils";
+import { formatFileSize, getFileTypeLabel, getMaterialIcon } from "@/lib/material-utils";
 
 type Material = FileMaterial | UrlMaterial;
 
@@ -27,9 +24,9 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.4, delay: index * 0.05 }}
-				className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-primary/30"
+				className="group bg-card/40 hover:border-primary/30 flex items-start gap-4 rounded-none border border-white/5 p-4 backdrop-blur-sm transition-colors duration-300"
 			>
-				<div className="relative flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+				<div className="bg-primary/10 relative flex size-12 shrink-0 items-center justify-center rounded-lg">
 					{material.faviconUrl ? (
 						<Image
 							src={material.faviconUrl}
@@ -40,20 +37,18 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 							unoptimized
 						/>
 					) : (
-						<Icon className="size-6 text-primary" />
+						<Icon className="text-primary size-6" />
 					)}
 				</div>
 
 				<div className="flex-1 overflow-hidden">
-					<h3 className="font-semibold text-foreground text-sm">
-						{material.name}
-					</h3>
+					<h3 className="text-foreground text-sm font-semibold">{material.name}</h3>
 					{material.description && (
-						<p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
+						<p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
 							{material.description}
 						</p>
 					)}
-					<div className="mt-2 flex items-center gap-2 text-muted-foreground text-xs">
+					<div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
 						<ExternalLink className="size-3" />
 						<span className="truncate">{new URL(material.url).hostname}</span>
 					</div>
@@ -62,7 +57,7 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 				<Button
 					variant="outline"
 					size="sm"
-					className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+					className="text-muted-foreground hover:border-primary/30 hover:text-primary shrink-0 gap-1.5 border-white/10"
 					asChild
 				>
 					<a href={material.url} target="_blank" rel="noopener noreferrer">
@@ -79,22 +74,20 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.4, delay: index * 0.05 }}
-			className="group flex items-start gap-4 rounded-none border border-white/5 bg-card/40 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-primary/30"
+			className="group bg-card/40 hover:border-primary/30 flex items-start gap-4 rounded-none border border-white/5 p-4 backdrop-blur-sm transition-colors duration-300"
 		>
-			<div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-6 text-primary" />
+			<div className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-lg">
+				<Icon className="text-primary size-6" />
 			</div>
 
 			<div className="min-w-0 flex-1">
-				<h3 className="line-clamp-2 font-semibold text-foreground text-sm">
-					{material.name}
-				</h3>
+				<h3 className="text-foreground line-clamp-2 text-sm font-semibold">{material.name}</h3>
 				{material.description && (
-					<p className="wrap-break-word mt-1 whitespace-pre-wrap text-muted-foreground text-xs">
+					<p className="text-muted-foreground mt-1 text-xs wrap-break-word whitespace-pre-wrap">
 						{material.description}
 					</p>
 				)}
-				<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
+				<div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
 					<span>{getFileTypeLabel(material.mimeType)}</span>
 					{material.sizeBytes && (
 						<>
@@ -108,7 +101,7 @@ export function MaterialCard({ material, index }: MaterialCardProps) {
 			<Button
 				variant="outline"
 				size="sm"
-				className="shrink-0 gap-1.5 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
+				className="text-muted-foreground hover:border-primary/30 hover:text-primary shrink-0 gap-1.5 border-white/10"
 				asChild
 			>
 				<a href={material.fileUrl} target="_blank" rel="noopener noreferrer">

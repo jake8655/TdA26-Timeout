@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
+
 import type { CourseDetail } from "@/api-client/types.gen";
 import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
@@ -67,22 +68,13 @@ export function CourseActions({
 		course.status ?? CourseStatus.DRAFT,
 		CourseAction.SCHEDULE,
 	);
-	const canStart = courseStatusActions(
-		course.status ?? CourseStatus.DRAFT,
-		CourseAction.START,
-	);
-	const canPause = courseStatusActions(
-		course.status ?? CourseStatus.DRAFT,
-		CourseAction.PAUSE,
-	);
+	const canStart = courseStatusActions(course.status ?? CourseStatus.DRAFT, CourseAction.START);
+	const canPause = courseStatusActions(course.status ?? CourseStatus.DRAFT, CourseAction.PAUSE);
 	const canMoveToDraft = courseStatusActions(
 		course.status ?? CourseStatus.DRAFT,
 		CourseAction.MOVE_TO_DRAFT,
 	);
-	const canArchive = courseStatusActions(
-		course.status ?? CourseStatus.DRAFT,
-		CourseAction.ARCHIVE,
-	);
+	const canArchive = courseStatusActions(course.status ?? CourseStatus.DRAFT, CourseAction.ARCHIVE);
 
 	return (
 		<div className="space-y-4">
@@ -101,9 +93,7 @@ export function CourseActions({
 							size="sm"
 							className="gap-2"
 							disabled={
-								course.status !== CourseStatus.DRAFT ||
-								isDuplicatePending ||
-								isDeletePending
+								course.status !== CourseStatus.DRAFT || isDuplicatePending || isDeletePending
 							}
 						>
 							<Edit2 className="size-4" />
@@ -128,9 +118,7 @@ export function CourseActions({
 					<DialogContent className="sm:max-w-md">
 						<DialogHeader>
 							<DialogTitle>Duplicate course</DialogTitle>
-							<DialogDescription>
-								Create a new draft course based on this one.
-							</DialogDescription>
+							<DialogDescription>Create a new draft course based on this one.</DialogDescription>
 						</DialogHeader>
 						<div className="space-y-3">
 							<Input
@@ -143,10 +131,7 @@ export function CourseActions({
 						<DialogFooter>
 							<DialogClose
 								render={
-									<Button
-										variant="outline"
-										disabled={isDuplicatePending || isDeletePending}
-									>
+									<Button variant="outline" disabled={isDuplicatePending || isDeletePending}>
 										Cancel
 									</Button>
 								}
@@ -154,9 +139,7 @@ export function CourseActions({
 							<Button
 								variant="accent"
 								onClick={() => onDuplicate(duplicateName)}
-								disabled={
-									!duplicateName || isDuplicatePending || isDeletePending
-								}
+								disabled={!duplicateName || isDuplicatePending || isDeletePending}
 							>
 								{isDuplicatePending ? (
 									<>
@@ -187,9 +170,7 @@ export function CourseActions({
 					<DialogContent className="sm:max-w-md">
 						<DialogHeader>
 							<DialogTitle>Delete course</DialogTitle>
-							<DialogDescription>
-								This deletes the course and kicks all students.
-							</DialogDescription>
+							<DialogDescription>This deletes the course and kicks all students.</DialogDescription>
 						</DialogHeader>
 						<div className="space-y-2">
 							<p className="text-muted-foreground text-sm">
@@ -205,10 +186,7 @@ export function CourseActions({
 						<DialogFooter>
 							<DialogClose
 								render={
-									<Button
-										variant="outline"
-										disabled={isDeletePending || isDuplicatePending}
-									>
+									<Button variant="outline" disabled={isDeletePending || isDuplicatePending}>
 										Cancel
 									</Button>
 								}
@@ -216,11 +194,7 @@ export function CourseActions({
 							<Button
 								variant="destructive"
 								onClick={() => onDelete()}
-								disabled={
-									deleteConfirm !== course.name ||
-									isDeletePending ||
-									isDuplicatePending
-								}
+								disabled={deleteConfirm !== course.name || isDeletePending || isDuplicatePending}
 							>
 								{isDeletePending ? (
 									<>
@@ -240,11 +214,9 @@ export function CourseActions({
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.4 }}
-					className="space-y-3 rounded-none border border-white/5 bg-card/50 p-4"
+					className="bg-card/50 space-y-3 rounded-none border border-white/5 p-4"
 				>
-					<p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
-						Course Actions
-					</p>
+					<p className="text-muted-foreground text-xs tracking-[0.2em] uppercase">Course Actions</p>
 					<div className="grid gap-2 sm:grid-cols-3">
 						{canSchedule && (
 							<CourseScheduleDialog
@@ -268,21 +240,13 @@ export function CourseActions({
 							/>
 						)}
 						{canStart && (
-							<Button
-								variant="accent"
-								className="justify-start gap-2"
-								onClick={() => onStart()}
-							>
+							<Button variant="accent" className="justify-start gap-2" onClick={() => onStart()}>
 								<Play className="size-4" />
 								Go Live Now
 							</Button>
 						)}
 						{canPause && (
-							<Button
-								variant="outline"
-								className="justify-start gap-2"
-								onClick={() => onPause()}
-							>
+							<Button variant="outline" className="justify-start gap-2" onClick={() => onPause()}>
 								<PauseCircle className="size-4" />
 								Pause Course
 							</Button>
@@ -298,11 +262,7 @@ export function CourseActions({
 							</Button>
 						)}
 						{canArchive && (
-							<Button
-								variant="outline"
-								className="justify-start gap-2"
-								onClick={() => onArchive()}
-							>
+							<Button variant="outline" className="justify-start gap-2" onClick={() => onArchive()}>
 								<Archive className="size-4" />
 								Archive Course
 							</Button>

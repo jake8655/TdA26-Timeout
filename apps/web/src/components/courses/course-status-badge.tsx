@@ -1,12 +1,7 @@
 "use client";
 
-import {
-	Archive,
-	CalendarClock,
-	FileText,
-	PauseCircle,
-	Radio,
-} from "lucide-react";
+import { Archive, CalendarClock, FileText, PauseCircle, Radio } from "lucide-react";
+
 import type { CourseStatus } from "@/api-client/types.gen";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +50,7 @@ export function CourseStatusBadge({
 	return (
 		<span
 			className={cn(
-				"inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-semibold text-[11px] uppercase tracking-wide",
+				"inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide uppercase",
 				meta.className,
 				className,
 			)}

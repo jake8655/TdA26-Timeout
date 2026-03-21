@@ -1,12 +1,13 @@
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
 import AboutLink from "@/components/about-link";
 import { Separator } from "@/components/ui/separator";
 
 export default function Footer() {
 	return (
-		<footer className="relative border-white/5 border-t bg-black/40 pt-16 pb-8 backdrop-blur-xl">
+		<footer className="relative border-t border-white/5 bg-black/40 pt-16 pb-8 backdrop-blur-xl">
 			<div className="mx-auto max-w-7xl px-6">
 				<div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
 					<div className="lg:col-span-2">
@@ -18,38 +19,30 @@ export default function Footer() {
 								height={44}
 								className="h-10 w-auto transition-transform duration-300 group-hover:rotate-12"
 							/>
-							<span className="font-bold text-xl tracking-tight">
+							<span className="text-xl font-bold tracking-tight">
 								Think <span className="text-primary">different</span> Academy
 							</span>
 						</Link>
-						<p className="max-w-md text-muted-foreground leading-relaxed">
-							A non-profit organization dedicated to revolutionizing education
-							through critical and creative thinking. We believe in making
-							learning accessible, engaging, and free for everyone.
+						<p className="text-muted-foreground max-w-md leading-relaxed">
+							A non-profit organization dedicated to revolutionizing education through critical and
+							creative thinking. We believe in making learning accessible, engaging, and free for
+							everyone.
 						</p>
 					</div>
 
 					<div>
-						<h4 className="mb-6 font-bold text-foreground">Quick Links</h4>
-						<ul className="space-y-4 text-muted-foreground text-sm">
+						<h4 className="text-foreground mb-6 font-bold">Quick Links</h4>
+						<ul className="text-muted-foreground space-y-4 text-sm">
 							<li>
-								<Link
-									href="/courses"
-									className="transition-colors hover:text-primary"
-								>
+								<Link href="/courses" className="hover:text-primary transition-colors">
 									Explore Courses
 								</Link>
 							</li>
 							<li>
-								<AboutLink className="transition-colors hover:text-primary">
-									About Us
-								</AboutLink>
+								<AboutLink className="hover:text-primary transition-colors">About Us</AboutLink>
 							</li>
 							<li>
-								<Link
-									href="/login"
-									className="transition-colors hover:text-primary"
-								>
+								<Link href="/login" className="hover:text-primary transition-colors">
 									Lecturer Login
 								</Link>
 							</li>
@@ -57,21 +50,15 @@ export default function Footer() {
 					</div>
 
 					<div>
-						<h4 className="mb-6 font-bold text-foreground">Legal</h4>
-						<ul className="space-y-4 text-muted-foreground text-sm">
+						<h4 className="text-foreground mb-6 font-bold">Legal</h4>
+						<ul className="text-muted-foreground space-y-4 text-sm">
 							<li>
-								<Link
-									href="/privacy"
-									className="transition-colors hover:text-primary"
-								>
+								<Link href="/privacy" className="hover:text-primary transition-colors">
 									Privacy Policy
 								</Link>
 							</li>
 							<li>
-								<Link
-									href="/terms"
-									className="transition-colors hover:text-primary"
-								>
+								<Link href="/terms" className="hover:text-primary transition-colors">
 									Terms of Use
 								</Link>
 							</li>
@@ -82,17 +69,14 @@ export default function Footer() {
 					</div>
 
 					<div>
-						<h4 className="mb-6 font-bold text-foreground">Get in Touch</h4>
-						<div className="space-y-4 text-muted-foreground text-sm">
+						<h4 className="text-foreground mb-6 font-bold">Get in Touch</h4>
+						<div className="text-muted-foreground space-y-4 text-sm">
 							<p>
 								Have questions or want to collaborate?
 								<br />
 								We'd love to hear from you.
 							</p>
-							<a
-								href="mailto:contact@tda.com"
-								className="inline-block text-accent hover:underline"
-							>
+							<a href="mailto:contact@tda.com" className="text-accent inline-block hover:underline">
 								contact@tda.com
 							</a>
 						</div>
@@ -103,10 +87,9 @@ export default function Footer() {
 
 				<div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
 					<p className="text-muted-foreground text-sm">
-						© {new Date().getFullYear()} Think different Academy. All rights
-						reserved.
+						© {new Date().getFullYear()} Think different Academy. All rights reserved.
 					</p>
-					<div className="flex items-center gap-1.5 rounded-full border border-white/5 bg-white/5 px-4 py-1.5 text-muted-foreground text-sm">
+					<div className="text-muted-foreground flex items-center gap-1.5 rounded-full border border-white/5 bg-white/5 px-4 py-1.5 text-sm">
 						<span>Made with</span>
 						<Heart className="size-3.5 fill-current text-red-500" />
 						<span>for education</span>

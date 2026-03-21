@@ -28,7 +28,7 @@ function FloatingIcon({
 			}}
 			className={className}
 		>
-			<div className="rounded-xl border border-white/10 bg-card/80 p-3 shadow-xl backdrop-blur-md">
+			<div className="bg-card/80 rounded-xl border border-white/10 p-3 shadow-xl backdrop-blur-md">
 				<Image src={src} alt={alt} width={32} height={32} />
 			</div>
 		</motion.div>
@@ -46,30 +46,28 @@ export default function About() {
 						viewport={{ once: true }}
 						transition={{ duration: 0.6 }}
 					>
-						<h2 className="mb-6 font-bold text-3xl sm:text-4xl">
+						<h2 className="mb-6 text-3xl font-bold sm:text-4xl">
 							Our <span className="text-accent">Mission</span>
 						</h2>
-						<div className="space-y-6 text-base text-muted-foreground sm:text-lg">
+						<div className="text-muted-foreground space-y-6 text-base sm:text-lg">
 							<p>
 								Think different Academy is a{" "}
-								<span className="font-semibold text-foreground">
-									non-profit organization
-								</span>{" "}
-								with a focus on developing critical and creative thinking among
-								students and the general public.
+								<span className="text-foreground font-semibold">non-profit organization</span> with
+								a focus on developing critical and creative thinking among students and the general
+								public.
 							</p>
 							<p>
-								We believe that education should be engaging, interactive, and
-								accessible to everyone, anywhere in the world.
+								We believe that education should be engaging, interactive, and accessible to
+								everyone, anywhere in the world.
 							</p>
 							<p>
-								Our goal is to make online teaching easier and more enjoyable
-								for lecturers by providing them with tools that help them share
-								their knowledge and expertise with greater impact.
+								Our goal is to make online teaching easier and more enjoyable for lecturers by
+								providing them with tools that help them share their knowledge and expertise with
+								greater impact.
 							</p>
 						</div>
 
-						<div className="mt-12 grid grid-cols-3 gap-8 border-white/5 border-t pt-8">
+						<div className="mt-12 grid grid-cols-3 gap-8 border-t border-white/5 pt-8">
 							{[
 								{
 									value: "100%",
@@ -95,10 +93,8 @@ export default function About() {
 									transition={{ delay: 0.2 + i * 0.1 }}
 									className="text-center"
 								>
-									<div className={`mb-1 font-bold text-3xl ${stat.color}`}>
-										{stat.value}
-									</div>
-									<div className="font-medium text-muted-foreground text-sm uppercase tracking-wider">
+									<div className={`mb-1 text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+									<div className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
 										{stat.label}
 									</div>
 								</motion.div>
@@ -114,9 +110,9 @@ export default function About() {
 						className="relative flex justify-center"
 					>
 						<div className="relative">
-							<div className="absolute inset-0 rounded-full bg-linear-to-br from-primary/20 to-accent/20 blur-[100px]" />
+							<div className="from-primary/20 to-accent/20 absolute inset-0 rounded-full bg-linear-to-br blur-[100px]" />
 
-							<div className="relative z-10 rounded-3xl border border-white/10 bg-card/30 p-8 backdrop-blur-sm md:p-16">
+							<div className="bg-card/30 relative z-10 rounded-3xl border border-white/10 p-8 backdrop-blur-sm md:p-16">
 								<Image
 									src="/logo/logo-official-dark.svg"
 									alt="Think different Academy"

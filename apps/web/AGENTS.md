@@ -1,9 +1,9 @@
 # MUST
+
 - Use bun and bunx instead of npm and npx
 - Use the package.json scripts to format/fix/lint/build/typecheck...
-  - bun check to check formatting
-  - bun check:write to fix formatting
-  - bun check:unsafe to fix formatting with unsafe rules
+  - bun fmt to fix formatting
+  - bun lint to fix lint issues
   - bun types to typecheck
 - DO NOT manually format code/sort imports/remove unused imports, use the scripts above
 - DO NOT run the dev server or any interactive commands, I will handle that
@@ -14,6 +14,7 @@
 - DO NOT MANUALLY MEMOIZE, rely on React Compiler
 
 ## UI
+
 - Use Tailwind CSS for styling
 - Dark mode only (no light mode needed)
 - Prefer using components from src/components/ui or add new ones using the shadcn cli over creating custom components

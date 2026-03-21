@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { z } from "zod";
+
 import BackgroundGrid from "@/components/background-grid";
 import { env } from "@/env";
 import { useAppForm } from "@/hooks/form";
@@ -71,7 +72,7 @@ export default function LoginClient() {
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.5 }}
-					className="overflow-hidden border border-white/10 bg-card/60 p-8 backdrop-blur-md"
+					className="bg-card/60 overflow-hidden border border-white/10 p-8 backdrop-blur-md"
 				>
 					<motion.div
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -89,7 +90,7 @@ export default function LoginClient() {
 									repeat: Number.POSITIVE_INFINITY,
 									repeatType: "reverse",
 								}}
-								className="absolute -inset-6 rounded-full bg-primary/10 blur-xl"
+								className="bg-primary/10 absolute -inset-6 rounded-full blur-xl"
 							/>
 							<Image
 								src="/logo/logo.svg"
@@ -107,9 +108,7 @@ export default function LoginClient() {
 						transition={{ duration: 0.5, delay: 0.2 }}
 						className="mb-8 text-center"
 					>
-						<h1 className="mb-2 font-bold text-2xl text-foreground">
-							Welcome back
-						</h1>
+						<h1 className="text-foreground mb-2 text-2xl font-bold">Welcome back</h1>
 						<p className="text-muted-foreground text-sm">
 							Log in to access your lecturer dashboard
 						</p>
@@ -132,7 +131,7 @@ export default function LoginClient() {
 									label="Username"
 									placeholder="Enter your username"
 									autoComplete="username"
-									className="h-11 focus-visible:border-primary focus-visible:ring-primary/20"
+									className="focus-visible:border-primary focus-visible:ring-primary/20 h-11"
 								/>
 							)}
 						</form.AppField>
@@ -144,16 +143,13 @@ export default function LoginClient() {
 									type="password"
 									placeholder="Enter your password"
 									autoComplete="current-password"
-									className="h-11 focus-visible:border-primary focus-visible:ring-primary/20"
+									className="focus-visible:border-primary focus-visible:ring-primary/20 h-11"
 								/>
 							)}
 						</form.AppField>
 
 						<form.AppForm>
-							<form.SubscribeButton
-								label="Login"
-								className="w-full font-semibold"
-							/>
+							<form.SubscribeButton label="Login" className="w-full font-semibold" />
 						</form.AppForm>
 					</motion.form>
 
@@ -161,7 +157,7 @@ export default function LoginClient() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ duration: 0.5, delay: 0.5 }}
-						className="mt-6 text-center text-muted-foreground text-xs"
+						className="text-muted-foreground mt-6 text-center text-xs"
 					>
 						Contact an administrator if you need access
 					</motion.p>

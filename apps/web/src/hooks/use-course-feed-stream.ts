@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+
 import { client } from "@/api-client/client.gen";
 import type { FeedItem } from "@/api-client/types.gen";
 
@@ -27,10 +28,8 @@ export function useCourseFeedStream(
 	const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
 	const [isConnected, setIsConnected] = useState(false);
 	const [kickPayload, setKickPayload] = useState<KickPayload | null>(null);
-	const [moduleRevealPayload, setModuleRevealPayload] =
-		useState<ModuleRevealPayload | null>(null);
-	const [moduleHiddenPayload, setModuleHiddenPayload] =
-		useState<ModuleHiddenPayload | null>(null);
+	const [moduleRevealPayload, setModuleRevealPayload] = useState<ModuleRevealPayload | null>(null);
+	const [moduleHiddenPayload, setModuleHiddenPayload] = useState<ModuleHiddenPayload | null>(null);
 	const eventSourceRef = useRef<EventSource | null>(null);
 
 	useEffect(() => {
@@ -66,21 +65,16 @@ export function useCourseFeedStream(
 					return;
 				}
 				setFeedItems((prev) => {
-					const existingIndex = prev.findIndex(
-						(item) => item.uuid === data.uuid,
-					);
+					const existingIndex = prev.findIndex((item) => item.uuid === data.uuid);
 					if (existingIndex >= 0) {
 						const updated = [...prev];
 						updated[existingIndex] = data;
 						return updated.sort(
-							(a, b) =>
-								new Date(b.createdAt).getTime() -
-								new Date(a.createdAt).getTime(),
+							(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 						);
 					}
 					return [data, ...prev].sort(
-						(a, b) =>
-							new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+						(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 					);
 				});
 			} catch (error) {

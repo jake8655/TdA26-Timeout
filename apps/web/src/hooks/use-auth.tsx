@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createContext, use } from "react";
 import z from "zod";
+
 import { env } from "@/env";
 
 export const authSchema = z.object({
@@ -56,9 +57,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const authData = useAuthQuery();
 
-	return (
-		<AuthContext.Provider value={authData}>{children}</AuthContext.Provider>
-	);
+	return <AuthContext.Provider value={authData}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

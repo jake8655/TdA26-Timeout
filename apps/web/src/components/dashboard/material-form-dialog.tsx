@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { File, Link as LinkIcon } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
+
 import {
 	postCoursesByCourseIdModulesByModuleIdMaterialsMutation,
 	putCoursesByCourseIdModulesByModuleIdMaterialsByMaterialIdMutation,
@@ -118,8 +119,7 @@ export function MaterialFormDialog({
 	const fileForm = useAppForm({
 		defaultValues: {
 			name: material?.type === "file" ? material.name : "",
-			description:
-				material?.type === "file" ? (material.description ?? "") : "",
+			description: material?.type === "file" ? (material.description ?? "") : "",
 			file: null as File | null,
 		},
 		validators: {
@@ -176,13 +176,9 @@ export function MaterialFormDialog({
 			<DialogTrigger render={trigger} />
 			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
-					<DialogTitle>
-						{mode === "add" ? "Add New Material" : "Edit Material"}
-					</DialogTitle>
+					<DialogTitle>{mode === "add" ? "Add New Material" : "Edit Material"}</DialogTitle>
 					<DialogDescription>
-						{mode === "add"
-							? "Add a file or link to your course."
-							: "Update the material details."}
+						{mode === "add" ? "Add a file or link to your course." : "Update the material details."}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -194,7 +190,7 @@ export function MaterialFormDialog({
 							className={`flex flex-1 items-center justify-center gap-2 rounded-none border p-3 text-sm transition-all ${
 								materialType === "file"
 									? "border-primary bg-primary/10 text-primary"
-									: "border-white/10 text-muted-foreground hover:border-white/20"
+									: "text-muted-foreground border-white/10 hover:border-white/20"
 							}`}
 						>
 							<File className="size-4" />
@@ -206,7 +202,7 @@ export function MaterialFormDialog({
 							className={`flex flex-1 items-center justify-center gap-2 rounded-none border p-3 text-sm transition-all ${
 								materialType === "url"
 									? "border-primary bg-primary/10 text-primary"
-									: "border-white/10 text-muted-foreground hover:border-white/20"
+									: "text-muted-foreground border-white/10 hover:border-white/20"
 							}`}
 						>
 							<LinkIcon className="size-4" />
@@ -226,11 +222,7 @@ export function MaterialFormDialog({
 					>
 						<urlForm.AppField name="name">
 							{(field) => (
-								<field.TextField
-									label="Name"
-									placeholder="Enter material name"
-									className="h-10"
-								/>
+								<field.TextField label="Name" placeholder="Enter material name" className="h-10" />
 							)}
 						</urlForm.AppField>
 
@@ -257,9 +249,7 @@ export function MaterialFormDialog({
 						<DialogFooter>
 							<DialogClose render={<Button variant="outline">Cancel</Button>} />
 							<urlForm.AppForm>
-								<urlForm.SubscribeButton
-									label={mode === "add" ? "Add Material" : "Save Changes"}
-								/>
+								<urlForm.SubscribeButton label={mode === "add" ? "Add Material" : "Save Changes"} />
 							</urlForm.AppForm>
 						</DialogFooter>
 					</form>
@@ -274,11 +264,7 @@ export function MaterialFormDialog({
 					>
 						<fileForm.AppField name="name">
 							{(field) => (
-								<field.TextField
-									label="Name"
-									placeholder="Enter material name"
-									className="h-10"
-								/>
+								<field.TextField label="Name" placeholder="Enter material name" className="h-10" />
 							)}
 						</fileForm.AppField>
 

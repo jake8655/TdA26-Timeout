@@ -44,7 +44,8 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           bun openapi:generate
-          bun check
+          bun fmt:check
+          bun lint:check
           bun types
         working-directory: apps/web
 

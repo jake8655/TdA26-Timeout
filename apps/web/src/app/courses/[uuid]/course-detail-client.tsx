@@ -15,16 +15,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+
 import {
 	getCoursesByCourseIdOptions,
 	postCoursesByCourseIdMaterialsByMaterialIdInteractionsMutation,
 	postCoursesByCourseIdSessionMutation,
 } from "@/api-client/@tanstack/react-query.gen";
-import {
-	CourseStatus,
-	type Material,
-	type Module,
-} from "@/api-client/types.gen";
+import { CourseStatus, type Material, type Module } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseFeed } from "@/components/courses/course-feed";
@@ -32,11 +29,7 @@ import { CourseKickDialog } from "@/components/courses/course-kick-dialog";
 import EmptyState from "@/components/empty-state";
 import { CourseQuizCard } from "@/components/quizzes/course-quiz-card";
 import { formatCourseTime } from "@/lib/course-date-utils";
-import {
-	formatFileSize,
-	getFileTypeLabel,
-	getMaterialIcon,
-} from "@/lib/material-utils";
+import { formatFileSize, getFileTypeLabel, getMaterialIcon } from "@/lib/material-utils";
 
 function isNotFoundError(error: unknown) {
 	if (!error || typeof error !== "object") {
@@ -84,29 +77,19 @@ export default function CourseDetailClient() {
 	};
 
 	useEffect(() => {
-		if (
-			!data ||
-			data.status !== CourseStatus.LIVE ||
-			hasAutoJoinedRef.current
-		) {
+		if (!data || data.status !== CourseStatus.LIVE || hasAutoJoinedRef.current) {
 			return;
 		}
 
 		startSession();
-		// biome-ignore lint/correctness/useExhaustiveDependencies: Handled by React Compiler
+		// oxlint-disable-next-line react/exhaustive-deps Handled by React Compiler
 	}, [data, startSession]);
 
-	if (
-		(!isPending && !isError && !data) ||
-		(isError && isNotFoundError(error))
-	) {
+	if ((!isPending && !isError && !data) || (isError && isNotFoundError(error))) {
 		notFound();
 	}
 
-	if (
-		data?.status === CourseStatus.DRAFT ||
-		data?.status === CourseStatus.ARCHIVED
-	) {
+	if (data?.status === CourseStatus.DRAFT || data?.status === CourseStatus.ARCHIVED) {
 		notFound();
 	}
 
@@ -149,24 +132,23 @@ export default function CourseDetailClient() {
 						transition={{ duration: 0.5 }}
 						className="flex justify-center"
 					>
-						<Loader2 className="size-16 animate-spin text-primary" />
+						<Loader2 className="text-primary size-16 animate-spin" />
 					</motion.div>
 				) : isError ? (
 					<EmptyState
 						title="Unable to load course"
 						description="Please try again in a moment."
-						icon={<MessageSquareText className="size-7 text-primary" />}
+						icon={<MessageSquareText className="text-primary size-7" />}
 						action={
 							<Button variant="outline" size="sm" onClick={() => refetch()}>
 								Retry
 							</Button>
 						}
 					/>
-				) : data.status === CourseStatus.SCHEDULED ||
-					data.status === CourseStatus.PAUSED ? (
-					<section className="border border-white/5 bg-card/40 p-8 backdrop-blur-sm md:p-12">
+				) : data.status === CourseStatus.SCHEDULED || data.status === CourseStatus.PAUSED ? (
+					<section className="bg-card/40 border border-white/5 p-8 backdrop-blur-sm md:p-12">
 						<div className="mb-8 flex items-center gap-6">
-							<div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10 md:size-20">
+							<div className="bg-primary/10 shadow-primary/10 flex size-16 shrink-0 items-center justify-center rounded-xl shadow-inner md:size-20">
 								<Image
 									src="/icons/Idea/zarivka_idea_blue.svg"
 									alt="Course icon"
@@ -176,34 +158,32 @@ export default function CourseDetailClient() {
 								/>
 							</div>
 							<div>
-								<h1 className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl">
+								<h1 className="text-primary text-2xl font-bold md:text-3xl lg:text-4xl">
 									{data.name}
 								</h1>
-								<p className="mt-2 text-muted-foreground">
-									{data.description ||
-										"Course details will be available when it goes live."}
+								<p className="text-muted-foreground mt-2">
+									{data.description || "Course details will be available when it goes live."}
 								</p>
-								{data.status === CourseStatus.SCHEDULED &&
-									data.scheduledStartAt && (
-										<div className="mt-3 flex flex-wrap items-center gap-3 text-muted-foreground text-xs">
-											{data.scheduledStartAt && (
-												<span className="inline-flex items-center gap-2">
-													<CalendarClock className="size-3.5" />
-													Starts {formatCourseTime(data.scheduledStartAt)}
-												</span>
-											)}
-										</div>
-									)}
+								{data.status === CourseStatus.SCHEDULED && data.scheduledStartAt && (
+									<div className="text-muted-foreground mt-3 flex flex-wrap items-center gap-3 text-xs">
+										{data.scheduledStartAt && (
+											<span className="inline-flex items-center gap-2">
+												<CalendarClock className="size-3.5" />
+												Starts {formatCourseTime(data.scheduledStartAt)}
+											</span>
+										)}
+									</div>
+								)}
 							</div>
 						</div>
-						<div className="rounded-none border border-white/5 bg-card/50 p-6 text-muted-foreground">
+						<div className="bg-card/50 text-muted-foreground rounded-none border border-white/5 p-6">
 							This course is currently {data.status}.
 						</div>
 					</section>
 				) : (
-					<section className="border border-white/5 bg-card/40 p-8 backdrop-blur-sm md:p-12">
+					<section className="bg-card/40 border border-white/5 p-8 backdrop-blur-sm md:p-12">
 						<div className="mb-8 flex items-center gap-6">
-							<div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10 md:size-20">
+							<div className="bg-primary/10 shadow-primary/10 flex size-16 shrink-0 items-center justify-center rounded-xl shadow-inner md:size-20">
 								<Image
 									src="/icons/Idea/zarivka_idea_blue.svg"
 									alt="Course icon"
@@ -214,11 +194,11 @@ export default function CourseDetailClient() {
 							</div>
 							<div className="flex flex-1 flex-wrap items-start justify-between gap-4">
 								<div className="space-y-2">
-									<h1 className="font-bold text-2xl text-primary md:text-3xl lg:text-4xl">
+									<h1 className="text-primary text-2xl font-bold md:text-3xl lg:text-4xl">
 										{data.name}
 									</h1>
 									{data.scheduledStartAt && (
-										<span className="inline-flex items-center gap-2 text-muted-foreground text-xs">
+										<span className="text-muted-foreground inline-flex items-center gap-2 text-xs">
 											<CalendarClock className="size-3.5" />
 											Starts {formatCourseTime(data.scheduledStartAt)}
 										</span>
@@ -228,16 +208,15 @@ export default function CourseDetailClient() {
 						</div>
 
 						{sessionMutation.isPending && (
-							<div className="mb-6 rounded-none border border-primary/20 bg-primary/5 px-4 py-3 text-muted-foreground text-sm">
+							<div className="border-primary/20 bg-primary/5 text-muted-foreground mb-6 rounded-none border px-4 py-3 text-sm">
 								Preparing your course session...
 							</div>
 						)}
 
 						{autoJoinFailed && (
-							<div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-none border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm">
+							<div className="border-destructive/20 bg-destructive/5 mb-6 flex flex-wrap items-center justify-between gap-3 rounded-none border px-4 py-3 text-sm">
 								<p className="text-muted-foreground">
-									We could not start your session. Some live actions may not
-									work.
+									We could not start your session. Some live actions may not work.
 								</p>
 								<Button
 									variant="outline"
@@ -250,23 +229,17 @@ export default function CourseDetailClient() {
 							</div>
 						)}
 
-						<div className="border-white/5 border-t pt-8">
-							<h2 className="mb-4 font-semibold text-foreground text-lg">
-								About this course
-							</h2>
-							<p className="max-w-2xl text-muted-foreground leading-relaxed">
-								{data.description || (
-									<span className="italic">No description available</span>
-								)}
+						<div className="border-t border-white/5 pt-8">
+							<h2 className="text-foreground mb-4 text-lg font-semibold">About this course</h2>
+							<p className="text-muted-foreground max-w-2xl leading-relaxed">
+								{data.description || <span className="italic">No description available</span>}
 							</p>
 						</div>
 
 						<div className="mt-8">
 							<div className="mb-6 flex items-center gap-3">
-								<BookOpen className="size-5 text-primary" />
-								<h2 className="font-semibold text-foreground text-lg">
-									Course Feed
-								</h2>
+								<BookOpen className="text-primary size-5" />
+								<h2 className="text-foreground text-lg font-semibold">Course Feed</h2>
 							</div>
 							<CourseFeed
 								courseId={uuid}
@@ -281,12 +254,10 @@ export default function CourseDetailClient() {
 							/>
 						</div>
 
-						<div className="mt-8 border-white/5 border-t pt-8">
+						<div className="mt-8 border-t border-white/5 pt-8">
 							<div className="mb-6 flex items-center gap-3">
-								<BookOpen className="size-5 text-primary" />
-								<h2 className="font-semibold text-foreground text-lg">
-									Modules
-								</h2>
+								<BookOpen className="text-primary size-5" />
+								<h2 className="text-foreground text-lg font-semibold">Modules</h2>
 							</div>
 							<LiveModules modules={data.modules ?? []} courseId={uuid} />
 						</div>
@@ -297,19 +268,13 @@ export default function CourseDetailClient() {
 	);
 }
 
-function LiveModules({
-	modules,
-	courseId,
-}: {
-	modules: Module[];
-	courseId: string;
-}) {
+function LiveModules({ modules, courseId }: { modules: Module[]; courseId: string }) {
 	if (modules.length === 0) {
 		return (
 			<EmptyState
 				title="No modules revealed yet"
 				description="Your lecturer will reveal modules one by one during the session."
-				icon={<BookOpen className="size-7 text-primary" />}
+				icon={<BookOpen className="text-primary size-7" />}
 			/>
 		);
 	}
@@ -317,28 +282,17 @@ function LiveModules({
 	return (
 		<div className="space-y-4">
 			{modules.map((module) => (
-				<div
-					key={module.uuid}
-					className="rounded-none border border-white/5 bg-card/30 p-4"
-				>
-					<h3 className="font-semibold text-base text-foreground">
-						{module.title}
-					</h3>
+				<div key={module.uuid} className="bg-card/30 rounded-none border border-white/5 p-4">
+					<h3 className="text-foreground text-base font-semibold">{module.title}</h3>
 					{module.description && (
-						<p className="mt-1 text-muted-foreground text-sm">
-							{module.description}
-						</p>
+						<p className="text-muted-foreground mt-1 text-sm">{module.description}</p>
 					)}
 
 					<div className="mt-4 space-y-4">
 						<div>
-							<p className="mb-2 font-semibold text-foreground text-sm">
-								Materials
-							</p>
+							<p className="text-foreground mb-2 text-sm font-semibold">Materials</p>
 							{(module.materials?.length ?? 0) === 0 ? (
-								<p className="text-muted-foreground text-xs italic">
-									No materials in this module.
-								</p>
+								<p className="text-muted-foreground text-xs italic">No materials in this module.</p>
 							) : (
 								<div className="space-y-2">
 									{(module.materials ?? []).map((material) => (
@@ -353,13 +307,9 @@ function LiveModules({
 						</div>
 
 						<div>
-							<p className="mb-2 font-semibold text-foreground text-sm">
-								Quizzes
-							</p>
+							<p className="text-foreground mb-2 text-sm font-semibold">Quizzes</p>
 							{(module.quizzes?.length ?? 0) === 0 ? (
-								<p className="text-muted-foreground text-xs italic">
-									No quizzes in this module.
-								</p>
+								<p className="text-muted-foreground text-xs italic">No quizzes in this module.</p>
 							) : (
 								<div className="space-y-3">
 									{(module.quizzes ?? []).map((quiz) => (
@@ -381,13 +331,7 @@ function LiveModules({
 	);
 }
 
-function ModuleMaterialRow({
-	material,
-	courseId,
-}: {
-	material: Material;
-	courseId: string;
-}) {
+function ModuleMaterialRow({ material, courseId }: { material: Material; courseId: string }) {
 	const Icon = getMaterialIcon(material);
 	const interactionMutation = useMutation({
 		...postCoursesByCourseIdMaterialsByMaterialIdInteractionsMutation(),
@@ -402,8 +346,8 @@ function ModuleMaterialRow({
 
 	if (material.type === "url") {
 		return (
-			<div className="grid grid-cols-1 gap-2 rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3">
-				<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+			<div className="bg-background/20 hover:border-primary/30 grid grid-cols-1 gap-2 rounded-none border border-white/5 p-3 text-sm transition-colors sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3">
+				<div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-lg">
 					{material.faviconUrl ? (
 						<Image
 							src={material.faviconUrl}
@@ -414,26 +358,22 @@ function ModuleMaterialRow({
 							unoptimized
 						/>
 					) : (
-						<Icon className="size-5 text-primary" />
+						<Icon className="text-primary size-5" />
 					)}
 				</div>
 				<div className="min-w-0">
-					<p className="wrap-break-word font-medium text-foreground">
-						{material.name}
-					</p>
+					<p className="text-foreground font-medium wrap-break-word">{material.name}</p>
 					{material.description && (
-						<p className="wrap-break-word mt-0.5 whitespace-pre-wrap text-muted-foreground text-xs">
+						<p className="text-muted-foreground mt-0.5 text-xs wrap-break-word whitespace-pre-wrap">
 							{material.description}
 						</p>
 					)}
-					<p className="mt-1 break-all text-muted-foreground text-xs">
-						{material.url}
-					</p>
+					<p className="text-muted-foreground mt-1 text-xs break-all">{material.url}</p>
 				</div>
 				<Button
 					variant="outline"
 					size="sm"
-					className="gap-1.5 justify-self-start border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary sm:justify-self-end"
+					className="text-muted-foreground hover:border-primary/30 hover:text-primary gap-1.5 justify-self-start border-white/10 sm:justify-self-end"
 					onClick={() => handleInteraction(material.url)}
 				>
 					<ExternalLink className="size-3.5" />
@@ -444,20 +384,18 @@ function ModuleMaterialRow({
 	}
 
 	return (
-		<div className="grid grid-cols-1 gap-2 rounded-none border border-white/5 bg-background/20 p-3 text-sm transition-colors hover:border-primary/30 sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3">
-			<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
+		<div className="bg-background/20 hover:border-primary/30 grid grid-cols-1 gap-2 rounded-none border border-white/5 p-3 text-sm transition-colors sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-3">
+			<div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-lg">
+				<Icon className="text-primary size-5" />
 			</div>
 			<div className="min-w-0">
-				<p className="wrap-break-word font-medium text-foreground">
-					{material.name}
-				</p>
+				<p className="text-foreground font-medium wrap-break-word">{material.name}</p>
 				{material.description && (
-					<p className="wrap-break-word mt-0.5 whitespace-pre-wrap text-muted-foreground text-xs">
+					<p className="text-muted-foreground mt-0.5 text-xs wrap-break-word whitespace-pre-wrap">
 						{material.description}
 					</p>
 				)}
-				<p className="wrap-break-word mt-1 text-muted-foreground text-xs">
+				<p className="text-muted-foreground mt-1 text-xs wrap-break-word">
 					{getFileTypeLabel(material.mimeType)}
 					{material.sizeBytes ? ` • ${formatFileSize(material.sizeBytes)}` : ""}
 				</p>
@@ -465,7 +403,7 @@ function ModuleMaterialRow({
 			<Button
 				variant="outline"
 				size="sm"
-				className="gap-1.5 justify-self-start border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary sm:justify-self-end"
+				className="text-muted-foreground hover:border-primary/30 hover:text-primary gap-1.5 justify-self-start border-white/10 sm:justify-self-end"
 				onClick={() => handleInteraction(material.fileUrl)}
 			>
 				<Download className="size-3.5" />

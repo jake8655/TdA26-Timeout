@@ -7,6 +7,7 @@ import {
 	Link,
 	type LucideIcon,
 } from "lucide-react";
+
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
 
 export type Material = FileMaterial | UrlMaterial;
@@ -20,8 +21,7 @@ export const SUPPORTED_FILE_TYPES = {
 
 export const SUPPORTED_MIME_TYPES = {
 	"application/pdf": "PDF Document",
-	"application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-		"Word Document",
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": "Word Document",
 	"text/plain": "Text File",
 	"image/png": "PNG Image",
 	"image/jpeg": "JPEG Image",
@@ -53,9 +53,7 @@ export function formatFileSize(bytes: number): string {
 	return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${units[i]}`;
 }
 
-export function getMaterialIcon(
-	material: FileMaterial | UrlMaterial,
-): LucideIcon {
+export function getMaterialIcon(material: FileMaterial | UrlMaterial): LucideIcon {
 	if (material.type === "url") {
 		return Link;
 	}
@@ -66,8 +64,7 @@ export function getMaterialIcon(
 	if (mimeType.startsWith("image/")) return FileImage;
 	if (mimeType.startsWith("video/")) return FileVideo;
 	if (mimeType.startsWith("audio/")) return FileAudio;
-	if (mimeType.includes("pdf") || mimeType.includes("document"))
-		return FileText;
+	if (mimeType.includes("pdf") || mimeType.includes("document")) return FileText;
 
 	return File;
 }
@@ -75,10 +72,7 @@ export function getMaterialIcon(
 export function getFileTypeLabel(mimeType: string | undefined): string {
 	if (!mimeType) return "File";
 
-	return (
-		SUPPORTED_MIME_TYPES[mimeType as keyof typeof SUPPORTED_MIME_TYPES] ||
-		"File"
-	);
+	return SUPPORTED_MIME_TYPES[mimeType as keyof typeof SUPPORTED_MIME_TYPES] || "File";
 }
 
 export function isValidFileType(file: File): boolean {

@@ -5,6 +5,7 @@ import { Loader2, SearchX } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
+
 import { getCoursesOptions } from "@/api-client/@tanstack/react-query.gen";
 import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
@@ -20,17 +21,13 @@ export default function CoursesClient() {
 	});
 
 	const trimmedQuery = searchQuery.trim();
-	const visibleCourses = (data ?? []).filter(
-		(course) => course.status !== CourseStatus.DRAFT,
-	);
+	const visibleCourses = (data ?? []).filter((course) => course.status !== CourseStatus.DRAFT);
 	const filteredCourses = !trimmedQuery
 		? visibleCourses
 		: visibleCourses.filter(
 				(course) =>
 					course.name.toLowerCase().includes(trimmedQuery.toLowerCase()) ||
-					course.description
-						?.toLowerCase()
-						.includes(trimmedQuery.toLowerCase()),
+					course.description?.toLowerCase().includes(trimmedQuery.toLowerCase()),
 			);
 	const isFiltering = trimmedQuery.length > 0;
 
@@ -45,12 +42,12 @@ export default function CoursesClient() {
 					transition={{ duration: 0.5 }}
 					className="mb-12 text-center"
 				>
-					<h1 className="mb-4 font-bold text-4xl sm:text-5xl">
+					<h1 className="mb-4 text-4xl font-bold sm:text-5xl">
 						<span className="text-primary">Courses</span>
 					</h1>
-					<p className="mx-auto mb-8 max-w-2xl text-base text-muted-foreground sm:text-lg">
-						Explore our collection of interactive courses designed to develop
-						critical and creative thinking.
+					<p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-base sm:text-lg">
+						Explore our collection of interactive courses designed to develop critical and creative
+						thinking.
 					</p>
 
 					<div className="mx-auto max-w-md">
@@ -67,15 +64,15 @@ export default function CoursesClient() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ duration: 0.5 }}
-						className="text-center text-muted-foreground"
+						className="text-muted-foreground text-center"
 					>
-						<Loader2 className="mx-auto size-16 animate-spin text-primary" />
+						<Loader2 className="text-primary mx-auto size-16 animate-spin" />
 					</motion.div>
 				) : isError ? (
 					<EmptyState
 						title="Unable to load courses"
 						description="Please try again in a moment."
-						icon={<SearchX className="size-7 text-primary" />}
+						icon={<SearchX className="text-primary size-7" />}
 						action={
 							<Button variant="outline" size="sm" onClick={() => refetch()}>
 								Retry
@@ -94,11 +91,7 @@ export default function CoursesClient() {
 					>
 						<AnimatePresence mode={isFiltering ? "sync" : "popLayout"}>
 							{filteredCourses.map((course, index) => (
-								<CourseCard
-									key={course.uuid}
-									course={course}
-									index={isFiltering ? 0 : index}
-								/>
+								<CourseCard key={course.uuid} course={course} index={isFiltering ? 0 : index} />
 							))}
 						</AnimatePresence>
 					</motion.div>

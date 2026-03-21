@@ -48,12 +48,11 @@ export function CourseKickDialog({
 						<DialogTitle>You’ve been removed from this course</DialogTitle>
 						<DialogDescription>
 							{reason ??
-								"This course is no longer available. You can rejoin when it goes live."}
+								"This course is no longer available right now. Come back when it goes live again."}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="rounded-none border border-white/5 bg-card/50 p-4 text-muted-foreground text-sm">
-						If this was a mistake, check the course listing for the next live
-						window.
+						If this seems wrong, return to Courses and try opening it again.
 					</div>
 					<div className="flex justify-end">
 						<Button
@@ -63,7 +62,7 @@ export function CourseKickDialog({
 								router.push(redirectTo ?? "/courses");
 							}}
 						>
-							Back to Courses
+							Go to Courses
 						</Button>
 					</div>
 				</motion.div>

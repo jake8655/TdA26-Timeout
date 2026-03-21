@@ -2,14 +2,12 @@ package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
-import eu.hypnomacka.timeout.server.core.CourseJoin;
 import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
-import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import eu.hypnomacka.timeout.server.core.query.QEvent;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -28,9 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class CourseGetController extends Controller {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Map<String, Object>> root(
-      @CookieValue(value = "SESSION_ID", required = false) String sessionId,
-      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
+  public List<Map<String, Object>> root() {
     List<Course> courses =
         new QCourse()
             .status
@@ -42,7 +38,7 @@ public class CourseGetController extends Controller {
 
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
-      result.add(buildCourseSummaryResponse(course, studentSessionId));
+      result.add(buildCourseSummaryResponse(course));
     }
     return result;
   }
@@ -58,15 +54,13 @@ public class CourseGetController extends Controller {
     List<Course> courses = new QCourse().orderBy().updatedAt.desc().findList();
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
-      result.add(buildCourseSummaryResponse(course, null));
+      result.add(buildCourseSummaryResponse(course));
     }
     return ResponseEntity.ok(result);
   }
 
   @GetMapping(value = "/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> byUUID(
-      @PathVariable("UUID") String uuidStr,
-      @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
+  public ResponseEntity<?> byUUID(@PathVariable("UUID") String uuidStr) {
     UUID uuid;
     try {
       uuid = UUID.fromString(uuidStr);
@@ -88,12 +82,10 @@ public class CourseGetController extends Controller {
 
     if (course.getStatus() == Course.Status.SCHEDULED
         || course.getStatus() == Course.Status.PAUSED) {
-      return ResponseEntity.status(HttpStatus.OK)
-          .body(buildLimitedCourseResponse(course, studentSessionId));
+      return ResponseEntity.status(HttpStatus.OK).body(buildLimitedCourseResponse(course));
     }
 
-    return ResponseEntity.status(HttpStatus.OK)
-        .body(buildCourseDetailResponse(course, false, studentSessionId));
+    return ResponseEntity.status(HttpStatus.OK).body(buildCourseDetailResponse(course, false));
   }
 
   @GetMapping(value = "/lecturer/{UUID}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -119,10 +111,10 @@ public class CourseGetController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    return ResponseEntity.ok(buildCourseDetailResponse(course, true, null));
+    return ResponseEntity.ok(buildCourseDetailResponse(course, true));
   }
 
-  private Map<String, Object> buildCourseSummaryResponse(Course course, String studentSessionId) {
+  private Map<String, Object> buildCourseSummaryResponse(Course course) {
     Map<String, Object> response = new LinkedHashMap<>();
     response.put("uuid", course.getUuid());
     response.put("name", course.getName());
@@ -133,15 +125,10 @@ public class CourseGetController extends Controller {
     response.put("scheduledStartAt", course.getScheduledStartAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
-    if (studentSessionId != null) {
-      response.put("joined", isJoined(course, studentSessionId));
-    }
-
     return response;
   }
 
-  private Map<String, Object> buildCourseDetailResponse(
-      Course course, boolean isLecturer, String studentSessionId) {
+  private Map<String, Object> buildCourseDetailResponse(Course course, boolean isLecturer) {
     List<Module> modules = new ArrayList<>(course.getModules());
     modules.sort(Comparator.comparing(Module::getOrderIndex).thenComparing(Module::getCreatedAt));
 
@@ -182,11 +169,10 @@ public class CourseGetController extends Controller {
     response.put("scheduledStartAt", course.getScheduledStartAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
-    response.put("joined", isJoined(course, studentSessionId));
     return response;
   }
 
-  private Map<String, Object> buildLimitedCourseResponse(Course course, String studentSessionId) {
+  private Map<String, Object> buildLimitedCourseResponse(Course course) {
     Map<String, Object> response = new LinkedHashMap<>();
     response.put("uuid", course.getUuid());
     response.put("name", course.getName());
@@ -197,17 +183,8 @@ public class CourseGetController extends Controller {
     response.put("scheduledStartAt", course.getScheduledStartAt());
     response.put("pausedAt", course.getPausedAt());
     response.put("archivedAt", course.getArchivedAt());
-    response.put("joined", isJoined(course, studentSessionId));
     response.put("modules", List.of());
     return response;
-  }
-
-  private boolean isJoined(Course course, String sessionId) {
-    if (sessionId == null || sessionId.isBlank()) {
-      return false;
-    }
-    CourseJoin join = new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
-    return join != null && Boolean.TRUE.equals(join.getActive());
   }
 
   private boolean isVisibleFeedEvent(Event event) {

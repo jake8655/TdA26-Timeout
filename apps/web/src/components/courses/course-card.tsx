@@ -1,12 +1,11 @@
 "use client";
 
-import { ArrowUpRight, CalendarClock, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CalendarClock } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import type { CourseSummary } from "@/api-client";
 import { CourseStatus } from "@/api-client/types.gen";
-import { Button } from "@/components/animate-ui/components/buttons/button";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { formatCourseTime } from "@/lib/course-date-utils";
 import { cn } from "@/lib/utils";
@@ -23,12 +22,22 @@ export function CourseCard({
 			layout
 			initial={{ opacity: 0, scale: 0.9 }}
 			animate={{ opacity: 1, scale: 1 }}
-			whileHover={{ y: -5 }}
 			exit={{ opacity: 0, scale: 0.9 }}
 			transition={{ duration: 0.4, delay: index * 0.1 }}
 			className="h-full"
 		>
-			<div className="group flex h-full flex-col border border-white/5 bg-card/40 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl">
+			<Link
+				href={
+					course.status === CourseStatus.PAUSED
+						? "javasript:void(0)"
+						: `/courses/${course.uuid}`
+				}
+				className={cn(
+					"group flex h-full flex-col border border-white/5 bg-card/40 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl",
+					course.status === CourseStatus.PAUSED &&
+						"pointer-events-none hover:translate-y-0 hover:border-white/5 hover:shadow-none",
+				)}
+			>
 				<div className="mb-4 flex items-start justify-between">
 					<div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 shadow-inner shadow-primary/10">
 						<Image
@@ -39,15 +48,7 @@ export function CourseCard({
 							className="size-7"
 						/>
 					</div>
-					<div className="flex flex-col items-end gap-2">
-						<CourseStatusBadge status={course.status} />
-						{course.joined && (
-							<span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-semibold text-[11px] text-emerald-200 uppercase tracking-wide">
-								<CheckCircle2 className="size-3.5" />
-								Joined
-							</span>
-						)}
-					</div>
+					<CourseStatusBadge status={course.status} />
 				</div>
 				<h3 className="mb-2 font-bold text-foreground text-lg">
 					{course.name}
@@ -78,31 +79,17 @@ export function CourseCard({
 							</div>
 						) : null}
 					</div>
-					<Button
-						variant={course.joined ? "accent" : "outline"}
-						size="sm"
+					<div
 						className={cn(
-							"ml-auto",
-							!course.joined &&
-								"border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary",
-							course.status === CourseStatus.PAUSED &&
-								"pointer-events-none opacity-50",
+							"ml-auto flex items-center gap-2",
+							course.status === CourseStatus.PAUSED && "hidden",
 						)}
-						asChild
 					>
-						<Link
-							href={
-								course.status === CourseStatus.PAUSED
-									? "javasript:void(0)"
-									: `/courses/${course.uuid}`
-							}
-						>
-							<ArrowUpRight className="size-4" />
-							{course.joined ? "Continue" : "View"}
-						</Link>
-					</Button>
+						<p className="text-sm">Open</p>
+						<ArrowRight className="size-4 transition-all group-hover:-rotate-45" />
+					</div>
 				</div>
-			</div>
+			</Link>
 		</motion.div>
 	);
 }

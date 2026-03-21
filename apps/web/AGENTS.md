@@ -11,6 +11,7 @@
 - Prefer implicit return types over explicit ones
   - When it is a complex type or there already is an explicit type that matches, you can use explicit types
 - DO NOT implement any tests or testing behavior or preparing for tests
+- DO NOT MANUALLY MEMOIZE, rely on React Compiler
 
 ## UI
 - Use Tailwind CSS for styling

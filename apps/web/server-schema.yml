@@ -40,6 +40,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/StatusResponse"
 
+  /auth/tenants:
+    get:
+      summary: List tenant countries
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TenantCountry"
+
   /auth/logout:
     post:
       summary: Logout
@@ -1077,6 +1090,15 @@ components:
         branchKey:
           type: string
         branchName:
+          type: string
+
+    TenantCountry:
+      type: object
+      required: [countryKey, name]
+      properties:
+        countryKey:
+          type: string
+        name:
           type: string
 
     Country:

@@ -1,12 +1,14 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { LayoutDashboard, Loader2, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import { getAuthTenants } from "@/api-client/sdk.gen";
 import { logout, useAuth } from "@/hooks/use-auth";
 import {
 	getCountryPathFromPathname,
@@ -27,13 +29,26 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 export default function Header() {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const pathname = usePathname();
+	const searchParams = useSearchParams();
 	const { data } = useAuth();
 	const countryPath = getCountryPathFromPathname(pathname);
+	const selectedCountryKey = countryPath.replace("/", "");
+	const tenantsQuery = useQuery<{ countryKey: string; name: string }[]>({
+		queryKey: ["auth", "tenants"],
+		queryFn: async () => {
+			const response = await getAuthTenants({
+				throwOnError: true,
+			});
+
+			return response.data as { countryKey: string; name: string }[];
+		},
+	});
 	const logoutMutation = useMutation({
 		mutationFn: async () => {
 			await logout();
@@ -46,6 +61,28 @@ export default function Header() {
 			router.push(countryPath);
 		},
 	});
+
+	const replaceCountryInPathname = (nextCountryKey: string) => {
+		const chunks = pathname.split("/").filter(Boolean);
+		if (chunks.length > 0 && /^[a-z]{2}-\d+$/i.test(chunks[0] || "")) {
+			chunks[0] = nextCountryKey;
+			return `/${chunks.join("/")}`;
+		}
+
+		return `/${nextCountryKey}`;
+	};
+
+	const handleCountryChange = (nextCountryKey: string | null) => {
+		if (!nextCountryKey || nextCountryKey === selectedCountryKey) {
+			return;
+		}
+
+		const nextPath = replaceCountryInPathname(nextCountryKey);
+		const search = searchParams.toString();
+		const hash = typeof window === "undefined" ? "" : window.location.hash;
+		const nextUrl = `${nextPath}${search ? `?${search}` : ""}${hash}`;
+		router.push(nextUrl);
+	};
 
 	return (
 		<header className="bg-background/80 fixed top-0 right-0 left-0 z-50 border-b border-white/5 backdrop-blur-md transition-all duration-300">
@@ -77,6 +114,23 @@ export default function Header() {
 				</nav>
 
 				<div className="flex items-center gap-4">
+					<Select
+						value={selectedCountryKey}
+						onValueChange={handleCountryChange}
+						disabled={tenantsQuery.isPending || (tenantsQuery.data?.length ?? 0) === 0}
+					>
+						<SelectTrigger className="min-w-22 sm:min-w-26" aria-label="Select region">
+							<SelectValue placeholder="Region" />
+						</SelectTrigger>
+						<SelectContent align="end">
+							{(tenantsQuery.data ?? []).map((tenant) => (
+								<SelectItem key={tenant.countryKey} value={tenant.countryKey}>
+									{tenant.countryKey.toUpperCase()}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+
 					{data ? (
 						<DropdownMenu>
 							<DropdownMenuTrigger>

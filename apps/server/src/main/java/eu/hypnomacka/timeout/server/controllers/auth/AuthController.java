@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Base64;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,21 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 public class AuthController extends Controller {
+
+  @GetMapping("/tenants")
+  public ResponseEntity<List<Map<String, String>>> tenants() {
+    List<Map<String, String>> payload =
+        DB.find(Country.class).where().eq("status", Country.Status.ACTIVE).orderBy("id desc").findList().stream()
+            .map(
+                country ->
+                    Map.of(
+                        "countryKey", country.getCountryKey() == null ? "" : country.getCountryKey(),
+                        "name", country.getName() == null ? "" : country.getName()))
+            .filter(item -> !item.get("countryKey").isBlank())
+            .toList();
+
+    return ResponseEntity.ok(payload);
+  }
 
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(

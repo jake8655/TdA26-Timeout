@@ -19,13 +19,13 @@ import { notFound, useParams, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { getCoursesByCourseIdCertificate } from "@/api-client";
 import {
 	getCoursesByCourseIdOptions,
 	getCoursesByCourseIdProgressOptions,
 	postCoursesByCourseIdMaterialsByMaterialIdInteractionsMutation,
 	postCoursesByCourseIdSessionMutation,
 } from "@/api-client/@tanstack/react-query.gen";
-import { getCoursesByCourseIdCertificate } from "@/api-client";
 import {
 	CourseStatus,
 	type CourseSessionResponse,

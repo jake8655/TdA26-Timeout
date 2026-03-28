@@ -99,7 +99,7 @@ export function QuizStatsDialog({
 	const selectedParticipant =
 		selectedParticipantId === "all"
 			? null
-			: participants.find((participant) => participant.id === selectedParticipantId) ?? null;
+			: (participants.find((participant) => participant.id === selectedParticipantId) ?? null);
 
 	if (isError || statsFailed || participantFailed || !quiz) {
 		return (
@@ -212,9 +212,9 @@ export function QuizStatsDialog({
 										questionStats={questionStats}
 										viewMode={selectedParticipant ? "participant" : "aggregate"}
 										selectedIndices={
-											selectedParticipant?.result.answers
-												?.find((answer) => answer.questionUuid === questionStats.questionUuid)
-												?.selectedIndices ?? []
+											selectedParticipant?.result.answers?.find(
+												(answer) => answer.questionUuid === questionStats.questionUuid,
+											)?.selectedIndices ?? []
 										}
 										totalSubmissionsOverride={selectedParticipant ? 1 : undefined}
 									/>

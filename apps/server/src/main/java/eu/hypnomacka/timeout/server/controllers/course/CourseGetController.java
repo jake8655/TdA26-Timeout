@@ -154,10 +154,6 @@ public class CourseGetController extends Controller {
       @PathVariable String branchKey,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
     Session session = getValidSession(sessionId);
-    if (session == null) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(Map.of("status", "bad", "message", "unauthorized"));
-    }
 
     var country = resolveCountryFromKey(countryKey);
     if (country == null) {
@@ -171,12 +167,14 @@ public class CourseGetController extends Controller {
           .body(Map.of("status", "bad", "message", "branch not found"));
     }
 
-    if (!canAccessBranch(session, branch)) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN)
-          .body(Map.of("status", "bad", "message", "forbidden"));
+    boolean canAccessAllCourses = session != null && canAccessBranch(session, branch);
+
+    QCourse courseQuery = new QCourse().branch.eq(branch);
+    if (!canAccessAllCourses) {
+      courseQuery.status.in(Course.Status.SCHEDULED, Course.Status.LIVE, Course.Status.PAUSED);
     }
 
-    List<Course> courses = new QCourse().branch.eq(branch).orderBy().updatedAt.desc().findList();
+    List<Course> courses = courseQuery.orderBy().updatedAt.desc().findList();
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
       result.add(buildCourseSummaryResponse(course));

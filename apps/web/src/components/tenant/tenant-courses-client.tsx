@@ -4,10 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, SearchX } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 
-import { getCoursesOptions } from "@/api-client/@tanstack/react-query.gen";
-import { CourseStatus } from "@/api-client/types.gen";
+import { client } from "@/api-client/client.gen";
+import { CourseStatus, type CourseSummary } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseCard } from "@/components/courses/course-card";
@@ -15,9 +16,17 @@ import { SearchInput } from "@/components/courses/search-input";
 import EmptyState from "@/components/empty-state";
 
 export default function TenantCoursesClient() {
+	const { country, branch } = useParams<{ country: string; branch: string }>();
 	const [searchQuery, setSearchQuery] = useState("");
-	const { data, isPending, isError, refetch } = useQuery({
-		...getCoursesOptions(),
+	const { data, isPending, isError, refetch } = useQuery<CourseSummary[]>({
+		queryKey: ["tenant-courses", country, branch],
+		queryFn: async () => {
+			const response = await client.get<{ 200: CourseSummary[] }, unknown, true>({
+				url: `/courses/tenants/${country}/branches/${branch}`,
+				throwOnError: true,
+			});
+			return response.data;
+		},
 	});
 
 	const trimmedQuery = searchQuery.trim();

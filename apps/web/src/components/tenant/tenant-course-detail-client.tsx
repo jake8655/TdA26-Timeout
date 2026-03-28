@@ -19,15 +19,16 @@ import { notFound, useParams, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { client } from "@/api-client/client.gen";
 import { getCoursesByCourseIdCertificate } from "@/api-client";
 import {
-	getCoursesByCourseIdOptions,
 	getCoursesByCourseIdProgressOptions,
 	postCoursesByCourseIdMaterialsByMaterialIdInteractionsMutation,
 	postCoursesByCourseIdSessionMutation,
 } from "@/api-client/@tanstack/react-query.gen";
 import {
 	CourseStatus,
+	type CourseDetail,
 	type CourseSessionResponse,
 	type Material,
 	type Module,
@@ -58,7 +59,7 @@ function isNotFoundError(error: unknown) {
 }
 
 export default function TenantCourseDetailClient() {
-	const { uuid } = useParams<{ uuid: string }>();
+	const { country, branch, uuid } = useParams<{ country: string; branch: string; uuid: string }>();
 	const pathname = usePathname();
 
 	const [kickDialog, setKickDialog] = useState<{
@@ -71,10 +72,15 @@ export default function TenantCourseDetailClient() {
 	const [sessionReady, setSessionReady] = useState(false);
 	const [usernameDialogOpen, setUsernameDialogOpen] = useState(false);
 	const [pendingQuizStart, setPendingQuizStart] = useState<null | (() => void)>(null);
-	const { data, error, isPending, isError, refetch } = useQuery({
-		...getCoursesByCourseIdOptions({
-			path: { courseId: uuid },
-		}),
+	const { data, error, isPending, isError, refetch } = useQuery<CourseDetail>({
+		queryKey: ["tenant-course-detail", country, branch, uuid],
+		queryFn: async () => {
+			const response = await client.get<{ 200: CourseDetail }, unknown, true>({
+				url: `/courses/tenants/${country}/branches/${branch}/${uuid}`,
+				throwOnError: true,
+			});
+			return response.data;
+		},
 	});
 	const progressQuery = useQuery({
 		...getCoursesByCourseIdProgressOptions({

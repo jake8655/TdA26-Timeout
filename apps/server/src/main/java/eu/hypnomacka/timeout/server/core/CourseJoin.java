@@ -26,6 +26,8 @@ public class CourseJoin extends Model {
   @Column(nullable = false)
   private String sessionToken;
 
+  @Column private String username;
+
   @WhenCreated private Instant joinedAt;
 
   @WhenModified private Instant lastSeenAt;

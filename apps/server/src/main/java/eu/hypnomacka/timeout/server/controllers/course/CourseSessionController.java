@@ -9,6 +9,7 @@ import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class CourseSessionController extends Controller {
   public ResponseEntity<?> createSession(
       @PathVariable("courseId") String courseIdStr,
       @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId,
+      @RequestBody(required = false) CourseSessionRequest request,
       HttpServletResponse response) {
     UUID courseId;
     try {
@@ -46,6 +48,7 @@ public class CourseSessionController extends Controller {
 
     boolean hasExistingSession = studentSessionId != null && !studentSessionId.isBlank();
     String sessionId = hasExistingSession ? studentSessionId : AuthController.generateNewToken();
+    String requestedUsername = request != null ? normalizeUsername(request.getUsername()) : null;
     if (!hasExistingSession) {
       Cookie cookie = new Cookie("STUDENT_SESSION_ID", sessionId);
       cookie.setHttpOnly(true);
@@ -57,18 +60,74 @@ public class CourseSessionController extends Controller {
     CourseJoin existingJoin =
         new QCourseJoin().course.eq(course).sessionToken.eq(sessionId).findOne();
     if (existingJoin != null) {
+      if (requestedUsername != null
+          && existingJoin.getUsername() != null
+          && !existingJoin.getUsername().equals(requestedUsername)) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(
+                buildSessionResponse(
+                    "bad",
+                    sessionId,
+                    existingJoin.getUsername(),
+                    true,
+                    "username already set for this course session"));
+      }
+
+      if (requestedUsername != null && existingJoin.getUsername() == null) {
+        existingJoin.setUsername(requestedUsername);
+      }
       existingJoin.setActive(true);
       existingJoin.setLastSeenAt(Instant.now());
       existingJoin.save();
-      return ResponseEntity.ok(Map.of("status", "ok", "sessionId", sessionId));
+      return ResponseEntity.ok(
+          buildSessionResponse(
+              "ok",
+              sessionId,
+              existingJoin.getUsername(),
+              existingJoin.getUsername() != null,
+              null));
     }
 
     CourseJoin join = new CourseJoin(course, sessionId);
     join.setUuid(UUID.randomUUID());
+    if (requestedUsername != null) {
+      join.setUsername(requestedUsername);
+    }
     join.setLastSeenAt(Instant.now());
     join.save();
 
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(Map.of("status", "ok", "sessionId", sessionId));
+        .body(
+            buildSessionResponse(
+                "ok", sessionId, join.getUsername(), join.getUsername() != null, null));
+  }
+
+  private Map<String, Object> buildSessionResponse(
+      String status, String sessionId, String username, boolean usernameLocked, String message) {
+    Map<String, Object> response = new LinkedHashMap<>();
+    response.put("status", status);
+    if (message != null) {
+      response.put("message", message);
+    }
+    response.put("sessionId", sessionId);
+    response.put("username", username);
+    response.put("usernameLocked", usernameLocked);
+    return response;
+  }
+
+  private String normalizeUsername(String username) {
+    if (username == null) {
+      return null;
+    }
+
+    String normalized = username.trim();
+    if (normalized.isBlank()) {
+      return null;
+    }
+
+    if (normalized.length() > 60) {
+      normalized = normalized.substring(0, 60);
+    }
+    return normalized;
   }
 }

@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Check, Loader2, Medal, Target, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdOptions } from "@/api-client/@tanstack/react-query.gen";
 import type { QuizAnswer, QuizSubmitResponse } from "@/api-client/types.gen";
@@ -42,8 +42,12 @@ export function QuizPlayer({
 	moduleId?: string;
 	onCancel: () => void;
 	onSubmitComplete: (result: QuizSubmitResponse) => void;
-	onSubmitAnswers: (answers: QuizAnswer[]) => Promise<QuizSubmitResponse>;
+	onSubmitAnswers: (
+		answers: QuizAnswer[],
+		attemptStartedAt?: string,
+	) => Promise<QuizSubmitResponse>;
 }) {
+	const attemptStartedAtRef = useRef(new Date().toISOString());
 	const [answers, setAnswers] = useState<Record<number, number | number[]>>(
 		initialSubmittedResult ? convertAnswersToRecord(initialAnswers) : {},
 	);
@@ -111,7 +115,7 @@ export function QuizPlayer({
 				};
 			});
 
-			const result = await onSubmitAnswers(answerArray);
+			const result = await onSubmitAnswers(answerArray, attemptStartedAtRef.current);
 			setSubmittedResult(result);
 			onSubmitComplete(result);
 		} finally {

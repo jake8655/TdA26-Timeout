@@ -37,6 +37,10 @@ public class QuizResult extends Model {
 
   @Column private String sessionToken;
 
+  @Column private Instant attemptStartedAt;
+
+  @Column private Integer durationSeconds;
+
   @Column(nullable = false)
   private Instant submittedAt;
 
@@ -57,5 +61,22 @@ public class QuizResult extends Model {
     this.maxScore = maxScore;
     this.correctPerQuestion = correctPerQuestion;
     this.submittedAt = submittedAt;
+  }
+
+  public QuizResult(
+      Quiz quiz,
+      Double score,
+      Double maxScore,
+      List<Boolean> correctPerQuestion,
+      Instant submittedAt,
+      Instant attemptStartedAt,
+      Integer durationSeconds) {
+    this.quiz = quiz;
+    this.score = score;
+    this.maxScore = maxScore;
+    this.correctPerQuestion = correctPerQuestion;
+    this.submittedAt = submittedAt;
+    this.attemptStartedAt = attemptStartedAt;
+    this.durationSeconds = durationSeconds;
   }
 }

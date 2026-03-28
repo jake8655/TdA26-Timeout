@@ -13,7 +13,7 @@ import type {
 	QuizSubmitResponse,
 } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 import { QuizPlayer } from "./quiz-player";
 
@@ -22,11 +22,13 @@ export function CourseQuizCard({
 	courseId,
 	moduleId,
 	onSaveResult,
+	onEnsureUsername,
 }: {
 	quiz: Quiz;
 	courseId: string;
 	moduleId?: string;
 	onSaveResult: (result: QuizSubmitResponse) => void;
+	onEnsureUsername?: () => Promise<boolean>;
 }) {
 	const [isPlaying, setIsPlaying] = useState(false);
 
@@ -42,12 +44,15 @@ export function CourseQuizCard({
 		postCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdSubmitMutation(),
 	);
 
-	const handleSubmitAnswers = async (answers: QuizAnswer[]): Promise<QuizSubmitResponse> => {
+	const handleSubmitAnswers = async (
+		answers: QuizAnswer[],
+		attemptStartedAt?: string,
+	): Promise<QuizSubmitResponse> => {
 		if (!quiz.uuid) {
 			throw new Error("Quiz UUID is required");
 		}
 
-		const body: QuizSubmitRequest = { answers };
+		const body: QuizSubmitRequest = { answers, attemptStartedAt };
 		const response = await mutation.mutateAsync({
 			path: { courseId, moduleId: moduleId ?? "", quizId: quiz.uuid },
 			body,
@@ -57,6 +62,17 @@ export function CourseQuizCard({
 		localStorage.setItem(`quizAnswers:${quiz.uuid}`, JSON.stringify(answers));
 
 		return response;
+	};
+
+	const handleStartQuiz = async () => {
+		if (onEnsureUsername) {
+			const ready = await onEnsureUsername();
+			if (!ready) {
+				return;
+			}
+		}
+
+		setIsPlaying(true);
 	};
 
 	return (
@@ -90,17 +106,14 @@ export function CourseQuizCard({
 			</div>
 
 			<Dialog open={isPlaying} onOpenChange={setIsPlaying}>
-				<DialogTrigger
-					render={
-						<Button
-							variant="outline"
-							size="sm"
-							className="text-muted-foreground hover:border-primary/30 hover:text-primary shrink-0 border-white/10"
-						>
-							{existingResult ? "View Results" : "Start Quiz"}
-						</Button>
-					}
-				/>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={handleStartQuiz}
+					className="text-muted-foreground hover:border-primary/30 hover:text-primary shrink-0 border-white/10"
+				>
+					{existingResult ? "View Results" : "Start Quiz"}
+				</Button>
 				<DialogContent
 					showCloseButton={false}
 					className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"

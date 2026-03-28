@@ -3,9 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
+import { useMemo, useState } from "react";
 
 import {
 	getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdOptions,
+	getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdResultsOptions,
 	getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdStatsOptions,
 } from "@/api-client/@tanstack/react-query.gen";
 import EmptyState from "@/components/empty-state";
@@ -49,7 +51,21 @@ export function QuizStatsDialog({
 		}),
 	});
 
-	if (isPending || statsPending) {
+	const {
+		data: participantResults,
+		isPending: participantPending,
+		isError: participantFailed,
+		refetch: refetchParticipants,
+	} = useQuery({
+		...getCoursesByCourseIdModulesByModuleIdQuizzesByQuizIdResultsOptions({
+			path: { courseId, moduleId: moduleId ?? "", quizId },
+			query: { latestPerParticipant: true },
+		}),
+	});
+
+	const [selectedParticipantId, setSelectedParticipantId] = useState<string>("all");
+
+	if (isPending || statsPending || participantPending) {
 		return (
 			<Dialog>
 				<DialogTrigger render={trigger} />
@@ -71,7 +87,21 @@ export function QuizStatsDialog({
 		]),
 	);
 
-	if (isError || statsFailed || !quiz) {
+	const participants = useMemo(() => {
+		const list = participantResults ?? [];
+		return list.map((result) => ({
+			id: result.resultUuid ?? result.participantSessionToken ?? `${result.submittedAt}`,
+			label: result.participantUsername ?? "Anonymous",
+			result,
+		}));
+	}, [participantResults]);
+
+	const selectedParticipant =
+		selectedParticipantId === "all"
+			? null
+			: participants.find((participant) => participant.id === selectedParticipantId) ?? null;
+
+	if (isError || statsFailed || participantFailed || !quiz) {
 		return (
 			<Dialog>
 				<DialogTrigger render={trigger} />
@@ -86,6 +116,7 @@ export function QuizStatsDialog({
 								onClick={() => {
 									refetchQuiz();
 									refetchStats();
+									refetchParticipants();
 								}}
 							>
 								Retry
@@ -119,6 +150,40 @@ export function QuizStatsDialog({
 					</div>
 				</div>
 
+				{participants.length > 0 && (
+					<div className="mb-4 flex flex-wrap gap-2">
+						<Button
+							variant={selectedParticipantId === "all" ? "default" : "outline"}
+							size="sm"
+							onClick={() => setSelectedParticipantId("all")}
+						>
+							All
+						</Button>
+						{participants.map((participant) => (
+							<Button
+								key={participant.id}
+								variant={selectedParticipantId === participant.id ? "default" : "outline"}
+								size="sm"
+								onClick={() => setSelectedParticipantId(participant.id)}
+							>
+								{participant.label}
+							</Button>
+						))}
+					</div>
+				)}
+
+				{selectedParticipant && (
+					<div className="border-primary/20 bg-primary/5 mb-4 rounded-none border p-3 text-sm">
+						<p className="text-foreground font-medium">Selected: {selectedParticipant.label}</p>
+						<p className="text-muted-foreground text-xs">
+							Latest attempt at {selectedParticipant.result.submittedAt ?? "unknown"}
+							{selectedParticipant.result.durationSeconds !== undefined &&
+								selectedParticipant.result.durationSeconds !== null &&
+								` · ${selectedParticipant.result.durationSeconds}s`}
+						</p>
+					</div>
+				)}
+
 				{statsData.totalSubmissions === 0 ? (
 					<EmptyState
 						title="No submissions yet"
@@ -145,6 +210,13 @@ export function QuizStatsDialog({
 										question={question}
 										questionIndex={index}
 										questionStats={questionStats}
+										viewMode={selectedParticipant ? "participant" : "aggregate"}
+										selectedIndices={
+											selectedParticipant?.result.answers
+												?.find((answer) => answer.questionUuid === questionStats.questionUuid)
+												?.selectedIndices ?? []
+										}
+										totalSubmissionsOverride={selectedParticipant ? 1 : undefined}
 									/>
 								);
 							})}

@@ -250,13 +250,52 @@ paths:
       - $ref: "#/components/parameters/CourseId"
     post:
       summary: Create course session
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseSessionRequest"
       responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseSessionResponse"
         "201":
           description: Created
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CourseSessionResponse"
+
+  /courses/{courseId}/progress:
+    parameters:
+      - $ref: "#/components/parameters/CourseId"
+    get:
+      summary: Get student course progress
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseProgressResponse"
+
+  /courses/{courseId}/certificate:
+    parameters:
+      - $ref: "#/components/parameters/CourseId"
+    get:
+      summary: Download course certificate PDF
+      responses:
+        "200":
+          description: OK
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
 
   /courses/{courseId}/leave:
     parameters:
@@ -635,6 +674,12 @@ paths:
       - $ref: "#/components/parameters/QuizId"
     get:
       summary: Get quiz results
+      parameters:
+        - name: latestPerParticipant
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: OK
@@ -1502,13 +1547,42 @@ components:
           type: string
           format: date-time
 
+    CourseSessionRequest:
+      type: object
+      properties:
+        username:
+          type: string
+
     CourseSessionResponse:
       type: object
       properties:
         status:
           type: string
+        message:
+          type: string
         sessionId:
           type: string
+        username:
+          type: string
+        usernameLocked:
+          type: boolean
+
+    CourseProgressResponse:
+      type: object
+      required: [status, points, threshold, eligible, bestAttemptsCount]
+      properties:
+        status:
+          type: string
+        username:
+          type: string
+        points:
+          type: number
+        threshold:
+          type: integer
+        eligible:
+          type: boolean
+        bestAttemptsCount:
+          type: integer
 
     CourseDuplicateRequest:
       type: object
@@ -1742,6 +1816,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/QuizAnswer"
+        attemptStartedAt:
+          type: string
+          format: date-time
 
     QuizAnswer:
       type: object
@@ -1765,6 +1842,9 @@ components:
         quizUuid:
           type: string
           format: uuid
+        resultUuid:
+          type: string
+          format: uuid
         score:
           type: number
         maxScore:
@@ -1776,6 +1856,31 @@ components:
         submittedAt:
           type: string
           format: date-time
+        attemptStartedAt:
+          type: string
+          format: date-time
+        durationSeconds:
+          type: integer
+        participantUsername:
+          type: string
+        participantSessionToken:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizAnswerSelectionResponse"
+
+    QuizAnswerSelectionResponse:
+      type: object
+      required: [questionUuid, selectedIndices]
+      properties:
+        questionUuid:
+          type: string
+          format: uuid
+        selectedIndices:
+          type: array
+          items:
+            type: integer
 
     QuizStatsResponse:
       type: object

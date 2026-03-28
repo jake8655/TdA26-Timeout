@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="course_joins">
+            <column name="username" type="varchar"/>
+        </addColumn>
+        <addColumn tableName="quiz_results">
+            <column name="attempt_started_at" type="timestamp"/>
+            <column name="duration_seconds" type="integer"/>
+        </addColumn>
+    </changeSet>
+</migration>

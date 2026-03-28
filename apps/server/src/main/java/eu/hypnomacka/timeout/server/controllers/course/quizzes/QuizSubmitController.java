@@ -9,6 +9,7 @@ import eu.hypnomacka.timeout.server.core.QuizAnswerSubmission;
 import eu.hypnomacka.timeout.server.core.QuizResult;
 import eu.hypnomacka.timeout.server.services.CourseStatsService;
 import io.ebean.DB;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,7 +119,25 @@ public class QuizSubmitController extends Controller {
     double maxScore = (double) questions.size();
     double score = correctCount;
 
-    QuizResult result = new QuizResult(quiz, score, maxScore, correctPerQuestion, Instant.now());
+    Instant submittedAt = Instant.now();
+    Instant attemptStartedAt = request.getAttemptStartedAt();
+    Integer durationSeconds = null;
+    if (attemptStartedAt != null && !attemptStartedAt.isAfter(submittedAt)) {
+      long seconds = Duration.between(attemptStartedAt, submittedAt).getSeconds();
+      if (seconds >= 0 && seconds <= 86400) {
+        durationSeconds = (int) seconds;
+      }
+    }
+
+    QuizResult result =
+        new QuizResult(
+            quiz,
+            score,
+            maxScore,
+            correctPerQuestion,
+            submittedAt,
+            attemptStartedAt,
+            durationSeconds);
     if (studentSessionId != null && !studentSessionId.isBlank()) {
       result.setSessionToken(studentSessionId);
     }
@@ -148,7 +167,7 @@ public class QuizSubmitController extends Controller {
       }
 
       QuizAnswerSubmission submission =
-          new QuizAnswerSubmission(result, answer.getUuid(), selectedIndices, Instant.now());
+          new QuizAnswerSubmission(result, answer.getUuid(), selectedIndices, submittedAt);
       submission.save();
     }
 
@@ -160,10 +179,13 @@ public class QuizSubmitController extends Controller {
     QuizSubmitResponse response =
         new QuizSubmitResponse(
             quiz.getUuid().toString(),
+            result.getUuid().toString(),
             score,
             maxScore,
             correctPerQuestion,
-            result.getSubmittedAt());
+            result.getSubmittedAt(),
+            result.getAttemptStartedAt(),
+            result.getDurationSeconds());
 
     return ResponseEntity.ok(response);
   }

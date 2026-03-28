@@ -5,29 +5,42 @@ import {
 	ArrowLeft,
 	BookOpen,
 	CalendarClock,
+	Award,
 	Download,
 	ExternalLink,
 	Loader2,
 	MessageSquareText,
+	ShieldCheck,
 } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import {
 	getCoursesByCourseIdOptions,
+	getCoursesByCourseIdProgressOptions,
 	postCoursesByCourseIdMaterialsByMaterialIdInteractionsMutation,
 	postCoursesByCourseIdSessionMutation,
 } from "@/api-client/@tanstack/react-query.gen";
-import { CourseStatus, type Material, type Module } from "@/api-client/types.gen";
+import { getCoursesByCourseIdCertificate } from "@/api-client";
+import {
+	CourseStatus,
+	type CourseSessionResponse,
+	type Material,
+	type Module,
+} from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import { CourseFeed } from "@/components/courses/course-feed";
 import { CourseKickDialog } from "@/components/courses/course-kick-dialog";
 import EmptyState from "@/components/empty-state";
 import { CourseQuizCard } from "@/components/quizzes/course-quiz-card";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { formatCourseTime } from "@/lib/course-date-utils";
 import { formatFileSize, getFileTypeLabel, getMaterialIcon } from "@/lib/material-utils";
 import { getScopedCoursesPathFromPathname } from "@/lib/tenant-routing";
@@ -53,24 +66,77 @@ export default function TenantCourseDetailClient() {
 		reason?: string;
 	}>({ open: false });
 	const [autoJoinFailed, setAutoJoinFailed] = useState(false);
+	const [username, setUsername] = useState("");
+	const [usernameLocked, setUsernameLocked] = useState(false);
+	const [sessionReady, setSessionReady] = useState(false);
+	const [usernameDialogOpen, setUsernameDialogOpen] = useState(false);
+	const [pendingQuizStart, setPendingQuizStart] = useState<null | (() => void)>(null);
 	const { data, error, isPending, isError, refetch } = useQuery({
 		...getCoursesByCourseIdOptions({
 			path: { courseId: uuid },
 		}),
 	});
+	const progressQuery = useQuery({
+		...getCoursesByCourseIdProgressOptions({
+			path: { courseId: uuid },
+		}),
+		enabled: data?.status === CourseStatus.LIVE && sessionReady,
+	});
 	const sessionMutation = useMutation({
 		...postCoursesByCourseIdSessionMutation(),
+	});
+	const certificateMutation = useMutation({
+		mutationFn: async () => {
+			const response = await getCoursesByCourseIdCertificate({
+				path: { courseId: uuid },
+				parseAs: "blob",
+				responseStyle: "fields",
+				throwOnError: true,
+			});
+
+			const contentDisposition = response.response.headers.get("Content-Disposition") ?? "";
+			const filenameMatch = contentDisposition.match(/filename=([^;]+)/i);
+			const filename = filenameMatch?.[1]?.replaceAll('"', "")?.trim() || `certificate-${uuid}.pdf`;
+
+			const url = URL.createObjectURL(response.data);
+			const anchor = document.createElement("a");
+			anchor.href = url;
+			anchor.download = filename;
+			document.body.appendChild(anchor);
+			anchor.click();
+			anchor.remove();
+			URL.revokeObjectURL(url);
+		},
+		onError: () => {
+			toast.error("Certificate is not available yet");
+		},
 	});
 	const hasAutoJoinedRef = useRef(false);
 
 	const queryClient = useQueryClient();
 
-	const startSession = () => {
+	const hydrateSessionState = (sessionResponse: CourseSessionResponse | undefined) => {
+		if (!sessionResponse) {
+			return;
+		}
+
+		setUsername(sessionResponse.username ?? "");
+		setUsernameLocked(Boolean(sessionResponse.usernameLocked));
+		setSessionReady(true);
+	};
+
+	const startSession = async (providedUsername?: string) => {
 		hasAutoJoinedRef.current = true;
 		setAutoJoinFailed(false);
-		sessionMutation.mutate(
-			{ path: { courseId: uuid } },
+		return sessionMutation.mutateAsync(
 			{
+				path: { courseId: uuid },
+				body: providedUsername ? { username: providedUsername } : undefined,
+			},
+			{
+				onSuccess: (sessionResponse) => {
+					hydrateSessionState(sessionResponse);
+				},
 				onError: () => {
 					setAutoJoinFailed(true);
 				},
@@ -78,12 +144,45 @@ export default function TenantCourseDetailClient() {
 		);
 	};
 
+	const ensureUsernameBeforeQuiz = async () => {
+		if (usernameLocked) {
+			return true;
+		}
+
+		setUsernameDialogOpen(true);
+		return false;
+	};
+
+	const confirmUsername = async () => {
+		const normalized = username.trim();
+		if (!normalized) {
+			toast.error("Username is required");
+			return;
+		}
+
+		try {
+			const response = await sessionMutation.mutateAsync({
+				path: { courseId: uuid },
+				body: { username: normalized },
+			});
+			hydrateSessionState(response);
+			setUsernameDialogOpen(false);
+			progressQuery.refetch();
+			if (pendingQuizStart) {
+				pendingQuizStart();
+				setPendingQuizStart(null);
+			}
+		} catch {
+			toast.error("Username is already locked for this session");
+		}
+	};
+
 	useEffect(() => {
 		if (!data || data.status !== CourseStatus.LIVE || hasAutoJoinedRef.current) {
 			return;
 		}
 
-		startSession();
+		void startSession();
 		// oxlint-disable-next-line react/exhaustive-deps Handled by React Compiler
 	}, [data, startSession]);
 
@@ -98,6 +197,41 @@ export default function TenantCourseDetailClient() {
 	return (
 		<div className="relative min-h-screen overflow-hidden">
 			<BackgroundGrid />
+			<Dialog open={usernameDialogOpen} onOpenChange={setUsernameDialogOpen}>
+				<DialogContent className="sm:max-w-md" showCloseButton={!sessionMutation.isPending}>
+					<DialogTitle className="text-foreground text-lg font-semibold">
+						Set your username
+					</DialogTitle>
+					<p className="text-muted-foreground text-sm">
+						You will use this name for this course session.
+					</p>
+					<div className="space-y-2 pt-3">
+						<Label htmlFor="course-username">Username</Label>
+						<Input
+							id="course-username"
+							value={username}
+							onChange={(event) => setUsername(event.target.value)}
+							placeholder="Type your username"
+							disabled={sessionMutation.isPending}
+						/>
+					</div>
+					<div className="flex justify-end gap-2 pt-4">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setPendingQuizStart(null);
+								setUsernameDialogOpen(false);
+							}}
+							disabled={sessionMutation.isPending}
+						>
+							Cancel
+						</Button>
+						<Button variant="accent" onClick={() => void confirmUsername()}>
+							{sessionMutation.isPending ? "Saving..." : "Save username"}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 			<CourseKickDialog
 				open={kickDialog.open}
 				reason={kickDialog.reason}
@@ -238,6 +372,37 @@ export default function TenantCourseDetailClient() {
 							</p>
 						</div>
 
+						<div className="mt-8 border-t border-white/5 pt-8">
+							<div className="mb-4 flex items-center gap-3">
+								<Award className="text-primary size-5" />
+								<h2 className="text-foreground text-lg font-semibold">Certificate</h2>
+							</div>
+							<div className="bg-card/30 rounded-none border border-white/5 p-4">
+								<div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
+									<span className="text-muted-foreground">Session name:</span>
+									<span className="text-foreground font-medium">
+										{usernameLocked ? username : "Not set"}
+									</span>
+								</div>
+								<div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+									<ShieldCheck className="text-primary size-4" />
+									<span className="text-muted-foreground">
+										Points: {progressQuery.data?.points ?? 0}/{progressQuery.data?.threshold ?? 10}
+									</span>
+								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => certificateMutation.mutate()}
+									disabled={!progressQuery.data?.eligible || certificateMutation.isPending}
+									className="text-muted-foreground hover:border-primary/30 hover:text-primary border-white/10"
+								>
+									<Download className="size-3.5" />
+									{certificateMutation.isPending ? "Generating..." : "Download Certificate"}
+								</Button>
+							</div>
+						</div>
+
 						<div className="mt-8">
 							<div className="mb-6 flex items-center gap-3">
 								<BookOpen className="text-primary size-5" />
@@ -261,7 +426,17 @@ export default function TenantCourseDetailClient() {
 								<BookOpen className="text-primary size-5" />
 								<h2 className="text-foreground text-lg font-semibold">Modules</h2>
 							</div>
-							<LiveModules modules={data.modules ?? []} courseId={uuid} />
+							<LiveModules
+								modules={data.modules ?? []}
+								courseId={uuid}
+								onEnsureUsername={async (startQuiz) => {
+									if (await ensureUsernameBeforeQuiz()) {
+										startQuiz();
+										return;
+									}
+									setPendingQuizStart(() => startQuiz);
+								}}
+							/>
 						</div>
 					</section>
 				)}
@@ -270,7 +445,15 @@ export default function TenantCourseDetailClient() {
 	);
 }
 
-function LiveModules({ modules, courseId }: { modules: Module[]; courseId: string }) {
+function LiveModules({
+	modules,
+	courseId,
+	onEnsureUsername,
+}: {
+	modules: Module[];
+	courseId: string;
+	onEnsureUsername: (startQuiz: () => void) => void | Promise<void>;
+}) {
 	if (modules.length === 0) {
 		return (
 			<EmptyState
@@ -321,6 +504,13 @@ function LiveModules({ modules, courseId }: { modules: Module[]; courseId: strin
 											courseId={courseId}
 											moduleId={module.uuid}
 											onSaveResult={() => {}}
+											onEnsureUsername={async () => {
+												let allowed = false;
+												await onEnsureUsername(() => {
+													allowed = true;
+												});
+												return allowed;
+											}}
 										/>
 									))}
 								</div>

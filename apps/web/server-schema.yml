@@ -1092,14 +1092,27 @@ components:
         branchName:
           type: string
 
+    TenantBranch:
+      type: object
+      required: [branchKey, name]
+      properties:
+        branchKey:
+          type: string
+        name:
+          type: string
+
     TenantCountry:
       type: object
-      required: [countryKey, name]
+      required: [countryKey, name, branches]
       properties:
         countryKey:
           type: string
         name:
           type: string
+        branches:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantBranch"
 
     Country:
       type: object

@@ -1,6 +1,5 @@
 "use client";
 
-import { Suspense } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,10 +7,13 @@ import { LayoutDashboard, Loader2, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
+import type { TenantCountry } from "@/api-client";
 import { getAuthTenants } from "@/api-client/sdk.gen";
 import { logout, useAuth } from "@/hooks/use-auth";
 import {
+	getBranchKeyFromPathname,
 	getCountryPathFromPathname,
 	getCoursesPath,
 	getDashboardPath,
@@ -40,16 +42,19 @@ function HeaderInner() {
 	const { data } = useAuth();
 	const countryPath = getCountryPathFromPathname(pathname);
 	const selectedCountryKey = countryPath.replace("/", "");
-	const tenantsQuery = useQuery<{ countryKey: string; name: string }[]>({
+	const selectedBranchKey = getBranchKeyFromPathname(pathname);
+	const tenantsQuery = useQuery<TenantCountry[]>({
 		queryKey: ["auth", "tenants"],
 		queryFn: async () => {
 			const response = await getAuthTenants({
 				throwOnError: true,
 			});
 
-			return response.data as { countryKey: string; name: string }[];
+			return response.data as TenantCountry[];
 		},
 	});
+	const selectedCountry = tenantsQuery.data?.find((t) => t.countryKey === selectedCountryKey);
+	const branches = selectedCountry?.branches ?? [];
 	const logoutMutation = useMutation({
 		mutationFn: async () => {
 			await logout();
@@ -63,10 +68,13 @@ function HeaderInner() {
 		},
 	});
 
-	const replaceCountryInPathname = (nextCountryKey: string) => {
+	const replaceCountryInPathname = (nextCountryKey: string, nextBranchKey?: string) => {
 		const chunks = pathname.split("/").filter(Boolean);
 		if (chunks.length > 0 && /^[a-z]{2}-\d+$/i.test(chunks[0] || "")) {
 			chunks[0] = nextCountryKey;
+			if (nextBranchKey && chunks.length > 1 && /^branch-\d+$/i.test(chunks[1] || "")) {
+				chunks[1] = nextBranchKey;
+			}
 			return `/${chunks.join("/")}`;
 		}
 
@@ -78,7 +86,25 @@ function HeaderInner() {
 			return;
 		}
 
-		const nextPath = replaceCountryInPathname(nextCountryKey);
+		const nextCountry = tenantsQuery.data?.find((t) => t.countryKey === nextCountryKey);
+		const nextBranchKey = nextCountry?.branches?.[0]?.branchKey;
+		const nextPath = replaceCountryInPathname(nextCountryKey, nextBranchKey);
+		const search = searchParams.toString();
+		const hash = typeof window === "undefined" ? "" : window.location.hash;
+		const nextUrl = `${nextPath}${search ? `?${search}` : ""}${hash}`;
+		router.push(nextUrl);
+	};
+
+	const handleBranchChange = (nextBranchKey: string | null) => {
+		if (!nextBranchKey || nextBranchKey === selectedBranchKey) {
+			return;
+		}
+
+		const chunks = pathname.split("/").filter(Boolean);
+		if (chunks.length > 1 && /^branch-\d+$/i.test(chunks[1] || "")) {
+			chunks[1] = nextBranchKey;
+		}
+		const nextPath = `/${chunks.join("/")}`;
 		const search = searchParams.toString();
 		const hash = typeof window === "undefined" ? "" : window.location.hash;
 		const nextUrl = `${nextPath}${search ? `?${search}` : ""}${hash}`;
@@ -131,6 +157,21 @@ function HeaderInner() {
 							))}
 						</SelectContent>
 					</Select>
+
+					{branches.length > 1 && (
+						<Select value={selectedBranchKey} onValueChange={handleBranchChange}>
+							<SelectTrigger className="min-w-22 sm:min-w-26" aria-label="Select branch">
+								<SelectValue placeholder="Branch" />
+							</SelectTrigger>
+							<SelectContent align="end">
+								{branches.map((branch) => (
+									<SelectItem key={branch.branchKey} value={branch.branchKey}>
+										{branch.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
 
 					{data ? (
 						<DropdownMenu>

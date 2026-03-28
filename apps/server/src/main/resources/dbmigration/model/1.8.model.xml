@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="support_messages" identityType="external" pkName="pk_support_messages">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="submitted_by_uuid" type="uuid" notnull="true" references="accounts.uuid" foreignKeyName="fk_support_messages_submitted_by_uuid" foreignKeyIndex="ix_support_messages_submitted_by_uuid"/>
+            <column name="subject" type="varchar" notnull="true"/>
+            <column name="page_url" type="varchar" notnull="true"/>
+            <column name="steps_to_reproduce" type="text" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="support_message_attachments" identityType="external" pkName="pk_support_message_attachments">
+            <column name="uuid" type="uuid" primaryKey="true" identity="true"/>
+            <column name="support_message_uuid" type="uuid" notnull="true" references="support_messages.uuid" foreignKeyName="fk_support_message_attachments_support_message_uuid" foreignKeyIndex="ix_support_message_attachments_support_message_uuid"/>
+            <column name="asset_uuid" type="uuid" notnull="true" uniqueOneToOne="uq_support_message_attachments_asset_uuid" references="file_assets.uuid" foreignKeyName="fk_support_message_attachments_asset_uuid"/>
+            <column name="file_name" type="varchar" notnull="true"/>
+            <column name="file_url" type="varchar" notnull="true"/>
+            <column name="mime_type" type="varchar" notnull="true"/>
+            <column name="size_bytes" type="bigint" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>

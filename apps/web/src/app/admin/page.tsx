@@ -12,6 +12,7 @@ import {
 	putAdminBranchesByBranchId,
 	putAdminCountriesByCountryId,
 } from "@/api-client";
+import { client } from "@/api-client/client.gen";
 import { getAdminBranches, getAdminCountries } from "@/api-client/sdk.gen";
 import type { BranchUpdateRequest, CountryUpdateRequest } from "@/api-client/types.gen";
 import BranchFormDialog from "@/components/admin/branch-form-dialog";
@@ -57,6 +58,26 @@ type Branch = {
 	managerUsername: string;
 	lecturerUsername: string;
 	branchKey: string;
+};
+
+type SupportMessage = {
+	uuid: string;
+	subject: string;
+	pageUrl: string;
+	stepsToReproduce: string;
+	createdAt: string;
+	submittedBy: {
+		uuid: string;
+		username: string;
+		displayName: string;
+	};
+	attachments: Array<{
+		uuid: string;
+		fileName: string;
+		fileUrl: string;
+		mimeType: string;
+		sizeBytes: number;
+	}>;
 };
 
 function EditCountryDialog({ country, onSaved }: { country: Country; onSaved: () => void }) {
@@ -265,6 +286,18 @@ export default function AdminPage() {
 		},
 	});
 
+	const supportMessagesQuery = useQuery({
+		queryKey: ["admin", "support-messages"],
+		enabled: authData?.role === "admin",
+		queryFn: async () => {
+			const response = await client.get({
+				url: "/support-messages",
+				throwOnError: true,
+			});
+			return response.data as SupportMessage[];
+		},
+	});
+
 	useEffect(() => {
 		if (!authPending && (!authData || authData.role !== "admin")) {
 			router.push(getAdminLoginPath());
@@ -450,6 +483,71 @@ export default function AdminPage() {
 										<p className="text-muted-foreground text-xs">
 											Lecturer: {branch.lecturerUsername}
 										</p>
+									</div>
+								))
+							)}
+						</CardContent>
+					</Card>
+				</motion.div>
+
+				<motion.div
+					initial={{ opacity: 0, y: 16 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.4, delay: 0.1 }}
+				>
+					<Card className="bg-card/40 border-white/5 backdrop-blur-sm">
+						<CardHeader>
+							<CardTitle className="text-foreground text-xl">Support Messages</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-3">
+							{supportMessagesQuery.isPending ? (
+								<Loader2 className="text-primary mx-auto size-8 animate-spin" />
+							) : (supportMessagesQuery.data ?? []).length === 0 ? (
+								<EmptyState
+									title="No support messages"
+									description="Student messages will show here with page URL, steps, and attachments."
+									icon={<Globe className="text-primary size-7" />}
+									iconClassName="bg-primary/10"
+								/>
+							) : (
+								(supportMessagesQuery.data ?? []).map((message) => (
+									<div
+										key={message.uuid}
+										className="bg-background/20 space-y-3 border border-white/5 p-3"
+									>
+										<div className="flex flex-wrap items-center justify-between gap-2">
+											<p className="text-foreground text-sm font-semibold">{message.subject}</p>
+											<p className="text-muted-foreground text-xs">
+												{new Date(message.createdAt).toLocaleString()}
+											</p>
+										</div>
+										<p className="text-muted-foreground text-xs">
+											From: {message.submittedBy.displayName} ({message.submittedBy.username})
+										</p>
+										<p className="text-muted-foreground break-all text-xs">
+											URL: {message.pageUrl}
+										</p>
+										<p className="text-foreground text-xs whitespace-pre-wrap">
+											{message.stepsToReproduce}
+										</p>
+										{message.attachments.length > 0 && (
+											<div className="space-y-1">
+												<p className="text-muted-foreground text-xs font-semibold">Attachments</p>
+												<div className="space-y-1">
+													{message.attachments.map((attachment) => (
+														<a
+															key={attachment.uuid}
+															href={attachment.fileUrl}
+															target="_blank"
+															rel="noreferrer"
+															className="text-primary block text-xs underline"
+														>
+															{attachment.fileName}
+														</a>
+													))}
+												</div>
+											</div>
+										)}
 									</div>
 								))
 							)}

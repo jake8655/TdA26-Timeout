@@ -6,6 +6,7 @@ import { client } from "@/api-client/client.gen";
 import { env } from "@/env";
 import { AuthProvider } from "@/hooks/use-auth";
 import { createQueryClient } from "@/lib/query-client";
+import SupportMessageWidget from "@/components/support/support-message-widget";
 
 import { Toaster } from "./ui/sonner";
 
@@ -21,6 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
 				{children}
+				<SupportMessageWidget />
 				<Toaster />
 			</AuthProvider>
 		</QueryClientProvider>

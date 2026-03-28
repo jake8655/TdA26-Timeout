@@ -17,8 +17,8 @@ public class SupportMessage extends Model {
 
   @Id private UUID uuid;
 
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "submitted_by_uuid", nullable = false)
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "submitted_by_uuid", nullable = true)
   private Account submittedBy;
 
   @Column(nullable = false)

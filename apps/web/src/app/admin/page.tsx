@@ -70,7 +70,7 @@ type SupportMessage = {
 		uuid: string;
 		username: string;
 		displayName: string;
-	};
+	} | null;
 	attachments: Array<{
 		uuid: string;
 		fileName: string;
@@ -522,7 +522,10 @@ export default function AdminPage() {
 											</p>
 										</div>
 										<p className="text-muted-foreground text-xs">
-											From: {message.submittedBy.displayName} ({message.submittedBy.username})
+											From:{" "}
+											{message.submittedBy
+												? `${message.submittedBy.displayName} (${message.submittedBy.username})`
+												: "Anonymous"}
 										</p>
 										<p className="text-muted-foreground break-all text-xs">
 											URL: {message.pageUrl}

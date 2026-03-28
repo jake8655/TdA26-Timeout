@@ -50,10 +50,6 @@ public class SupportMessageController extends Controller {
       @RequestPart(value = "attachments", required = false) MultipartFile[] attachments) {
     var session = getValidSession(sessionId);
     Account account = resolveAccount(session);
-    if (account == null) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(Map.of("status", "bad", "message", "unauthorized"));
-    }
 
     if (subject == null || subject.isBlank() || pageUrl == null || pageUrl.isBlank() || stepsToReproduce == null || stepsToReproduce.isBlank()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -157,10 +153,12 @@ public class SupportMessageController extends Controller {
                   item.put("createdAt", message.getCreatedAt());
                   item.put(
                       "submittedBy",
-                      Map.of(
-                          "uuid", message.getSubmittedBy().getUuid(),
-                          "username", message.getSubmittedBy().getUsername(),
-                          "displayName", message.getSubmittedBy().getDisplayName()));
+                      message.getSubmittedBy() == null
+                          ? null
+                          : Map.of(
+                              "uuid", message.getSubmittedBy().getUuid(),
+                              "username", message.getSubmittedBy().getUsername(),
+                              "displayName", message.getSubmittedBy().getDisplayName()));
 
                   List<Map<String, Object>> attachments =
                       DB.find(SupportMessageAttachment.class)

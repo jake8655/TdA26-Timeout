@@ -4,7 +4,7 @@ An online course platform for educators and learners alike.
 ## Team Members
 - [Dominik Tóth (Jake)](https://github.com/jake8655) - frontend, team lead
 - [Filip Konc (hypnomacka)](https://github.com/hypnomacka) - backend
-- [Jakub Cagáň](https://github.com/koobisko) - financial support
+- [Jakub Cagáň](https://github.com/koobisko) - pani sekretarka + financial support
 
 ## Quick Start (Docker Compose)
 

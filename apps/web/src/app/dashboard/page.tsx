@@ -1,12 +1,7 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import DashboardClient from "./dashboard-client";
-
-export const metadata: Metadata = {
-	title: "Dashboard",
-	description: "Manage your courses, track student progress, and create new learning content.",
-};
+import { getDefaultBranchKey, getDefaultCountryPath } from "@/lib/tenant-routing";
 
 export default function DashboardPage() {
-	return <DashboardClient />;
+	redirect(`${getDefaultCountryPath()}/${getDefaultBranchKey()}/dashboard`);
 }

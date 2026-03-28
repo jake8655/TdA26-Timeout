@@ -8,10 +8,14 @@ import Link from "next/link";
 import type { CourseSummary } from "@/api-client";
 import { CourseStatus } from "@/api-client/types.gen";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
+import { useAuth } from "@/hooks/use-auth";
 import { formatCourseTime } from "@/lib/course-date-utils";
+import { getCoursePath } from "@/lib/tenant-routing";
 import { cn } from "@/lib/utils";
 
 export function CourseCard({ course, index }: { course: CourseSummary; index: number }) {
+	const { data: authData } = useAuth();
+
 	return (
 		<motion.div
 			layout
@@ -23,7 +27,9 @@ export function CourseCard({ course, index }: { course: CourseSummary; index: nu
 		>
 			<Link
 				href={
-					course.status === CourseStatus.PAUSED ? "javasript:void(0)" : `/courses/${course.uuid}`
+					course.status === CourseStatus.PAUSED
+						? "javasript:void(0)"
+						: getCoursePath(authData, course.uuid)
 				}
 				className={cn(
 					"group bg-card/40 flex h-full flex-col border border-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl",

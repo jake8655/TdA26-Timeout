@@ -2,26 +2,34 @@ import { useQuery } from "@tanstack/react-query";
 import { createContext, use } from "react";
 import z from "zod";
 
-import { env } from "@/env";
+import { getAuthMe, postAuthLogout } from "@/api-client/sdk.gen";
 
 export const authSchema = z.object({
 	username: z.string(),
+	displayName: z.string().optional().default(""),
+	role: z.enum(["admin", "manager", "lecturer"]).optional().default("lecturer"),
+	countryKey: z.string().optional().default(""),
+	countryId: z.string().optional().default(""),
+	branchId: z.string().optional().default(""),
+	branchKey: z.string().optional().default(""),
+	branchName: z.string().optional().default(""),
 });
 export type AuthData = z.infer<typeof authSchema>;
 
 export function useAuthQuery(): AuthContextType {
-	const { data, isPending } = useQuery({
+	const { data, isPending } = useQuery<AuthData | null>({
 		queryKey: ["auth"],
 		queryFn: async () => {
-			const res = await fetch(`${env.NEXT_PUBLIC_API_BASE}/auth/me`, {
-				credentials: "include",
-			});
+			let json: unknown;
+			try {
+				const response = await getAuthMe({
+					throwOnError: true,
+				});
+				json = response.data;
+			} catch {
+				return null;
+			}
 
-			if (res.status === 401) return null;
-
-			if (!res.ok) throw new Error("Failed when communicating with the server");
-
-			const json = await res.json();
 			const { success, data, error } = authSchema.safeParse(json);
 
 			if (!success) {
@@ -31,7 +39,6 @@ export function useAuthQuery(): AuthContextType {
 
 			return data;
 		},
-		// Do not retry 401 errors
 		retry: false,
 		staleTime: 5 * 60 * 1000,
 	});
@@ -68,8 +75,7 @@ export function useAuth() {
 }
 
 export async function logout() {
-	await fetch(`${env.NEXT_PUBLIC_API_BASE}/auth/logout`, {
-		method: "POST",
-		credentials: "include",
+	await postAuthLogout({
+		throwOnError: true,
 	});
 }

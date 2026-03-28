@@ -2,12 +2,17 @@ package eu.hypnomacka.timeout.server.controllers.course.quizzes;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.CourseJoin;
 import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Quiz;
+import eu.hypnomacka.timeout.server.core.QuizAnswerSubmission;
 import eu.hypnomacka.timeout.server.core.QuizResult;
+import eu.hypnomacka.timeout.server.core.query.QCourseJoin;
 import eu.hypnomacka.timeout.server.core.query.QQuizResult;
 import io.ebean.DB;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,6 +30,8 @@ public class QuizResultsGetController extends Controller {
       @PathVariable String courseId,
       @PathVariable String moduleId,
       @PathVariable String quizId,
+      @RequestParam(value = "latestPerParticipant", required = false, defaultValue = "false")
+          boolean latestPerParticipant,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @CookieValue(value = "STUDENT_SESSION_ID", required = false) String studentSessionId) {
 
@@ -62,6 +69,22 @@ public class QuizResultsGetController extends Controller {
     List<QuizResult> results = new ArrayList<>();
     if (isLecturer) {
       results = new QQuizResult().quiz.eq(quiz).orderBy().submittedAt.desc().findList();
+      if (latestPerParticipant) {
+        Map<String, QuizResult> latest = new HashMap<>();
+        for (QuizResult result : results) {
+          String key = result.getSessionToken();
+          if (key == null || key.isBlank()) {
+            key = "anonymous:" + result.getUuid();
+          }
+          if (!latest.containsKey(key)) {
+            latest.put(key, result);
+          }
+        }
+        results =
+            latest.values().stream()
+                .sorted(Comparator.comparing(QuizResult::getSubmittedAt).reversed())
+                .toList();
+      }
     } else if (studentSessionId != null && !studentSessionId.isBlank()) {
       results =
           new QQuizResult()
@@ -77,13 +100,31 @@ public class QuizResultsGetController extends Controller {
 
     List<QuizSubmitResponse> responses = new ArrayList<>();
     for (QuizResult result : results) {
-      responses.add(
+      QuizSubmitResponse response =
           new QuizSubmitResponse(
               result.getQuiz().getUuid().toString(),
+              result.getUuid().toString(),
               result.getScore(),
               result.getMaxScore(),
               result.getCorrectPerQuestion(),
-              result.getSubmittedAt()));
+              result.getSubmittedAt(),
+              result.getAttemptStartedAt(),
+              result.getDurationSeconds());
+
+      List<QuizAnswerSelectionResponse> answers = new ArrayList<>();
+      for (QuizAnswerSubmission submission : result.getAnswerSubmissions()) {
+        answers.add(
+            new QuizAnswerSelectionResponse(
+                submission.getQuestionUuid(), new ArrayList<>(submission.getSelectedIndices())));
+      }
+      response.setAnswers(answers);
+
+      if (isLecturer) {
+        response.setParticipantSessionToken(result.getSessionToken());
+        response.setParticipantUsername(resolveUsername(course, result.getSessionToken()));
+      }
+
+      responses.add(response);
     }
 
     return ResponseEntity.ok(responses);
@@ -119,5 +160,19 @@ public class QuizResultsGetController extends Controller {
     } catch (IllegalArgumentException e) {
       return null;
     }
+  }
+
+  private String resolveUsername(Course course, String sessionToken) {
+    if (sessionToken == null || sessionToken.isBlank()) {
+      return null;
+    }
+
+    CourseJoin join =
+        new QCourseJoin().course.eq(course).sessionToken.eq(sessionToken).setMaxRows(1).findOne();
+    if (join == null) {
+      return null;
+    }
+
+    return join.getUsername();
   }
 }

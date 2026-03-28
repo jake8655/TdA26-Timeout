@@ -4,6 +4,77 @@ info:
   version: 1.0.0
 
 paths:
+  /auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /auth/tenants/{countryKey}/login:
+    parameters:
+      - $ref: "#/components/parameters/CountryKey"
+    post:
+      summary: Tenant login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /auth/tenants:
+    get:
+      summary: List tenant countries
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TenantCountry"
+
+  /auth/logout:
+    post:
+      summary: Logout
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /auth/me:
+    get:
+      summary: Authenticated profile
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthMeResponse"
+
   /:
     get:
       summary: Root endpoint
@@ -192,13 +263,52 @@ paths:
       - $ref: "#/components/parameters/CourseId"
     post:
       summary: Create course session
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseSessionRequest"
       responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseSessionResponse"
         "201":
           description: Created
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CourseSessionResponse"
+
+  /courses/{courseId}/progress:
+    parameters:
+      - $ref: "#/components/parameters/CourseId"
+    get:
+      summary: Get student course progress
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseProgressResponse"
+
+  /courses/{courseId}/certificate:
+    parameters:
+      - $ref: "#/components/parameters/CourseId"
+    get:
+      summary: Download course certificate PDF
+      responses:
+        "200":
+          description: OK
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
 
   /courses/{courseId}/leave:
     parameters:
@@ -231,6 +341,65 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CourseDetail"
+
+  /courses/{courseId}/export:
+    parameters:
+      - $ref: "#/components/parameters/CourseId"
+    post:
+      summary: Export course payload
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseExportPayload"
+
+  /courses/import:
+    post:
+      summary: Import course payload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseExportPayload"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseImportResponse"
+
+  /courses/{courseId}/versions:
+    parameters:
+      - $ref: "#/components/parameters/CourseId"
+    get:
+      summary: List course versions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CourseVersionSummary"
+
+  /courses/{courseId}/versions/{versionNo}:
+    parameters:
+      - $ref: "#/components/parameters/CourseId"
+      - $ref: "#/components/parameters/VersionNo"
+    get:
+      summary: Get course version snapshot
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseVersionDetail"
 
   /courses/{courseId}/modules:
     parameters:
@@ -518,6 +687,12 @@ paths:
       - $ref: "#/components/parameters/QuizId"
     get:
       summary: Get quiz results
+      parameters:
+        - name: latestPerParticipant
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         "200":
           description: OK
@@ -664,8 +839,181 @@ paths:
               schema:
                 $ref: "#/components/schemas/StatusResponse"
 
+  /admin/countries:
+    get:
+      summary: List countries
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Country"
+    post:
+      summary: Create country
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CountryCreateRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Country"
+
+  /admin/countries/{countryId}:
+    parameters:
+      - $ref: "#/components/parameters/CountryId"
+    put:
+      summary: Update country
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CountryUpdateRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Country"
+    delete:
+      summary: Delete country
+      responses:
+        "204":
+          description: No content
+
+  /admin/branches:
+    get:
+      summary: List branches
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BranchAdmin"
+    post:
+      summary: Create branch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BranchCreateRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BranchAdmin"
+
+  /admin/branches/{branchId}:
+    parameters:
+      - $ref: "#/components/parameters/BranchId"
+    put:
+      summary: Update branch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BranchUpdateRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BranchAdmin"
+    delete:
+      summary: Delete branch
+      responses:
+        "204":
+          description: No content
+
+  /manager/branch:
+    get:
+      summary: Manager branch profile
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagerBranch"
+    put:
+      summary: Update manager branch profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BranchUpdateRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /manager/lecturer/credentials:
+    put:
+      summary: Update lecturer credentials by manager
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManagerLecturerCredentialsRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
 components:
   parameters:
+    CountryKey:
+      name: countryKey
+      in: path
+      required: true
+      schema:
+        type: string
+    CountryId:
+      name: countryId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    BranchId:
+      name: branchId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    VersionNo:
+      name: versionNo
+      in: path
+      required: true
+      schema:
+        type: integer
     CourseId:
       name: courseId
       in: path
@@ -711,6 +1059,387 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
 
   schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthMeResponse:
+      type: object
+      required: [status, username, role]
+      properties:
+        status:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, lecturer]
+        countryKey:
+          type: string
+        countryId:
+          type: string
+        branchId:
+          type: string
+        branchKey:
+          type: string
+        branchName:
+          type: string
+
+    TenantCountry:
+      type: object
+      required: [countryKey, name]
+      properties:
+        countryKey:
+          type: string
+        name:
+          type: string
+
+    Country:
+      type: object
+      required: [id, isoCode, name, status]
+      properties:
+        id:
+          type: integer
+          format: int64
+        isoCode:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, onboarding, waiting]
+
+    CountryCreateRequest:
+      type: object
+      required: [isoCode, name]
+      properties:
+        isoCode:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, onboarding, waiting]
+
+    CountryUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, onboarding, waiting]
+
+    BranchAdmin:
+      type: object
+      required:
+        [
+          id,
+          countryId,
+          countryKey,
+          name,
+          city,
+          address,
+          postalCode,
+          region,
+          type,
+          status,
+          managerDisplayName,
+          managerUsername,
+          lecturerUsername,
+          branchKey,
+        ]
+      properties:
+        id:
+          type: integer
+          format: int64
+        countryId:
+          type: integer
+          format: int64
+        countryKey:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        postalCode:
+          type: string
+        region:
+          type: string
+        type:
+          type: string
+          enum: [hq, branch]
+        status:
+          type: string
+          enum: [active, onboarding, waiting]
+        managerDisplayName:
+          type: string
+        managerUsername:
+          type: string
+        lecturerUsername:
+          type: string
+        branchKey:
+          type: string
+
+    BranchCreateRequest:
+      type: object
+      required:
+        [
+          countryId,
+          name,
+          city,
+          address,
+          postalCode,
+          region,
+          type,
+          status,
+          managerUsername,
+          managerPassword,
+          managerDisplayName,
+          lecturerUsername,
+          lecturerPassword,
+        ]
+      properties:
+        countryId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        postalCode:
+          type: string
+        region:
+          type: string
+        type:
+          type: string
+          enum: [hq, branch]
+        status:
+          type: string
+          enum: [active, onboarding, waiting]
+        managerUsername:
+          type: string
+        managerPassword:
+          type: string
+        managerDisplayName:
+          type: string
+        lecturerUsername:
+          type: string
+        lecturerPassword:
+          type: string
+
+    BranchUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        postalCode:
+          type: string
+        region:
+          type: string
+        type:
+          type: string
+          enum: [hq, branch]
+        status:
+          type: string
+          enum: [active, onboarding, waiting]
+
+    ManagerBranch:
+      type: object
+      required:
+        [
+          id,
+          countryId,
+          countryKey,
+          name,
+          city,
+          address,
+          postalCode,
+          region,
+          type,
+          status,
+          lecturerAccountId,
+          lecturerUsername,
+        ]
+      properties:
+        id:
+          type: integer
+          format: int64
+        countryId:
+          type: integer
+          format: int64
+        countryKey:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+        postalCode:
+          type: string
+        region:
+          type: string
+        type:
+          type: string
+          enum: [hq, branch]
+        status:
+          type: string
+          enum: [active, onboarding, waiting]
+        lecturerAccountId:
+          type: string
+        lecturerUsername:
+          type: string
+
+    ManagerLecturerCredentialsRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    CourseExportPayload:
+      type: object
+      required: [formatVersion, exportedAt, course, modules]
+      properties:
+        formatVersion:
+          type: integer
+        exportedAt:
+          type: string
+          format: date-time
+        course:
+          type: object
+          required: [name]
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+        modules:
+          type: array
+          items:
+            $ref: "#/components/schemas/CourseExportModule"
+
+    CourseExportModule:
+      type: object
+      required: [title, orderIndex, visible, materials, quizzes]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        orderIndex:
+          type: integer
+        visible:
+          type: boolean
+        materials:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              url:
+                type: string
+              mimeType:
+                type: string
+              sizeBytes:
+                type: integer
+                format: int64
+              faviconUrl:
+                type: string
+        quizzes:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              questions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    question:
+                      type: string
+                    options:
+                      type: array
+                      items:
+                        type: string
+                    correctIndex:
+                      type: integer
+                    correctIndices:
+                      type: array
+                      items:
+                        type: integer
+                    position:
+                      type: integer
+
+    CourseImportResponse:
+      type: object
+      required: [status, courseId]
+      properties:
+        status:
+          type: string
+        courseId:
+          type: string
+          format: uuid
+
+    CourseVersionSummary:
+      type: object
+      required: [versionNo, reason, source, createdAt, createdBy]
+      properties:
+        versionNo:
+          type: integer
+        reason:
+          type: string
+        source:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+
+    CourseVersionDetail:
+      type: object
+      required: [versionNo, reason, source, createdAt, snapshot]
+      properties:
+        versionNo:
+          type: integer
+        reason:
+          type: string
+        source:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        snapshot:
+          type: object
+          additionalProperties: true
+
     OrganizationResponse:
       type: object
       required: [organization]
@@ -840,13 +1569,42 @@ components:
           type: string
           format: date-time
 
+    CourseSessionRequest:
+      type: object
+      properties:
+        username:
+          type: string
+
     CourseSessionResponse:
       type: object
       properties:
         status:
           type: string
+        message:
+          type: string
         sessionId:
           type: string
+        username:
+          type: string
+        usernameLocked:
+          type: boolean
+
+    CourseProgressResponse:
+      type: object
+      required: [status, points, threshold, eligible, bestAttemptsCount]
+      properties:
+        status:
+          type: string
+        username:
+          type: string
+        points:
+          type: number
+        threshold:
+          type: integer
+        eligible:
+          type: boolean
+        bestAttemptsCount:
+          type: integer
 
     CourseDuplicateRequest:
       type: object
@@ -1080,6 +1838,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/QuizAnswer"
+        attemptStartedAt:
+          type: string
+          format: date-time
 
     QuizAnswer:
       type: object
@@ -1103,6 +1864,9 @@ components:
         quizUuid:
           type: string
           format: uuid
+        resultUuid:
+          type: string
+          format: uuid
         score:
           type: number
         maxScore:
@@ -1114,6 +1878,31 @@ components:
         submittedAt:
           type: string
           format: date-time
+        attemptStartedAt:
+          type: string
+          format: date-time
+        durationSeconds:
+          type: integer
+        participantUsername:
+          type: string
+        participantSessionToken:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizAnswerSelectionResponse"
+
+    QuizAnswerSelectionResponse:
+      type: object
+      required: [questionUuid, selectedIndices]
+      properties:
+        questionUuid:
+          type: string
+          format: uuid
+        selectedIndices:
+          type: array
+          items:
+            type: integer
 
     QuizStatsResponse:
       type: object

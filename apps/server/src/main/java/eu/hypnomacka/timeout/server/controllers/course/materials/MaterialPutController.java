@@ -1,13 +1,16 @@
 package eu.hypnomacka.timeout.server.controllers.course.materials;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.FileAsset;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Module;
+import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import eu.hypnomacka.timeout.server.storage.FileStorageService;
 import io.ebean.DB;
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MaterialPutController extends Controller {
 
   private final FileStorageService fileStorageService;
+  private final CourseVersionService courseVersionService;
 
   private String normalizeMimeType(String mimeType) {
     if (mimeType == null) {
@@ -55,9 +59,15 @@ public class MaterialPutController extends Controller {
           .body(Map.of("status", "bad", "message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     UUID materialUuid;
@@ -89,6 +99,11 @@ public class MaterialPutController extends Controller {
       }
       urlAttachment.save();
 
+      Account actor = resolveAccount(session);
+      if (actor != null) {
+        courseVersionService.createSnapshot(course, actor, "URL material updated");
+      }
+
       return ResponseEntity.ok(urlAttachment);
     }
 
@@ -104,6 +119,11 @@ public class MaterialPutController extends Controller {
         fileAttachment.setDescription(description);
       }
       fileAttachment.save();
+
+      Account actor = resolveAccount(session);
+      if (actor != null) {
+        courseVersionService.createSnapshot(course, actor, "File material metadata updated");
+      }
 
       return ResponseEntity.ok(fileAttachment);
     }
@@ -134,9 +154,15 @@ public class MaterialPutController extends Controller {
           .body(Map.of("status", "bad", "message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     UUID materialUuid;
@@ -161,33 +187,49 @@ public class MaterialPutController extends Controller {
     }
 
     if (file != null && !file.isEmpty()) {
-      String oldUrl = fileAttachment.getFileUrl();
-      try {
-        fileStorageService.delete(oldUrl);
-      } catch (IOException | IllegalArgumentException e) {
-        System.err.println("Warning: Failed to delete old file: " + e.getMessage());
+      if (fileAttachment.getAsset() != null) {
+        FileAsset oldAsset = DB.find(FileAsset.class, fileAttachment.getAsset().getUuid());
+        if (oldAsset != null) {
+          oldAsset.setRetentionState(FileAsset.RetentionState.SOFT_DELETED);
+          oldAsset.save();
+        }
       }
 
       String newFileUrl;
       try {
         newFileUrl =
             fileStorageService.store(course.getUuid(), file.getOriginalFilename(), file.getBytes());
-      } catch (IOException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(Map.of("status", "bad", "message", "failed to store file: " + e.getMessage()));
       } catch (IllegalArgumentException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(Map.of("status", "bad", "message", e.getMessage()));
+      } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Map.of("status", "bad", "message", "failed to store file: " + e.getMessage()));
       }
 
       String mimeType = normalizeMimeType(file.getContentType());
 
+      FileAsset asset =
+          new FileAsset(
+              newFileUrl,
+              UUID.randomUUID().toString().replace("-", ""),
+              mimeType == null ? "application/octet-stream" : mimeType,
+              file.getSize());
+      asset.setRetentionState(FileAsset.RetentionState.PROTECTED);
+      asset.save();
+
       fileAttachment.setFileUrl(newFileUrl);
       fileAttachment.setSizeBytes(file.getSize());
       fileAttachment.setMimeType(mimeType);
+      fileAttachment.setAsset(asset);
     }
 
     fileAttachment.save();
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "File material updated");
+    }
 
     return ResponseEntity.ok(fileAttachment);
   }

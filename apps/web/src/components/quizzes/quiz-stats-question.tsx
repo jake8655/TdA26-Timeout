@@ -14,6 +14,9 @@ export function QuizStatsQuestion({
 	question,
 	questionIndex,
 	questionStats,
+	viewMode = "aggregate",
+	selectedIndices = [],
+	totalSubmissionsOverride,
 }: {
 	question: Question;
 	questionIndex: number;
@@ -26,6 +29,9 @@ export function QuizStatsQuestion({
 		correctIndices?: number[];
 		optionCounts: Record<string, number>;
 	};
+	viewMode?: "aggregate" | "participant";
+	selectedIndices?: number[];
+	totalSubmissionsOverride?: number;
 }) {
 	const isSingleChoice = question.type === "singleChoice";
 	const isMultipleChoice = question.type === "multipleChoice";
@@ -33,10 +39,9 @@ export function QuizStatsQuestion({
 	const optionCountsValues = Object.values(questionStats.optionCounts || {}).map(
 		(v) => v,
 	) as number[];
-	const totalSubmissions: number = optionCountsValues.reduce(
-		(sum: number, count: number) => sum + count,
-		0,
-	);
+	const totalSubmissions: number =
+		totalSubmissionsOverride ??
+		optionCountsValues.reduce((sum: number, count: number) => sum + count, 0);
 
 	const isCorrect = (index: number): boolean => {
 		if (isSingleChoice) {
@@ -48,6 +53,20 @@ export function QuizStatsQuestion({
 	};
 
 	const getOptionStyle = (index: number) => {
+		const isSelected = selectedIndices.includes(index);
+		if (viewMode === "participant") {
+			if (isSelected && isCorrect(index)) {
+				return "border-green-500/50 bg-green-500/10";
+			}
+			if (isSelected && !isCorrect(index)) {
+				return "border-red-500/40 bg-red-500/10";
+			}
+			if (isCorrect(index)) {
+				return "border-green-500/30 bg-green-500/5";
+			}
+			return "border-white/5 bg-card/40";
+		}
+
 		if (isCorrect(index)) {
 			return "border-green-500/50 bg-green-500/10";
 		}
@@ -77,7 +96,13 @@ export function QuizStatsQuestion({
 
 			<div className="mt-4 space-y-2">
 				{options.map((option, index) => {
-					const count = questionStats.optionCounts?.[String(index)] || 0;
+					const isSelected = selectedIndices.includes(index);
+					const count =
+						viewMode === "participant"
+							? isSelected
+								? 1
+								: 0
+							: questionStats.optionCounts?.[String(index)] || 0;
 					const percentage = totalSubmissions > 0 ? (count / totalSubmissions) * 100 : 0;
 					const correct = isCorrect(index);
 
@@ -95,6 +120,7 @@ export function QuizStatsQuestion({
 									"bg-primary/20 absolute top-0 left-0 h-full transition-all duration-500",
 									{
 										"bg-green-500/20": correct,
+										"bg-red-500/20": viewMode === "participant" && isSelected && !correct,
 									},
 								)}
 								style={{ width: `${percentage}%` }}
@@ -103,6 +129,9 @@ export function QuizStatsQuestion({
 								<div className="flex items-center gap-3">
 									<span className="text-foreground text-sm leading-relaxed">{option}</span>
 									{correct && <CheckCircle className="size-4 text-green-500" />}
+									{viewMode === "participant" && isSelected && (
+										<span className="text-xs text-blue-300">Selected</span>
+									)}
 								</div>
 								<div className="flex items-center gap-2">
 									<span className="text-foreground text-sm font-medium">{count}</span>

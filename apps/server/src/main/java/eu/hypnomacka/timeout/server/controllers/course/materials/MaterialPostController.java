@@ -1,16 +1,21 @@
 package eu.hypnomacka.timeout.server.controllers.course.materials;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.FileAsset;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Module;
+import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import eu.hypnomacka.timeout.server.storage.FileStorageService;
 import io.ebean.DB;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,9 +26,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/courses/{courseId}/modules/{moduleId}/materials")
 @RequiredArgsConstructor
+@Slf4j
 public class MaterialPostController extends Controller {
 
   private final FileStorageService fileStorageService;
+  private final CourseVersionService courseVersionService;
 
   private static final List<String> SUPPORTED_MIME_TYPES =
       Arrays.asList(
@@ -57,9 +64,15 @@ public class MaterialPostController extends Controller {
           .body(Map.of("status", "bad", "message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     String name = request.get("name");
@@ -86,6 +99,11 @@ public class MaterialPostController extends Controller {
                 + url.replace("https://", "").replace("http://", "").split("/")[0]
                 + ".ico");
     attachment.save();
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "URL material added");
+    }
 
     return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
   }
@@ -123,9 +141,15 @@ public class MaterialPostController extends Controller {
           .body(Map.of("status", "bad", "message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     String fileUrl;
@@ -144,7 +168,21 @@ public class MaterialPostController extends Controller {
     FileAttachment attachment =
         new FileAttachment(
             module, name, description, FileAttachment.Type.file, file.getSize(), mimeType, fileUrl);
+    FileAsset asset =
+        new FileAsset(
+            fileUrl,
+            UUID.randomUUID().toString().replace("-", ""),
+            mimeType,
+            file.getSize());
+    asset.setRetentionState(FileAsset.RetentionState.PROTECTED);
+    asset.save();
+    attachment.setAsset(asset);
     attachment.save();
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "File material added");
+    }
 
     return ResponseEntity.status(HttpStatus.CREATED).body(attachment);
   }

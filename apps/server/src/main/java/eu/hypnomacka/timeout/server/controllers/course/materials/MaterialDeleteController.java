@@ -1,12 +1,16 @@
 package eu.hypnomacka.timeout.server.controllers.course.materials;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
+import eu.hypnomacka.timeout.server.core.FileAsset;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Module;
+import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
-import eu.hypnomacka.timeout.server.storage.FileStorageService;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import io.ebean.DB;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MaterialDeleteController extends Controller {
 
-  private final FileStorageService fileStorageService;
+  private final CourseVersionService courseVersionService;
 
   @DeleteMapping("/{materialId}")
   public ResponseEntity<?> deleteMaterial(
@@ -40,9 +44,15 @@ public class MaterialDeleteController extends Controller {
           .body(Map.of("status", "bad", "message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     UUID materialUuid;
@@ -66,14 +76,20 @@ public class MaterialDeleteController extends Controller {
 
     FileAttachment file = DB.find(FileAttachment.class, materialUuid);
     if (file != null && file.getModule().getUuid().equals(module.getUuid())) {
-      String fileUrl = file.getFileUrl();
-      try {
-        fileStorageService.delete(fileUrl);
-      } catch (Exception e) {
-        System.err.println("Error deleting file from disk: " + e.getMessage());
+      if (file.getAsset() != null) {
+        FileAsset asset = DB.find(FileAsset.class, file.getAsset().getUuid());
+        if (asset != null) {
+          asset.setRetentionState(FileAsset.RetentionState.SOFT_DELETED);
+          asset.setDeletedAt(Instant.now());
+          asset.save();
+        }
       }
 
       if (file.delete()) {
+        Account actor = resolveAccount(session);
+        if (actor != null) {
+          courseVersionService.createSnapshot(course, actor, "File material deleted");
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
       }
 
@@ -84,6 +100,10 @@ public class MaterialDeleteController extends Controller {
     UrlAttachment urlFile = DB.find(UrlAttachment.class, materialUuid);
     if (urlFile != null && urlFile.getModule().getUuid().equals(module.getUuid())) {
       if (urlFile.delete()) {
+        Account actor = resolveAccount(session);
+        if (actor != null) {
+          courseVersionService.createSnapshot(course, actor, "URL material deleted");
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
       }
 

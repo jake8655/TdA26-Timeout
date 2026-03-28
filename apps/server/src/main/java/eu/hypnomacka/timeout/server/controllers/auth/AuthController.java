@@ -1,8 +1,12 @@
 package eu.hypnomacka.timeout.server.controllers.auth;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
+import eu.hypnomacka.timeout.server.core.Branch;
+import eu.hypnomacka.timeout.server.core.Country;
 import eu.hypnomacka.timeout.server.core.Lecturer;
 import eu.hypnomacka.timeout.server.core.Session;
+import io.ebean.DB;
 import eu.hypnomacka.timeout.server.core.query.QLecturer;
 import eu.hypnomacka.timeout.server.core.query.QSession;
 import eu.hypnomacka.timeout.server.utils.HashUtil;
@@ -11,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Base64;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -21,14 +26,88 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController extends Controller {
 
-  private static final String USERNAME = "lecturer";
-  private static final String PASSWORD = "TdA26!";
+  @GetMapping("/tenants")
+  public ResponseEntity<List<Map<String, String>>> tenants() {
+    List<Map<String, String>> payload =
+        DB.find(Country.class).where().eq("status", Country.Status.ACTIVE).orderBy("id desc").findList().stream()
+            .map(
+                country ->
+                    Map.of(
+                        "countryKey", country.getCountryKey() == null ? "" : country.getCountryKey(),
+                        "name", country.getName() == null ? "" : country.getName()))
+            .filter(item -> !item.get("countryKey").isBlank())
+            .toList();
+
+    return ResponseEntity.ok(payload);
+  }
 
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(
       @RequestBody Map<String, String> body, HttpServletResponse response) {
+    return doLogin(body, null, response);
+  }
+
+  @PostMapping("/tenants/{countryKey}/login")
+  public ResponseEntity<Map<String, String>> tenantLogin(
+      @PathVariable String countryKey,
+      @RequestBody Map<String, String> body,
+      HttpServletResponse response) {
+    return doLogin(body, countryKey, response);
+  }
+
+  private ResponseEntity<Map<String, String>> doLogin(
+      Map<String, String> body, String countryKey, HttpServletResponse response) {
     String username = body.get("username");
     String password = body.get("password");
+
+    if (username == null || password == null || username.isBlank() || password.isBlank()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "missing credentials"));
+    }
+
+    Account account = DB.find(Account.class).where().eq("username", username).findOne();
+    if (account != null && HashUtil.verifyPassword(password, account.getHashedPass())) {
+      Country scopedCountry = null;
+      Branch scopedBranch = null;
+
+      if (countryKey != null && !countryKey.isBlank()) {
+        scopedCountry = resolveCountryFromKey(countryKey);
+        if (scopedCountry == null) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(Map.of("status", "bad", "message", "invalid country key"));
+        }
+      }
+
+      if (account.getRole() == Account.Role.MANAGER || account.getRole() == Account.Role.LECTURER) {
+        Branch managedBranch =
+            DB.find(Branch.class)
+                .where()
+                .or()
+                .eq("managerAccount.uuid", account.getUuid())
+                .eq("lecturerAccount.uuid", account.getUuid())
+                .endOr()
+                .findOne();
+        if (managedBranch == null) {
+          return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+              .body(Map.of("status", "bad", "message", "account has no branch"));
+        }
+        scopedBranch = managedBranch;
+        scopedCountry = managedBranch.getCountry();
+      }
+
+      String sessionId = generateNewToken();
+      Cookie cookie = new Cookie("SESSION_ID", sessionId);
+      cookie.setHttpOnly(true);
+      cookie.setPath("/");
+      cookie.setMaxAge(60 * 60 * 24 * 30);
+      response.addCookie(cookie);
+
+      Session session =
+          new Session(account, scopedCountry, scopedBranch, sessionId, Instant.now().plus(Duration.ofDays(30)));
+      session.save();
+
+      return ResponseEntity.ok(Map.of("status", "ok", "message", "logged in"));
+    }
 
     Lecturer lecturer = new QLecturer().username.eq(username).findOne();
     if (lecturer == null || !HashUtil.verifyPassword(password, lecturer.getHashedPass())) {
@@ -79,25 +158,55 @@ public class AuthController extends Controller {
   public ResponseEntity<Map<String, String>> self(
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       HttpServletResponse response) {
-    if (sessionId != null && !sessionId.isEmpty()) {
-      Session session = new QSession().token.eq(sessionId).findOne();
+    if (sessionId == null || sessionId.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "not logged in"));
+    }
 
-      if (session == null || session.getExpiresAt().isBefore(Instant.now())) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(Map.of("status", "bad", "message", "session expired"));
-      }
+    Session session = new QSession().token.eq(sessionId).findOne();
+    if (session == null || session.getExpiresAt().isBefore(Instant.now())) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "session expired"));
+    }
+
+    Account account = resolveAccount(session);
+    if (account != null) {
+      String countryKey = session.getCountry() == null ? "" : session.getCountry().getCountryKey();
+      String countryId = session.getCountry() == null ? "" : String.valueOf(session.getCountry().getId());
+      String branchId = session.getBranch() == null ? "" : String.valueOf(session.getBranch().getId());
+      String branchKey = session.getBranch() == null ? "" : session.getBranch().getBranchKey();
+      String branchName = session.getBranch() == null ? "" : session.getBranch().getName();
+      String displayName = account.getDisplayName() == null ? account.getUsername() : account.getDisplayName();
 
       return ResponseEntity.ok(
           Map.of(
-              "status",
-              "ok",
-              "message",
-              "returning username",
-              "username",
-              session.getLecturer().getUsername()));
+              "status", "ok",
+              "username", account.getUsername(),
+              "displayName", displayName,
+              "role", account.getRole().name().toLowerCase(),
+              "countryKey", countryKey,
+              "countryId", countryId,
+              "branchId", branchId,
+              "branchKey", branchKey,
+              "branchName", branchName));
     }
+
+    if (session.getLecturer() != null) {
+      return ResponseEntity.ok(
+          Map.of(
+              "status", "ok",
+              "username", session.getLecturer().getUsername(),
+              "displayName", session.getLecturer().getUsername(),
+              "role", "lecturer",
+              "countryKey", "",
+              "countryId", "",
+              "branchId", "",
+              "branchKey", "",
+              "branchName", ""));
+    }
+
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(Map.of("status", "bad", "message", "not logged in"));
+        .body(Map.of("status", "bad", "message", "session not linked to account"));
   }
 
   @PostMapping("/register")

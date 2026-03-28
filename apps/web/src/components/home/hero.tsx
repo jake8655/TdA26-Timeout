@@ -3,11 +3,17 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { getCountryPathFromPathname } from "@/lib/tenant-routing";
 
 import { Button } from "../animate-ui/components/buttons/button";
 import BackgroundGrid from "../background-grid";
 
 export default function Hero() {
+	const pathname = usePathname();
+	const countryPath = getCountryPathFromPathname(pathname);
+
 	return (
 		<section className="relative flex min-h-screen items-center justify-center pt-20">
 			<BackgroundGrid />
@@ -66,7 +72,7 @@ export default function Hero() {
 						className="bg-accent text-accent-foreground hover:bg-accent/90 h-14 min-w-[200px] border-none text-lg"
 						asChild
 					>
-						<Link href="/courses">Explore Courses</Link>
+						<Link href={`${countryPath}/courses`}>Explore Courses</Link>
 					</Button>
 					<Button
 						variant="outline"

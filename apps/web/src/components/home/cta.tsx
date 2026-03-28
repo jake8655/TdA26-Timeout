@@ -3,10 +3,16 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { getCountryPathFromPathname } from "@/lib/tenant-routing";
 
 import { Button } from "../animate-ui/components/buttons/button";
 
 export default function CallToAction() {
+	const pathname = usePathname();
+	const countryPath = getCountryPathFromPathname(pathname);
+
 	return (
 		<section className="relative py-32">
 			<div className="pointer-events-none absolute inset-0">
@@ -63,7 +69,7 @@ export default function CallToAction() {
 					transition={{ delay: 0.4 }}
 				>
 					<Button variant="accent" size="lg" className="h-14 px-12 text-lg" asChild>
-						<Link href="/courses">Start Learning Today</Link>
+						<Link href={`${countryPath}/courses`}>Start Learning Today</Link>
 					</Button>
 				</motion.div>
 

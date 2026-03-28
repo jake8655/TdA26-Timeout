@@ -35,6 +35,14 @@ public class Course extends Model {
   @JsonBackReference
   private Lecturer lecturer;
 
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "country_id")
+  private Country country;
+
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "branch_id")
+  private Branch branch;
+
   @Column(nullable = false)
   private String name;
 

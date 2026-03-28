@@ -1,14 +1,16 @@
 package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
-import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Question;
 import eu.hypnomacka.timeout.server.core.Quiz;
+import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Data;
@@ -20,6 +22,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/courses/{courseId}")
 public class CourseDuplicateController extends Controller {
+
+  private final CourseVersionService courseVersionService;
+
+  public CourseDuplicateController(CourseVersionService courseVersionService) {
+    this.courseVersionService = courseVersionService;
+  }
 
   @PostMapping(value = "/duplicate", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> duplicate(
@@ -40,9 +48,15 @@ public class CourseDuplicateController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     String newName = request.getName();
@@ -53,6 +67,8 @@ public class CourseDuplicateController extends Controller {
 
     Course clone = new Course(course.getLecturer(), newName, course.getDescription());
     clone.setStatus(Course.Status.DRAFT);
+    clone.setCountry(course.getCountry());
+    clone.setBranch(course.getBranch());
     clone.save();
 
     for (Module module : course.getModules()) {
@@ -72,6 +88,7 @@ public class CourseDuplicateController extends Controller {
                 attachment.getSizeBytes(),
                 attachment.getMimeType(),
                 attachment.getFileUrl());
+        copy.setAsset(attachment.getAsset());
         copy.save();
       }
 
@@ -105,14 +122,9 @@ public class CourseDuplicateController extends Controller {
       }
     }
 
-    for (Event event : course.getEvents()) {
-      Event copy = new Event();
-      copy.setUuid(UUID.randomUUID());
-      copy.setCourse(clone);
-      copy.setType(event.getType());
-      copy.setMessage(event.getMessage());
-      copy.setEdited(event.getEdited());
-      copy.save();
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(clone, actor, "Course duplicated");
     }
 
     return ResponseEntity.status(HttpStatus.CREATED).body(clone);

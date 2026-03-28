@@ -29,7 +29,9 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/hooks/form";
+import type { AuthData } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { getManageCoursePath } from "@/lib/tenant-routing";
 
 const formSchema = z.object({
 	name: z.string().min(3, "Course name must be at least 3 characters"),
@@ -135,7 +137,15 @@ function CourseFormDialog({
 	);
 }
 
-function CourseCard({ course, index }: { course: CourseSummary; index: number }) {
+function CourseCard({
+	course,
+	index,
+	authData,
+}: {
+	course: CourseSummary;
+	index: number;
+	authData: AuthData | null;
+}) {
 	return (
 		<motion.div
 			layout
@@ -145,7 +155,7 @@ function CourseCard({ course, index }: { course: CourseSummary; index: number })
 			transition={{ duration: 0.3, delay: index * 0.05 }}
 			className="h-full"
 		>
-			<Link href={`/dashboard/courses/${course.uuid}`} className="block h-full">
+			<Link href={getManageCoursePath(authData, course.uuid)} className="block h-full">
 				<Card className="group bg-card/40 h-full border-white/5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl">
 					<CardHeader className="pb-2">
 						<CardTitle className="text-primary text-lg font-bold">{course.name}</CardTitle>
@@ -239,7 +249,7 @@ export default function DashboardClient() {
 						>
 							<AnimatePresence mode="popLayout">
 								{courses.map((course, index) => (
-									<CourseCard key={course.uuid} course={course} index={index} />
+									<CourseCard key={course.uuid} course={course} index={index} authData={data} />
 								))}
 							</AnimatePresence>
 						</motion.div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import {
@@ -11,6 +11,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { getScopedCoursesPathFromPathname } from "@/lib/tenant-routing";
 
 export function CourseKickDialog({
 	open,
@@ -24,6 +25,7 @@ export function CourseKickDialog({
 	onClose: () => void;
 }) {
 	const router = useRouter();
+	const pathname = usePathname();
 
 	return (
 		<Dialog
@@ -57,7 +59,7 @@ export function CourseKickDialog({
 							variant="accent"
 							onClick={() => {
 								onClose();
-								router.push(redirectTo ?? "/courses");
+								router.push(redirectTo ?? getScopedCoursesPathFromPathname(pathname));
 							}}
 						>
 							Go to Courses

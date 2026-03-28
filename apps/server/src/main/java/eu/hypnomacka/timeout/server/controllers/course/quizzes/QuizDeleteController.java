@@ -1,9 +1,12 @@
 package eu.hypnomacka.timeout.server.controllers.course.quizzes;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Quiz;
+import eu.hypnomacka.timeout.server.core.Session;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import io.ebean.DB;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/courses/{courseId}/modules/{moduleId}/quizzes")
 public class QuizDeleteController extends Controller {
+
+  private final CourseVersionService courseVersionService;
+
+  public QuizDeleteController(CourseVersionService courseVersionService) {
+    this.courseVersionService = courseVersionService;
+  }
 
   @DeleteMapping(value = "/{quizId}")
   public ResponseEntity<?> deleteQuiz(
@@ -34,9 +43,14 @@ public class QuizDeleteController extends Controller {
           .body(Map.of("message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "forbidden"));
     }
 
     int moduleItemCount =
@@ -54,6 +68,11 @@ public class QuizDeleteController extends Controller {
     }
 
     quiz.delete();
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Quiz deleted");
+    }
 
     return ResponseEntity.noContent().build();
   }

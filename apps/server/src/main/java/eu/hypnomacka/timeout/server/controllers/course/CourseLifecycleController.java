@@ -1,11 +1,14 @@
 package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Course.Status;
 import eu.hypnomacka.timeout.server.core.Module;
+import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.services.CourseLifecycleService;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -20,9 +23,12 @@ import org.springframework.web.bind.annotation.*;
 public class CourseLifecycleController extends Controller {
 
   private final CourseLifecycleService lifecycleService;
+  private final CourseVersionService courseVersionService;
 
-  public CourseLifecycleController(CourseLifecycleService lifecycleService) {
+  public CourseLifecycleController(
+      CourseLifecycleService lifecycleService, CourseVersionService courseVersionService) {
     this.lifecycleService = lifecycleService;
+    this.courseVersionService = courseVersionService;
   }
 
   @PutMapping(value = "/status", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -36,9 +42,15 @@ public class CourseLifecycleController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     Status status;
@@ -82,6 +94,11 @@ public class CourseLifecycleController extends Controller {
       }
     }
 
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Course lifecycle status updated");
+    }
+
     return ResponseEntity.ok(course);
   }
 
@@ -96,9 +113,15 @@ public class CourseLifecycleController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     if (hasEmptyModules(course)) {
@@ -112,6 +135,11 @@ public class CourseLifecycleController extends Controller {
     }
 
     lifecycleService.transitionToLive(course, "Course started by lecturer");
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Course started");
+    }
 
     return ResponseEntity.ok(course);
   }
@@ -127,9 +155,15 @@ public class CourseLifecycleController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     lifecycleService.transitionToPaused(course, "Course paused by lecturer");
@@ -137,6 +171,11 @@ public class CourseLifecycleController extends Controller {
     if (request.getScheduledStartAt() != null) {
       course.setScheduledStartAt(Instant.parse(request.getScheduledStartAt()));
       course.save();
+    }
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Course paused");
     }
 
     return ResponseEntity.ok(course);
@@ -152,13 +191,24 @@ public class CourseLifecycleController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
     }
 
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
+    }
+
     lifecycleService.transitionToArchived(course, "Course archived by lecturer");
     lifecycleService.deactivateJoinsAndKick(course, "Course archived by lecturer", Status.ARCHIVED);
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Course archived");
+    }
 
     return ResponseEntity.ok(course);
   }

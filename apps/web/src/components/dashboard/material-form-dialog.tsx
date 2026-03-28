@@ -9,6 +9,7 @@ import {
 	postCoursesByCourseIdModulesByModuleIdMaterialsMutation,
 	putCoursesByCourseIdModulesByModuleIdMaterialsByMaterialIdMutation,
 } from "@/api-client/@tanstack/react-query.gen";
+import { client } from "@/api-client/client.gen";
 import type { FileMaterial, UrlMaterial } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import {
@@ -21,7 +22,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { env } from "@/env";
 import { useAppForm } from "@/hooks/form";
 import { getFileTypeLabel, SUPPORTED_MIME_TYPES } from "@/lib/material-utils";
 
@@ -146,24 +146,27 @@ export function MaterialFormDialog({
 					return;
 				}
 
-				await fetch(
-					`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/modules/${moduleId ?? ""}/materials`,
-					{
-						method: "POST",
-						body: formData,
-						credentials: "include",
+				await client.post({
+					url: "/courses/{courseId}/modules/{moduleId}/materials",
+					path: {
+						courseId,
+						moduleId: moduleId ?? "",
 					},
-				);
+					body: formData,
+					throwOnError: true,
+				});
 				await queryClient.invalidateQueries();
 			} else if (material) {
-				await fetch(
-					`${env.NEXT_PUBLIC_API_BASE}/courses/${courseId}/modules/${moduleId ?? ""}/materials/${material.uuid}`,
-					{
-						method: "PUT",
-						credentials: "include",
-						body: formData,
+				await client.put({
+					url: "/courses/{courseId}/modules/{moduleId}/materials/{materialId}",
+					path: {
+						courseId,
+						moduleId: moduleId ?? "",
+						materialId: material.uuid,
 					},
-				);
+					body: formData,
+					throwOnError: true,
+				});
 				await queryClient.invalidateQueries();
 			}
 			fileForm.reset();

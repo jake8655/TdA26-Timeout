@@ -22,9 +22,25 @@ public class Session extends Model {
   @Column(nullable = false)
   private String token;
 
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "lecturer_uuid", nullable = false)
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "account_uuid")
+  private Account account;
+
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "lecturer_uuid")
   private Lecturer lecturer;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role_snapshot")
+  private Account.Role roleSnapshot;
+
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "country_id")
+  private Country country;
+
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "branch_id")
+  private Branch branch;
 
   @WhenCreated private Instant createdAt;
 
@@ -37,6 +53,16 @@ public class Session extends Model {
 
   public Session(Lecturer lecturer, String token, Instant expiresAt) {
     this.lecturer = lecturer;
+    this.account = null;
+    this.token = token;
+    this.expiresAt = expiresAt;
+  }
+
+  public Session(Account account, Country country, Branch branch, String token, Instant expiresAt) {
+    this.account = account;
+    this.roleSnapshot = account == null ? null : account.getRole();
+    this.country = country;
+    this.branch = branch;
     this.token = token;
     this.expiresAt = expiresAt;
   }

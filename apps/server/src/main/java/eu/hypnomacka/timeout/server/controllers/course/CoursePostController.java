@@ -4,7 +4,6 @@ import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Lecturer;
 import eu.hypnomacka.timeout.server.core.Session;
-import eu.hypnomacka.timeout.server.core.query.QSession;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,20 +20,8 @@ public class CoursePostController extends Controller {
   public ResponseEntity<?> create(
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestBody Map<String, String> body) {
-    /*if (sessionId == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "no session found")
-        );
-    }*/
-
     String name = body.get("name");
     String description = body.get("description");
-
-    /*if (Objects.equals(name, Objects.requireNonNull(new QCourse().name.eq(name).findOne()).getName())) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            Map.of("status", "bad", "message", "name already in use")
-        );
-    }*/
 
     if (name == null || name.isBlank()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -46,15 +33,26 @@ public class CoursePostController extends Controller {
           .body(Map.of("status", "bad", "message", "session not linked to an account"));
     }
 
-    Session session = new QSession().token.eq(sessionId).findOne();
-    if (session == null || session.getLecturer() == null) {
+    Session session = getValidSession(sessionId);
+    if (session == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "session not linked to an account"));
     }
 
-    Lecturer lecturer = session.getLecturer();
+    Lecturer lecturer = resolveLecturer(session);
+    if (lecturer == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "session not linked to lecturer"));
+    }
+
     Course course = new Course(lecturer, name, description);
     course.setStatus(Course.Status.DRAFT);
+    if (session.getCountry() != null) {
+      course.setCountry(session.getCountry());
+    }
+    if (session.getBranch() != null) {
+      course.setBranch(session.getBranch());
+    }
     course.save();
 
     return ResponseEntity.status(HttpStatus.CREATED).body(course);

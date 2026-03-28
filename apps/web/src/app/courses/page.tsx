@@ -1,13 +1,7 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import CoursesClient from "./courses-client";
-
-export const metadata: Metadata = {
-	title: "Courses",
-	description:
-		"Browse and explore our collection of interactive courses designed to develop critical and creative thinking skills.",
-};
+import { getDefaultCountryPath, getDefaultBranchKey } from "@/lib/tenant-routing";
 
 export default function CoursesPage() {
-	return <CoursesClient />;
+	redirect(`${getDefaultCountryPath()}/${getDefaultBranchKey()}/courses`);
 }

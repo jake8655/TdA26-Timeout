@@ -28,7 +28,8 @@ public class CourseDeleteController extends Controller {
   public ResponseEntity<?> delete(
       @PathVariable("UUID") String uuidStr,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
-    if (!isLecturerSession(sessionId)) {
+    var session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
     }
@@ -45,6 +46,11 @@ public class CourseDeleteController extends Controller {
     if (course == null) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("The requested resource was not found.");
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     feedService.broadcastMessage(

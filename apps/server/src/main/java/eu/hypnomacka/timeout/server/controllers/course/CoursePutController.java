@@ -1,8 +1,10 @@
 package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/courses")
 public class CoursePutController extends Controller {
 
+  private final CourseVersionService courseVersionService;
+
+  public CoursePutController(CourseVersionService courseVersionService) {
+    this.courseVersionService = courseVersionService;
+  }
+
   @PutMapping(
       value = "/{UUID}",
       consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -22,34 +30,8 @@ public class CoursePutController extends Controller {
       @PathVariable("UUID") String uuidStr,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId,
       @RequestBody Map<String, String> body) {
-    /*if (sessionId == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "no session found")
-        );
-    }*/
-
     String name = body.get("name");
     String description = body.get("description");
-
-    /*if (Objects.equals(name, Objects.requireNonNull(new QCourse().name.eq(name).findOne()).getName())) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            Map.of("status", "bad", "message", "name already in use")
-        );
-    }*/
-
-    /*Session session = new QSession().token.eq(sessionId).findOne();
-    if (session == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "session not found in database")
-        );
-    }
-
-    Lecturer lecturer = new QLecturer().id.eq(session.getLecturer().getId()).findOne();
-    if (lecturer == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            Map.of("status", "bad", "message", "session not linked to an account")
-        );
-    }*/
 
     UUID uuid;
     try {
@@ -65,13 +47,15 @@ public class CoursePutController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    /*if (!lecturer.getId().equals(course.getLecturer().getId())) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("not allowed to change course");
-    }*/
-
-    if (!isLecturerSession(sessionId)) {
+    var session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     if (course.getStatus() != Course.Status.DRAFT) {
@@ -85,6 +69,11 @@ public class CoursePutController extends Controller {
 
     course.setDescription(description);
     course.save();
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Course updated");
+    }
 
     return ResponseEntity.status(HttpStatus.OK).body(course);
   }

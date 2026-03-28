@@ -55,6 +55,13 @@ public class FileAttachment extends Model {
   @Column(nullable = false)
   private String fileUrl;
 
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "asset_uuid")
+  private FileAsset asset;
+
+  @Column(name = "deleted_at")
+  private Instant deletedAt;
+
   @WhenCreated private Instant createdAt;
 
   @WhenModified private Instant updatedAt;

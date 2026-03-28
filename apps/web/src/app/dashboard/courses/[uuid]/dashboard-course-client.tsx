@@ -28,9 +28,11 @@ import {
 	CreateFeedPostButton,
 	EditFeedPostButton,
 } from "@/components/courses/feed-post-form-dialog";
+import CoursePortabilityCard from "@/components/dashboard/course-portability-card";
 import EmptyState from "@/components/empty-state";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { getDashboardPath, getManageCoursePath } from "@/lib/tenant-routing";
 
 export default function DashboardCourseClient() {
 	const { uuid } = useParams<{ uuid: string }>();
@@ -66,7 +68,7 @@ export default function DashboardCourseClient() {
 		...postCoursesByCourseIdDuplicateMutation(),
 		onSuccess: (data) => {
 			if (data?.uuid) {
-				router.push(`/dashboard/courses/${data.uuid}`);
+				router.push(getManageCoursePath(authData, data.uuid));
 			}
 		},
 	});
@@ -98,7 +100,7 @@ export default function DashboardCourseClient() {
 						className="text-muted-foreground hover:text-primary dark:hover:bg-transparent"
 						asChild
 					>
-						<Link href="/dashboard">
+						<Link href={getDashboardPath(authData)}>
 							<ArrowLeft />
 							Back to Dashboard
 						</Link>
@@ -178,12 +180,14 @@ export default function DashboardCourseClient() {
 									});
 									// This is very cursed, do NOT do this or repeat this pattern
 									// It should be done in the onSuccess callback of the mutation, but all queries are invalidated (and the invalidation is awaited) on every mutation which causes the current (deleted) course's data to be refetched but it does not exist anymore so it throws an error
-									router.push("/dashboard");
+									router.push(getDashboardPath(authData));
 								}}
 							/>
 						</div>
 
 						<CourseStatsSection courseId={uuid} isLive={course.status === CourseStatus.LIVE} />
+
+						<CoursePortabilityCard courseId={uuid} />
 
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}

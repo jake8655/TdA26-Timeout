@@ -1,17 +1,29 @@
+"use client";
+
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import AboutLink from "@/components/about-link";
 import { Separator } from "@/components/ui/separator";
+import {
+	getCountryPathFromPathname,
+	getLocalizedLoginPath,
+	getLocalizedManagerLoginPath,
+} from "@/lib/tenant-routing";
 
 export default function Footer() {
+	const pathname = usePathname();
+	const countryPath = getCountryPathFromPathname(pathname);
+	const countryKey = countryPath.replace("/", "");
+
 	return (
 		<footer className="relative border-t border-white/5 bg-black/40 pt-16 pb-8 backdrop-blur-xl">
 			<div className="mx-auto max-w-7xl px-6">
 				<div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
 					<div className="lg:col-span-2">
-						<Link href="/" className="group mb-6 flex items-center gap-3">
+						<Link href={countryPath} className="group mb-6 flex items-center gap-3">
 							<Image
 								src="/logo/logo.svg"
 								alt="Think different Academy"
@@ -34,7 +46,10 @@ export default function Footer() {
 						<h4 className="text-foreground mb-6 font-bold">Quick Links</h4>
 						<ul className="text-muted-foreground space-y-4 text-sm">
 							<li>
-								<Link href="/courses" className="hover:text-primary transition-colors">
+								<Link
+									href={`${countryPath}/courses`}
+									className="hover:text-primary transition-colors"
+								>
 									Explore Courses
 								</Link>
 							</li>
@@ -42,8 +57,19 @@ export default function Footer() {
 								<AboutLink className="hover:text-primary transition-colors">About Us</AboutLink>
 							</li>
 							<li>
-								<Link href="/login" className="hover:text-primary transition-colors">
+								<Link
+									href={getLocalizedLoginPath(countryKey)}
+									className="hover:text-primary transition-colors"
+								>
 									Lecturer Login
+								</Link>
+							</li>
+							<li>
+								<Link
+									href={getLocalizedManagerLoginPath(countryKey)}
+									className="hover:text-primary transition-colors"
+								>
+									Manager Login
 								</Link>
 							</li>
 						</ul>
@@ -53,12 +79,18 @@ export default function Footer() {
 						<h4 className="text-foreground mb-6 font-bold">Legal</h4>
 						<ul className="text-muted-foreground space-y-4 text-sm">
 							<li>
-								<Link href="/privacy" className="hover:text-primary transition-colors">
+								<Link
+									href={`${countryPath}/privacy`}
+									className="hover:text-primary transition-colors"
+								>
 									Privacy Policy
 								</Link>
 							</li>
 							<li>
-								<Link href="/terms" className="hover:text-primary transition-colors">
+								<Link
+									href={`${countryPath}/terms`}
+									className="hover:text-primary transition-colors"
+								>
 									Terms of Use
 								</Link>
 							</li>

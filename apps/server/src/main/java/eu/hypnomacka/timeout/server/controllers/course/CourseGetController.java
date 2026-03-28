@@ -1,14 +1,18 @@
 package eu.hypnomacka.timeout.server.controllers.course;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
+import eu.hypnomacka.timeout.server.core.Branch;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Module;
+import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QCourse;
 import eu.hypnomacka.timeout.server.core.query.QEvent;
+import io.ebean.DB;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -46,12 +50,36 @@ public class CourseGetController extends Controller {
   @GetMapping(value = "/lecturer", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> lecturerList(
       @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
     }
 
-    List<Course> courses = new QCourse().orderBy().updatedAt.desc().findList();
+    List<Course> courses;
+    Account account = resolveAccount(session);
+    Branch branch = session.getBranch();
+    if (branch != null) {
+      courses = new QCourse().branch.eq(branch).orderBy().updatedAt.desc().findList();
+    } else if (account != null && account.getRole() == Account.Role.ADMIN) {
+      courses = new QCourse().orderBy().updatedAt.desc().findList();
+    } else {
+      var lecturer = resolveLecturer(session);
+      if (lecturer == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(Map.of("status", "bad", "message", "unauthorized"));
+      }
+      courses =
+          new QCourse()
+              .lecturer
+              .uuid
+              .eq(lecturer.getUuid())
+              .orderBy()
+              .updatedAt
+              .desc()
+              .findList();
+    }
+
     List<Map<String, Object>> result = new ArrayList<>();
     for (Course course : courses) {
       result.add(buildCourseSummaryResponse(course));
@@ -92,7 +120,8 @@ public class CourseGetController extends Controller {
   public ResponseEntity<?> lecturerByUUID(
       @PathVariable("UUID") String uuidStr,
       @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
     }
@@ -111,7 +140,102 @@ public class CourseGetController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
+    }
+
     return ResponseEntity.ok(buildCourseDetailResponse(course, true));
+  }
+
+  @GetMapping(value = "/tenants/{countryKey}/branches/{branchKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> listByTenant(
+      @PathVariable String countryKey,
+      @PathVariable String branchKey,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+    Session session = getValidSession(sessionId);
+    if (session == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    var country = resolveCountryFromKey(countryKey);
+    if (country == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "country not found"));
+    }
+
+    var branch = resolveBranchFromKey(branchKey, country);
+    if (branch == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "branch not found"));
+    }
+
+    if (!canAccessBranch(session, branch)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
+    }
+
+    List<Course> courses = new QCourse().branch.eq(branch).orderBy().updatedAt.desc().findList();
+    List<Map<String, Object>> result = new ArrayList<>();
+    for (Course course : courses) {
+      result.add(buildCourseSummaryResponse(course));
+    }
+    return ResponseEntity.ok(result);
+  }
+
+  @GetMapping(
+      value = "/tenants/{countryKey}/branches/{branchKey}/{UUID}",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> byTenantCourse(
+      @PathVariable String countryKey,
+      @PathVariable String branchKey,
+      @PathVariable("UUID") String uuidStr,
+      @CookieValue(value = "SESSION_ID", required = false) String sessionId) {
+    UUID uuid;
+    try {
+      uuid = UUID.fromString(uuidStr);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "bad", "message", "invalid UUID format"));
+    }
+
+    Course course = new QCourse().uuid.eq(uuid).findOne();
+    if (course == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    var country = resolveCountryFromKey(countryKey);
+    if (country == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "country not found"));
+    }
+
+    var branch = resolveBranchFromKey(branchKey, country);
+    if (branch == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "branch not found"));
+    }
+
+    if (course.getBranch() == null || !course.getBranch().getId().equals(branch.getId())) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    Session session = getValidSession(sessionId);
+    boolean isLecturer = session != null && isLecturerSession(sessionId) && canAccessCourse(session, course);
+
+    if (!isLecturer && (course.getStatus() == Course.Status.DRAFT || course.getStatus() == Course.Status.ARCHIVED)) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("status", "bad", "message", "course not found"));
+    }
+
+    if (!isLecturer && (course.getStatus() == Course.Status.SCHEDULED || course.getStatus() == Course.Status.PAUSED)) {
+      return ResponseEntity.status(HttpStatus.OK).body(buildLimitedCourseResponse(course));
+    }
+
+    return ResponseEntity.ok(buildCourseDetailResponse(course, isLecturer));
   }
 
   private Map<String, Object> buildCourseSummaryResponse(Course course) {

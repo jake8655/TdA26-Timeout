@@ -2,12 +2,15 @@ package eu.hypnomacka.timeout.server.controllers.course.modules;
 
 import eu.hypnomacka.timeout.server.controllers.Controller;
 import eu.hypnomacka.timeout.server.controllers.feed.CourseFeedService;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Event;
 import eu.hypnomacka.timeout.server.core.FileAttachment;
 import eu.hypnomacka.timeout.server.core.Module;
+import eu.hypnomacka.timeout.server.core.Session;
 import eu.hypnomacka.timeout.server.core.Quiz;
 import eu.hypnomacka.timeout.server.core.UrlAttachment;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import io.ebean.DB;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 public class ModuleController extends Controller {
 
   private final CourseFeedService feedService;
+  private final CourseVersionService courseVersionService;
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> listModules(
@@ -43,6 +47,12 @@ public class ModuleController extends Controller {
     }
 
     boolean isLecturer = isLecturerSession(sessionId);
+    Session session = getValidSession(sessionId);
+    if (isLecturer && (session == null || !canAccessCourse(session, course))) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
+    }
+
     if (!isLecturer && course.getStatus() != Course.Status.LIVE) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
           .body(Map.of("status", "bad", "message", "course not live"));
@@ -76,9 +86,15 @@ public class ModuleController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     if (request.getTitle() == null || request.getTitle().isBlank()) {
@@ -94,6 +110,11 @@ public class ModuleController extends Controller {
     module.setOrderIndex(maxOrder + 1);
 
     module.save();
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Module created");
+    }
 
     return ResponseEntity.status(HttpStatus.CREATED).body(buildModuleResponse(module));
   }
@@ -117,9 +138,15 @@ public class ModuleController extends Controller {
           .body(Map.of("status", "bad", "message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     if (request.getTitle() != null) {
@@ -135,6 +162,12 @@ public class ModuleController extends Controller {
     }
 
     module.save();
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Module updated");
+    }
+
     return ResponseEntity.ok(buildModuleResponse(module));
   }
 
@@ -156,12 +189,24 @@ public class ModuleController extends Controller {
           .body(Map.of("status", "bad", "message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "course not editable"));
     }
 
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
+    }
+
     module.delete();
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Module deleted");
+    }
+
     return ResponseEntity.noContent().build();
   }
 
@@ -183,9 +228,15 @@ public class ModuleController extends Controller {
           .body(Map.of("status", "bad", "message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     if (course.getStatus() != Course.Status.LIVE) {
@@ -242,6 +293,11 @@ public class ModuleController extends Controller {
             "{\"moduleId\":\"%s\",\"title\":\"%s\",\"revealedAt\":\"%s\"}",
             module.getUuid(), module.getTitle().replace("\"", "\\\""), module.getRevealedAt()));
 
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Module revealed");
+    }
+
     return ResponseEntity.ok(buildModuleResponse(module));
   }
 
@@ -257,9 +313,15 @@ public class ModuleController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("status", "bad", "message", "can only reorder in draft"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     List<String> moduleIds = request.getModuleIds();
@@ -290,6 +352,11 @@ public class ModuleController extends Controller {
       m.save();
     }
 
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Modules reordered");
+    }
+
     return ResponseEntity.ok(Map.of("status", "ok"));
   }
 
@@ -304,9 +371,15 @@ public class ModuleController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     if (course.getStatus() != Course.Status.LIVE) {
@@ -356,6 +429,11 @@ public class ModuleController extends Controller {
             "{\"moduleId\":\"%s\",\"title\":\"%s\",\"revealedAt\":\"%s\"}",
             next.getUuid(), next.getTitle().replace("\"", "\\\""), next.getRevealedAt()));
 
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Next module revealed");
+    }
+
     return ResponseEntity.ok(buildModuleResponse(next));
   }
 
@@ -370,9 +448,15 @@ public class ModuleController extends Controller {
           .body(Map.of("status", "bad", "message", "course not found"));
     }
 
-    if (!isLecturerSession(sessionId)) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(Map.of("status", "bad", "message", "unauthorized"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(Map.of("status", "bad", "message", "forbidden"));
     }
 
     if (course.getStatus() != Course.Status.LIVE) {
@@ -410,6 +494,11 @@ public class ModuleController extends Controller {
         String.format(
             "{\"moduleId\":\"%s\",\"title\":\"%s\",\"hiddenAt\":\"%s\"}",
             last.getUuid(), last.getTitle().replace("\"", "\\\""), hiddenAt));
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Last module hidden");
+    }
 
     return ResponseEntity.ok(buildModuleResponse(last));
   }

@@ -3,10 +3,13 @@ package eu.hypnomacka.timeout.server.controllers.course.quizzes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.hypnomacka.timeout.server.controllers.Controller;
+import eu.hypnomacka.timeout.server.core.Account;
 import eu.hypnomacka.timeout.server.core.Course;
 import eu.hypnomacka.timeout.server.core.Module;
 import eu.hypnomacka.timeout.server.core.Question;
 import eu.hypnomacka.timeout.server.core.Quiz;
+import eu.hypnomacka.timeout.server.core.Session;
+import eu.hypnomacka.timeout.server.services.CourseVersionService;
 import io.ebean.DB;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,11 @@ import org.springframework.web.bind.annotation.*;
 public class QuizPostController extends Controller {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final CourseVersionService courseVersionService;
+
+  public QuizPostController(CourseVersionService courseVersionService) {
+    this.courseVersionService = courseVersionService;
+  }
 
   @PostMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -44,9 +52,14 @@ public class QuizPostController extends Controller {
           .body(Map.of("message", "module not found"));
     }
 
-    if (!isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
+    Session session = getValidSession(sessionId);
+    if (session == null || !isLecturerSession(sessionId) || course.getStatus() != Course.Status.DRAFT) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(Map.of("message", "course not editable"));
+    }
+
+    if (!canAccessCourse(session, course)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "forbidden"));
     }
 
     if (request.getTitle() == null || request.getTitle().isBlank()) {
@@ -106,6 +119,12 @@ public class QuizPostController extends Controller {
           .body(Map.of("message", "newly created quiz not found in database"));
     }
     QuizResponse response = buildQuizResponse(updatedQuiz);
+
+    Account actor = resolveAccount(session);
+    if (actor != null) {
+      courseVersionService.createSnapshot(course, actor, "Quiz created");
+    }
+
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 

@@ -59,13 +59,7 @@ type Branch = {
 	branchKey: string;
 };
 
-function EditCountryDialog({
-	country,
-	onSaved,
-}: {
-	country: Country;
-	onSaved: () => void;
-}) {
+function EditCountryDialog({ country, onSaved }: { country: Country; onSaved: () => void }) {
 	const mutation = useMutation({
 		mutationFn: async (values: CountryUpdateRequest) => {
 			const payload: CountryUpdateRequest = {
@@ -117,7 +111,9 @@ function EditCountryDialog({
 					className="space-y-4"
 				>
 					<form.AppField name="name">
-						{(field) => <field.TextField label="Name" placeholder="Country name" className="h-10" />}
+						{(field) => (
+							<field.TextField label="Name" placeholder="Country name" className="h-10" />
+						)}
 					</form.AppField>
 					<form.AppField name="status">
 						{(field) => (
@@ -140,13 +136,7 @@ function EditCountryDialog({
 	);
 }
 
-function EditBranchDialog({
-	branch,
-	onSaved,
-}: {
-	branch: Branch;
-	onSaved: () => void;
-}) {
+function EditBranchDialog({ branch, onSaved }: { branch: Branch; onSaved: () => void }) {
 	const mutation = useMutation({
 		mutationFn: async (values: BranchUpdateRequest) => {
 			await putAdminBranchesByBranchId({
@@ -198,19 +188,27 @@ function EditBranchDialog({
 					className="grid gap-3 sm:grid-cols-2"
 				>
 					<form.AppField name="name">
-						{(field) => <field.TextField label="Branch name" placeholder="Prague HQ" className="h-10" />}
+						{(field) => (
+							<field.TextField label="Branch name" placeholder="Prague HQ" className="h-10" />
+						)}
 					</form.AppField>
 					<form.AppField name="city">
 						{(field) => <field.TextField label="City" placeholder="Prague" className="h-10" />}
 					</form.AppField>
 					<form.AppField name="address">
-						{(field) => <field.TextField label="Address" placeholder="Main Square 1" className="h-10" />}
+						{(field) => (
+							<field.TextField label="Address" placeholder="Main Square 1" className="h-10" />
+						)}
 					</form.AppField>
 					<form.AppField name="postalCode">
-						{(field) => <field.TextField label="Postal code" placeholder="11000" className="h-10" />}
+						{(field) => (
+							<field.TextField label="Postal code" placeholder="11000" className="h-10" />
+						)}
 					</form.AppField>
 					<form.AppField name="region">
-						{(field) => <field.TextField label="Region" placeholder="Central Europe" className="h-10" />}
+						{(field) => (
+							<field.TextField label="Region" placeholder="Central Europe" className="h-10" />
+						)}
 					</form.AppField>
 					<form.AppField name="type">
 						{(field) => <field.TextField label="Type" placeholder="hq / branch" className="h-10" />}
@@ -241,7 +239,9 @@ function EditBranchDialog({
 
 export default function AdminPage() {
 	const router = useRouter();
-	const { data: authData, isPending: authPending } = useRequireAuth({ redirectTo: getAdminLoginPath() });
+	const { data: authData, isPending: authPending } = useRequireAuth({
+		redirectTo: getAdminLoginPath(),
+	});
 
 	const countriesQuery = useQuery({
 		queryKey: ["admin", "countries"],

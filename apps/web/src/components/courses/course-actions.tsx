@@ -64,7 +64,9 @@ export function CourseActions({
 	const isDuplicatePending = duplicatePending;
 	const isDeletePending = deletePending;
 	const shareUrl =
-		typeof window === "undefined" ? sharePath : new URL(sharePath, window.location.origin).toString();
+		typeof window === "undefined"
+			? sharePath
+			: new URL(sharePath, window.location.origin).toString();
 	const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(shareUrl)}`;
 
 	useEffect(() => {
@@ -135,9 +137,7 @@ export function CourseActions({
 					<DialogContent className="sm:max-w-md">
 						<DialogHeader>
 							<DialogTitle>Share course</DialogTitle>
-							<DialogDescription>
-								Copy the link or let students scan the QR code.
-							</DialogDescription>
+							<DialogDescription>Copy the link or let students scan the QR code.</DialogDescription>
 						</DialogHeader>
 						<div className="space-y-4">
 							<button

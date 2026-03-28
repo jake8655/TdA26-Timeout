@@ -63,15 +63,6 @@ export default function AuthLoginClient({
 			return fetchMe();
 		},
 		onSuccess: (profile) => {
-			if (mode === "manager" && profile.role !== "manager") {
-				throw new Error("Use lecturer login for lecturer accounts");
-			}
-			if (mode === "admin" && profile.role !== "admin") {
-				throw new Error("Use global admin login for admin accounts");
-			}
-			if (mode === "lecturer" && profile.role !== "lecturer") {
-				throw new Error("Use manager or admin login for staff accounts");
-			}
 			router.push(getDashboardPath(profile));
 		},
 	});
@@ -96,14 +87,19 @@ export default function AuthLoginClient({
 	}, [data, isPending, router]);
 
 	const roleLabel =
-		mode === "admin" ? "Global Admin Access" : mode === "manager" ? "Branch Manager Access" : "Lecturer Access";
+		mode === "admin"
+			? "Global Admin Access"
+			: mode === "manager"
+				? "Branch Manager Access"
+				: "Lecturer Access";
 	const roleHint =
 		mode === "admin"
 			? "Use your global admin credentials to manage countries and branches"
 			: mode === "manager"
 				? "Use your branch manager credentials to manage local operations"
 				: "Use your lecturer credentials to run courses and classroom sessions";
-	const submitLabel = mode === "admin" ? "Admin Login" : mode === "manager" ? "Manager Login" : "Lecturer Login";
+	const submitLabel =
+		mode === "admin" ? "Admin Login" : mode === "manager" ? "Manager Login" : "Lecturer Login";
 
 	return (
 		<section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-20">
@@ -192,10 +188,7 @@ export default function AuthLoginClient({
 						</form.AppField>
 
 						<form.AppForm>
-							<form.SubscribeButton
-								label={submitLabel}
-								className="w-full font-semibold"
-							/>
+							<form.SubscribeButton label={submitLabel} className="w-full font-semibold" />
 						</form.AppForm>
 					</motion.form>
 				</motion.div>

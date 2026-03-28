@@ -248,7 +248,6 @@ export default function ManagerDashboardPage() {
 						</Card>
 					</>
 				)}
-
 			</div>
 		</section>
 	);

@@ -21,7 +21,11 @@ export const createQueryClient = () => {
 				});
 			},
 
-			onSuccess: async () => {
+			onSuccess: async (_data, _variables, _context, mutation) => {
+				if (mutation.options.meta?.skipInvalidate) {
+					return;
+				}
+
 				await queryClient.invalidateQueries();
 			},
 		}),

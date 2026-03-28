@@ -32,7 +32,7 @@ import CoursePortabilityCard from "@/components/dashboard/course-portability-car
 import EmptyState from "@/components/empty-state";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { useRequireAuth } from "@/hooks/use-require-auth";
-import { getDashboardPath, getManageCoursePath } from "@/lib/tenant-routing";
+import { getCoursePath, getDashboardPath, getManageCoursePath } from "@/lib/tenant-routing";
 
 export default function DashboardCourseClient() {
 	const { uuid } = useParams<{ uuid: string }>();
@@ -132,6 +132,7 @@ export default function DashboardCourseClient() {
 							<CourseHeader course={course} />
 							<CourseActions
 								course={course}
+								sharePath={getCoursePath(authData, uuid)}
 								duplicatePending={duplicateMutation.isPending}
 								deletePending={deleteMutation.isPending}
 								onSchedule={(payload) =>

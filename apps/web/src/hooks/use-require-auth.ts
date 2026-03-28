@@ -7,17 +7,22 @@ import { getCountryPathFromPathname, getLocalizedLoginPath } from "@/lib/tenant-
 
 import { useAuth } from "./use-auth";
 
-export function useRequireAuth() {
+export function useRequireAuth({ redirectTo }: { redirectTo?: string } = {}) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const { data, isPending } = useAuth();
 
 	useEffect(() => {
 		if (!data && !isPending) {
+			if (redirectTo) {
+				router.push(redirectTo);
+				return;
+			}
+
 			const countryKey = getCountryPathFromPathname(pathname).replace("/", "");
 			router.push(getLocalizedLoginPath(countryKey));
 		}
-	}, [data, isPending, pathname, router]);
+	}, [data, isPending, pathname, redirectTo, router]);
 
 	return { data, isPending };
 }

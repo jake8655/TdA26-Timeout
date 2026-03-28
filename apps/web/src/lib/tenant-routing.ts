@@ -69,6 +69,10 @@ export function getLocalizedManagerLoginPath(countryKey?: string) {
 	return `/${countryKey || "cz-1"}/manager/login`;
 }
 
+export function getAdminLoginPath() {
+	return "/admin/login";
+}
+
 export function getDashboardPath(authData: AuthData | null) {
 	if (!authData) {
 		return "/login";

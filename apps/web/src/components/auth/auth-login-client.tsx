@@ -37,7 +37,7 @@ export default function AuthLoginClient({
 	mode,
 	countryKey,
 }: {
-	mode: "lecturer" | "manager";
+	mode: "lecturer" | "manager" | "admin";
 	countryKey?: string;
 }) {
 	const router = useRouter();
@@ -66,6 +66,12 @@ export default function AuthLoginClient({
 			if (mode === "manager" && profile.role !== "manager") {
 				throw new Error("Use lecturer login for lecturer accounts");
 			}
+			if (mode === "admin" && profile.role !== "admin") {
+				throw new Error("Use global admin login for admin accounts");
+			}
+			if (mode === "lecturer" && profile.role !== "lecturer") {
+				throw new Error("Use manager or admin login for staff accounts");
+			}
 			router.push(getDashboardPath(profile));
 		},
 	});
@@ -88,6 +94,16 @@ export default function AuthLoginClient({
 			router.push(getDashboardPath(data));
 		}
 	}, [data, isPending, router]);
+
+	const roleLabel =
+		mode === "admin" ? "Global Admin Access" : mode === "manager" ? "Branch Manager Access" : "Lecturer Access";
+	const roleHint =
+		mode === "admin"
+			? "Use your global admin credentials to manage countries and branches"
+			: mode === "manager"
+				? "Use your branch manager credentials to manage local operations"
+				: "Use your lecturer credentials to run courses and classroom sessions";
+	const submitLabel = mode === "admin" ? "Admin Login" : mode === "manager" ? "Manager Login" : "Lecturer Login";
 
 	return (
 		<section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-20">
@@ -134,12 +150,11 @@ export default function AuthLoginClient({
 						transition={{ duration: 0.5, delay: 0.2 }}
 						className="mb-8 text-center"
 					>
-						<h1 className="text-foreground mb-2 text-2xl font-bold">Welcome back</h1>
-						<p className="text-muted-foreground text-sm">
-							{mode === "manager"
-								? "Log in to access your branch manager account"
-								: "Log in to access your lecturer dashboard"}
+						<p className="text-primary mb-2 text-xs font-semibold tracking-[0.18em] uppercase">
+							{roleLabel}
 						</p>
+						<h1 className="text-foreground mb-2 text-2xl font-bold">Welcome back</h1>
+						<p className="text-muted-foreground text-sm">{roleHint}</p>
 					</motion.div>
 
 					<motion.form
@@ -178,7 +193,7 @@ export default function AuthLoginClient({
 
 						<form.AppForm>
 							<form.SubscribeButton
-								label={mode === "manager" ? "Manager Login" : "Lecturer Login"}
+								label={submitLabel}
 								className="w-full font-semibold"
 							/>
 						</form.AppForm>

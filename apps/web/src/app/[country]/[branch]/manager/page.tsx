@@ -1,25 +1,37 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Building2, KeyRound, Loader2, Save } from "lucide-react";
+import { Building2, KeyRound, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 import { getManagerBranch, putManagerBranch, putManagerLecturerCredentials } from "@/api-client";
 import type { ManagerBranch } from "@/api-client/types.gen";
-import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppForm } from "@/hooks/form";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { getCountryPathFromPathname, getLocalizedManagerLoginPath } from "@/lib/tenant-routing";
 
 export default function ManagerDashboardPage() {
 	const router = useRouter();
-	const { data: authData, isPending: authPending } = useRequireAuth();
+	const pathname = usePathname();
+	const countryKey = getCountryPathFromPathname(pathname).replace("/", "");
+	const { data: authData, isPending: authPending } = useRequireAuth({
+		redirectTo: getLocalizedManagerLoginPath(countryKey),
+	});
+
+	useEffect(() => {
+		if (!authPending && authData && authData.role !== "manager") {
+			router.push(getLocalizedManagerLoginPath(countryKey));
+		}
+	}, [authData, authPending, countryKey, router]);
 
 	const branchQuery = useQuery({
 		queryKey: ["manager", "branch"],
+		enabled: authData?.role === "manager",
 		queryFn: async () => {
 			const response = await getManagerBranch({
 				throwOnError: true,
@@ -60,15 +72,6 @@ export default function ManagerDashboardPage() {
 		},
 	});
 
-	if (authPending) {
-		return <LoadingPlaceholder />;
-	}
-
-	if (!authData || authData.role !== "manager") {
-		router.push("/manager/login");
-		return <LoadingPlaceholder />;
-	}
-
 	const branch = branchQuery.data;
 
 	const branchForm = useAppForm({
@@ -96,10 +99,13 @@ export default function ManagerDashboardPage() {
 		},
 	});
 
-	const dashboardPath =
-		authData.countryKey && authData.branchKey
-			? `/${authData.countryKey}/${authData.branchKey}/dashboard`
-			: "/cz-1/branch-1/dashboard";
+	if (authPending) {
+		return <LoadingPlaceholder />;
+	}
+
+	if (!authData || authData.role !== "manager") {
+		return <LoadingPlaceholder />;
+	}
 
 	return (
 		<section className="relative min-h-screen overflow-hidden pt-28 pb-16">
@@ -243,12 +249,6 @@ export default function ManagerDashboardPage() {
 					</>
 				)}
 
-				<div className="flex justify-end">
-					<Button variant="outline" size="sm" onClick={() => router.push(dashboardPath)}>
-						<Save className="size-4" />
-						Go to dashboard
-					</Button>
-				</div>
 			</div>
 		</section>
 	);

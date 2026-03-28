@@ -1,12 +1,19 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Building2, Globe, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { Building2, Globe, Loader2, Pencil, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-import { deleteAdminBranchesByBranchId, deleteAdminCountriesByCountryId } from "@/api-client";
+import {
+	deleteAdminBranchesByBranchId,
+	deleteAdminCountriesByCountryId,
+	putAdminBranchesByBranchId,
+	putAdminCountriesByCountryId,
+} from "@/api-client";
 import { getAdminBranches, getAdminCountries } from "@/api-client/sdk.gen";
+import type { BranchUpdateRequest, CountryUpdateRequest } from "@/api-client/types.gen";
 import BranchFormDialog from "@/components/admin/branch-form-dialog";
 import CountryFormDialog from "@/components/admin/country-form-dialog";
 import { Button } from "@/components/animate-ui/components/buttons/button";
@@ -14,8 +21,19 @@ import BackgroundGrid from "@/components/background-grid";
 import EmptyState from "@/components/empty-state";
 import LoadingPlaceholder from "@/components/loading-placeholder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { logout } from "@/hooks/use-auth";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import { useAppForm } from "@/hooks/form";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { getAdminLoginPath } from "@/lib/tenant-routing";
 
 type Country = {
 	id: number;
@@ -41,12 +59,193 @@ type Branch = {
 	branchKey: string;
 };
 
+function EditCountryDialog({
+	country,
+	onSaved,
+}: {
+	country: Country;
+	onSaved: () => void;
+}) {
+	const mutation = useMutation({
+		mutationFn: async (values: CountryUpdateRequest) => {
+			const payload: CountryUpdateRequest = {
+				name: values.name,
+				status: values.status,
+			};
+
+			await putAdminCountriesByCountryId({
+				path: {
+					countryId: country.id,
+				},
+				body: payload,
+				throwOnError: true,
+			});
+		},
+		onSuccess: () => onSaved(),
+	});
+
+	const form = useAppForm({
+		defaultValues: {
+			name: country.name,
+			status: country.status as "active" | "onboarding" | "waiting",
+		},
+		onSubmit: async ({ value }) => {
+			await mutation.mutateAsync(value);
+		},
+	});
+
+	return (
+		<Dialog>
+			<DialogTrigger
+				render={
+					<Button variant="ghost" size="icon">
+						<Pencil className="size-4" />
+					</Button>
+				}
+			/>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Edit country</DialogTitle>
+					<DialogDescription>Update country metadata and status.</DialogDescription>
+				</DialogHeader>
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						form.handleSubmit();
+					}}
+					className="space-y-4"
+				>
+					<form.AppField name="name">
+						{(field) => <field.TextField label="Name" placeholder="Country name" className="h-10" />}
+					</form.AppField>
+					<form.AppField name="status">
+						{(field) => (
+							<field.TextField
+								label="Status"
+								placeholder="active / onboarding / waiting"
+								className="h-10"
+							/>
+						)}
+					</form.AppField>
+					<DialogFooter>
+						<DialogClose render={<Button variant="outline">Cancel</Button>} />
+						<form.AppForm>
+							<form.SubscribeButton label="Save" className="min-w-28" />
+						</form.AppForm>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function EditBranchDialog({
+	branch,
+	onSaved,
+}: {
+	branch: Branch;
+	onSaved: () => void;
+}) {
+	const mutation = useMutation({
+		mutationFn: async (values: BranchUpdateRequest) => {
+			await putAdminBranchesByBranchId({
+				path: {
+					branchId: branch.id,
+				},
+				body: values,
+				throwOnError: true,
+			});
+		},
+		onSuccess: () => onSaved(),
+	});
+
+	const form = useAppForm({
+		defaultValues: {
+			name: branch.name,
+			city: branch.city,
+			address: branch.address,
+			postalCode: branch.postalCode,
+			region: branch.region,
+			type: branch.type as "branch" | "hq",
+			status: branch.status as "active" | "onboarding" | "waiting",
+		},
+		onSubmit: async ({ value }) => {
+			await mutation.mutateAsync(value);
+		},
+	});
+
+	return (
+		<Dialog>
+			<DialogTrigger
+				render={
+					<Button variant="ghost" size="icon">
+						<Pencil className="size-4" />
+					</Button>
+				}
+			/>
+			<DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
+				<DialogHeader>
+					<DialogTitle>Edit branch</DialogTitle>
+					<DialogDescription>Update branch details and local settings.</DialogDescription>
+				</DialogHeader>
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						form.handleSubmit();
+					}}
+					className="grid gap-3 sm:grid-cols-2"
+				>
+					<form.AppField name="name">
+						{(field) => <field.TextField label="Branch name" placeholder="Prague HQ" className="h-10" />}
+					</form.AppField>
+					<form.AppField name="city">
+						{(field) => <field.TextField label="City" placeholder="Prague" className="h-10" />}
+					</form.AppField>
+					<form.AppField name="address">
+						{(field) => <field.TextField label="Address" placeholder="Main Square 1" className="h-10" />}
+					</form.AppField>
+					<form.AppField name="postalCode">
+						{(field) => <field.TextField label="Postal code" placeholder="11000" className="h-10" />}
+					</form.AppField>
+					<form.AppField name="region">
+						{(field) => <field.TextField label="Region" placeholder="Central Europe" className="h-10" />}
+					</form.AppField>
+					<form.AppField name="type">
+						{(field) => <field.TextField label="Type" placeholder="hq / branch" className="h-10" />}
+					</form.AppField>
+					<form.AppField name="status">
+						{(field) => (
+							<field.TextField
+								label="Status"
+								placeholder="active / onboarding / waiting"
+								className="h-10"
+							/>
+						)}
+					</form.AppField>
+
+					<div className="sm:col-span-2">
+						<DialogFooter>
+							<DialogClose render={<Button variant="outline">Cancel</Button>} />
+							<form.AppForm>
+								<form.SubscribeButton label="Save changes" className="min-w-32" />
+							</form.AppForm>
+						</DialogFooter>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 export default function AdminPage() {
 	const router = useRouter();
-	const { data: authData, isPending: authPending } = useRequireAuth();
+	const { data: authData, isPending: authPending } = useRequireAuth({ redirectTo: getAdminLoginPath() });
 
 	const countriesQuery = useQuery({
 		queryKey: ["admin", "countries"],
+		enabled: authData?.role === "admin",
 		queryFn: async () => {
 			const response = await getAdminCountries({
 				throwOnError: true,
@@ -57,6 +256,7 @@ export default function AdminPage() {
 
 	const branchesQuery = useQuery({
 		queryKey: ["admin", "branches"],
+		enabled: authData?.role === "admin",
 		queryFn: async () => {
 			const response = await getAdminBranches({
 				throwOnError: true,
@@ -65,10 +265,11 @@ export default function AdminPage() {
 		},
 	});
 
-	const logoutMutation = useMutation({
-		mutationFn: async () => logout(),
-		onSuccess: () => router.push("/login"),
-	});
+	useEffect(() => {
+		if (!authPending && (!authData || authData.role !== "admin")) {
+			router.push(getAdminLoginPath());
+		}
+	}, [authData, authPending, router]);
 
 	const deleteCountryMutation = useMutation({
 		mutationFn: async (countryId: number) => {
@@ -104,7 +305,6 @@ export default function AdminPage() {
 	}
 
 	if (!authData || authData.role !== "admin") {
-		router.push("/login");
 		return <LoadingPlaceholder />;
 	}
 
@@ -127,22 +327,6 @@ export default function AdminPage() {
 						<p className="text-muted-foreground mt-2 max-w-2xl text-sm sm:text-base">
 							Manage countries, branches, and local account ownership.
 						</p>
-					</div>
-					<div className="flex items-center gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => {
-								countriesQuery.refetch();
-								branchesQuery.refetch();
-							}}
-						>
-							<RefreshCw className="size-4" />
-							Refresh
-						</Button>
-						<Button variant="destructive" size="sm" onClick={() => logoutMutation.mutate()}>
-							Logout
-						</Button>
 					</div>
 				</motion.div>
 
@@ -184,14 +368,23 @@ export default function AdminPage() {
 												Status: {country.status.toLowerCase()}
 											</p>
 										</div>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={() => deleteCountryMutation.mutate(country.id)}
-											disabled={deleteCountryMutation.isPending}
-										>
-											<Trash2 className="text-destructive size-4" />
-										</Button>
+										<div className="flex items-center">
+											<EditCountryDialog
+												country={country}
+												onSaved={() => {
+													countriesQuery.refetch();
+													branchesQuery.refetch();
+												}}
+											/>
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() => deleteCountryMutation.mutate(country.id)}
+												disabled={deleteCountryMutation.isPending}
+											>
+												<Trash2 className="text-destructive size-4" />
+											</Button>
+										</div>
 									</div>
 								))
 							)}
@@ -228,14 +421,22 @@ export default function AdminPage() {
 											<p className="text-foreground text-sm font-semibold">
 												{branch.name} ({branch.city})
 											</p>
-											<Button
-												variant="ghost"
-												size="icon"
-												onClick={() => deleteBranchMutation.mutate(branch.id)}
-												disabled={deleteBranchMutation.isPending}
-											>
-												<Trash2 className="text-destructive size-4" />
-											</Button>
+											<div className="flex items-center">
+												<EditBranchDialog
+													branch={branch}
+													onSaved={() => {
+														branchesQuery.refetch();
+													}}
+												/>
+												<Button
+													variant="ghost"
+													size="icon"
+													onClick={() => deleteBranchMutation.mutate(branch.id)}
+													disabled={deleteBranchMutation.isPending}
+												>
+													<Trash2 className="text-destructive size-4" />
+												</Button>
+											</div>
 										</div>
 										<p className="text-muted-foreground text-xs">
 											{branch.countryKey} • {branch.branchKey}

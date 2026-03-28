@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
 
-import { getCoursesLecturerOptions } from "@/api-client/@tanstack/react-query.gen";
+import { getCoursesOptions } from "@/api-client/@tanstack/react-query.gen";
 import { CourseStatus } from "@/api-client/types.gen";
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import BackgroundGrid from "@/components/background-grid";
@@ -17,7 +17,7 @@ import EmptyState from "@/components/empty-state";
 export default function TenantCoursesClient() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const { data, isPending, isError, refetch } = useQuery({
-		...getCoursesLecturerOptions(),
+		...getCoursesOptions(),
 	});
 
 	const trimmedQuery = searchQuery.trim();

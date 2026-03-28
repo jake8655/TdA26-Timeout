@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { LayoutDashboard, Loader2, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +13,6 @@ import {
 	getCoursesPath,
 	getDashboardPath,
 	getLocalizedLoginPath,
-	getLocalizedManagerLoginPath,
 } from "@/lib/tenant-routing";
 
 import AboutLink from "./about-link";
@@ -30,6 +30,7 @@ import {
 
 export default function Header() {
 	const router = useRouter();
+	const queryClient = useQueryClient();
 	const pathname = usePathname();
 	const { data } = useAuth();
 	const countryPath = getCountryPathFromPathname(pathname);
@@ -37,7 +38,11 @@ export default function Header() {
 		mutationFn: async () => {
 			await logout();
 		},
+		meta: {
+			skipInvalidate: true,
+		},
 		onSuccess: () => {
+			queryClient.setQueryData(["auth"], null);
 			router.push(countryPath);
 		},
 	});
@@ -131,11 +136,6 @@ export default function Header() {
 							>
 								<Link href={getLocalizedLoginPath(countryPath.replace("/", ""))}>
 									Lecturer Login
-								</Link>
-							</Button>
-							<Button variant="outline" size="sm" asChild>
-								<Link href={getLocalizedManagerLoginPath(countryPath.replace("/", ""))}>
-									Manager
 								</Link>
 							</Button>
 							<Button variant="accent" size="sm" asChild>

@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import AboutLink from "@/components/about-link";
 import { Separator } from "@/components/ui/separator";
 import {
+	getAdminLoginPath,
 	getCountryPathFromPathname,
 	getLocalizedLoginPath,
 	getLocalizedManagerLoginPath,
@@ -70,6 +71,11 @@ export default function Footer() {
 									className="hover:text-primary transition-colors"
 								>
 									Manager Login
+								</Link>
+							</li>
+							<li>
+								<Link href={getAdminLoginPath()} className="hover:text-primary transition-colors">
+									Global Admin Login
 								</Link>
 							</li>
 						</ul>

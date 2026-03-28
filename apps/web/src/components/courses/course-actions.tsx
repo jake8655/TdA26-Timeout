@@ -8,9 +8,11 @@ import {
 	Loader2,
 	PauseCircle,
 	Play,
+	Share2,
 	Trash2,
 } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import type { CourseDetail } from "@/api-client/types.gen";
@@ -40,6 +42,7 @@ export function CourseActions({
 	onMoveToDraft,
 	onDuplicate,
 	onDelete,
+	sharePath,
 	duplicatePending = false,
 	deletePending = false,
 }: {
@@ -51,18 +54,32 @@ export function CourseActions({
 	onMoveToDraft: () => void;
 	onDuplicate: (name: string) => void;
 	onDelete: () => void;
+	sharePath: string;
 	duplicatePending?: boolean;
 	deletePending?: boolean;
 }) {
 	const [duplicateName, setDuplicateName] = useState(`${course.name} Copy`);
 	const [deleteConfirm, setDeleteConfirm] = useState("");
+	const [copied, setCopied] = useState(false);
 	const isDuplicatePending = duplicatePending;
 	const isDeletePending = deletePending;
+	const shareUrl =
+		typeof window === "undefined" ? sharePath : new URL(sharePath, window.location.origin).toString();
+	const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(shareUrl)}`;
 
 	useEffect(() => {
 		setDuplicateName(`${course.name} Copy`);
 		setDeleteConfirm("");
 	}, [course.name]);
+
+	useEffect(() => {
+		if (!copied) {
+			return;
+		}
+
+		const timeout = setTimeout(() => setCopied(false), 1800);
+		return () => clearTimeout(timeout);
+	}, [copied]);
 
 	const canSchedule = courseStatusActions(
 		course.status ?? CourseStatus.DRAFT,
@@ -101,6 +118,55 @@ export function CourseActions({
 						</Button>
 					}
 				/>
+				<Dialog>
+					<DialogTrigger
+						render={
+							<Button
+								variant="outline"
+								size="sm"
+								className="gap-2"
+								disabled={isDeletePending || isDuplicatePending}
+							>
+								<Share2 className="size-4" />
+								Share
+							</Button>
+						}
+					/>
+					<DialogContent className="sm:max-w-md">
+						<DialogHeader>
+							<DialogTitle>Share course</DialogTitle>
+							<DialogDescription>
+								Copy the link or let students scan the QR code.
+							</DialogDescription>
+						</DialogHeader>
+						<div className="space-y-4">
+							<button
+								type="button"
+								onClick={async () => {
+									await navigator.clipboard.writeText(shareUrl);
+									setCopied(true);
+								}}
+								className="border-input bg-background hover:bg-accent hover:text-accent-foreground text-foreground mx-auto flex h-9 w-56 items-center justify-center gap-2 border px-4 py-2 text-sm transition-colors"
+							>
+								<Copy className="size-3.5 shrink-0" />
+								<span className="text-center">{copied ? "Copied" : "Copy course link"}</span>
+							</button>
+							<div className="mx-auto w-fit">
+								<Image
+									src={qrImageUrl}
+									alt="Course share QR code"
+									width={224}
+									height={224}
+									className="border border-white/10 p-1"
+									unoptimized
+								/>
+							</div>
+						</div>
+						<DialogFooter>
+							<DialogClose render={<Button variant="outline">Close</Button>} />
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
 				<Dialog>
 					<DialogTrigger
 						render={

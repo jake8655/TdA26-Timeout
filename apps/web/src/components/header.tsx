@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,7 +32,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
-export default function Header() {
+function HeaderInner() {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const pathname = usePathname();
@@ -200,5 +201,13 @@ export default function Header() {
 				</div>
 			</div>
 		</header>
+	);
+}
+
+export default function Header() {
+	return (
+		<Suspense>
+			<HeaderInner />
+		</Suspense>
 	);
 }

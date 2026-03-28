@@ -6,17 +6,17 @@ import eu.hypnomacka.timeout.server.core.Branch;
 import eu.hypnomacka.timeout.server.core.Country;
 import eu.hypnomacka.timeout.server.core.Lecturer;
 import eu.hypnomacka.timeout.server.core.Session;
-import io.ebean.DB;
 import eu.hypnomacka.timeout.server.core.query.QLecturer;
 import eu.hypnomacka.timeout.server.core.query.QSession;
 import eu.hypnomacka.timeout.server.utils.HashUtil;
+import io.ebean.DB;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,15 +27,46 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController extends Controller {
 
   @GetMapping("/tenants")
-  public ResponseEntity<List<Map<String, String>>> tenants() {
-    List<Map<String, String>> payload =
-        DB.find(Country.class).where().eq("status", Country.Status.ACTIVE).orderBy("id desc").findList().stream()
+  public ResponseEntity<List<Map<String, Object>>> tenants() {
+    List<Country> countries =
+        DB.find(Country.class)
+            .where()
+            .eq("status", Country.Status.ACTIVE)
+            .orderBy("id desc")
+            .findList();
+
+    List<Map<String, Object>> payload =
+        countries.stream()
+            .filter(
+                country -> country.getCountryKey() != null && !country.getCountryKey().isBlank())
             .map(
-                country ->
-                    Map.of(
-                        "countryKey", country.getCountryKey() == null ? "" : country.getCountryKey(),
-                        "name", country.getName() == null ? "" : country.getName()))
-            .filter(item -> !item.get("countryKey").isBlank())
+                country -> {
+                  List<Map<String, String>> branches =
+                      DB
+                          .find(Branch.class)
+                          .where()
+                          .eq("country.id", country.getId())
+                          .eq("status", Branch.Status.ACTIVE)
+                          .orderBy("id asc")
+                          .findList()
+                          .stream()
+                          .map(
+                              branch ->
+                                  Map.of(
+                                      "branchKey",
+                                          branch.getBranchKey() == null
+                                              ? ""
+                                              : branch.getBranchKey(),
+                                      "name", branch.getName() == null ? "" : branch.getName()))
+                          .filter(item -> !item.get("branchKey").isBlank())
+                          .toList();
+
+                  Map<String, Object> item = new java.util.LinkedHashMap<>();
+                  item.put("countryKey", country.getCountryKey());
+                  item.put("name", country.getName() == null ? "" : country.getName());
+                  item.put("branches", branches);
+                  return item;
+                })
             .toList();
 
     return ResponseEntity.ok(payload);
@@ -103,7 +134,12 @@ public class AuthController extends Controller {
       response.addCookie(cookie);
 
       Session session =
-          new Session(account, scopedCountry, scopedBranch, sessionId, Instant.now().plus(Duration.ofDays(30)));
+          new Session(
+              account,
+              scopedCountry,
+              scopedBranch,
+              sessionId,
+              Instant.now().plus(Duration.ofDays(30)));
       session.save();
 
       return ResponseEntity.ok(Map.of("status", "ok", "message", "logged in"));
@@ -172,11 +208,14 @@ public class AuthController extends Controller {
     Account account = resolveAccount(session);
     if (account != null) {
       String countryKey = session.getCountry() == null ? "" : session.getCountry().getCountryKey();
-      String countryId = session.getCountry() == null ? "" : String.valueOf(session.getCountry().getId());
-      String branchId = session.getBranch() == null ? "" : String.valueOf(session.getBranch().getId());
+      String countryId =
+          session.getCountry() == null ? "" : String.valueOf(session.getCountry().getId());
+      String branchId =
+          session.getBranch() == null ? "" : String.valueOf(session.getBranch().getId());
       String branchKey = session.getBranch() == null ? "" : session.getBranch().getBranchKey();
       String branchName = session.getBranch() == null ? "" : session.getBranch().getName();
-      String displayName = account.getDisplayName() == null ? account.getUsername() : account.getDisplayName();
+      String displayName =
+          account.getDisplayName() == null ? account.getUsername() : account.getDisplayName();
 
       return ResponseEntity.ok(
           Map.of(

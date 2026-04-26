@@ -1,4 +1,4 @@
-# Tour de App - Timeout
+# Tour de App - Timeout (Grandfinale)
 An online course platform for educators and learners alike.
 
 ## Team Members

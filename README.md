@@ -6,6 +6,18 @@ An online course platform for educators and learners alike.
 - [Filip Konc (hypnomacka)](https://github.com/hypnomacka) - backend
 - [Jakub Cagáň](https://github.com/koobisko) - financial support
 
+## Competition Results
+Tour de App 2026
+
+### Nomination round
+**🏅 1st out of 144 teams** [link](https://tourdeapp.com/articles/announcement-of-the-nomination-round-26)
+
+### Competition round
+**🥉 3rd out of 40 teams** [link](https://tourdeapp.com/articles/announcement-of-the-competition-round-26)
+
+### Grandfinale
+**🎖️ 6th out of 20 teams** [link](https://tourdeapp.com/articles/grand-finale-top-5-results-26)
+
 ## Quick Start (Docker Compose)
 
 ```bash

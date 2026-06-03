@@ -2,7 +2,7 @@ alias b := build
 alias r := run
 
 db_name := "timeout-mysql"
-db_pass := "TGCQeIKeCYpAeyiPTG37gpzy"
+db_pass := env_var_or_default("MYSQL_ROOT_PASSWORD", "timeout-dev-root-password")
 
 build:
   ./gradlew build

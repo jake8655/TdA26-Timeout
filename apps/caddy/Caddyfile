@@ -1,6 +1,9 @@
-http://:80 {
+{$DOMAIN:http://:80} {
+  encode zstd gzip
+
   handle_path /api* {
     reverse_proxy {$SERVER_UPSTREAM}
   }
+
   reverse_proxy {$WEB_UPSTREAM}
 }

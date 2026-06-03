@@ -1,0 +1,63 @@
+services:
+  web:
+    build:
+      context: apps/web
+      args:
+        NEXT_PUBLIC_API_BASE: /api
+    restart: unless-stopped
+
+  server:
+    build: apps/server
+    environment:
+      DBURL: ${DBURL:?Set DBURL in .env}
+      DBUSERNAME: ${DBUSERNAME:?Set DBUSERNAME in .env}
+      DBPASSWORD: ${DBPASSWORD:?Set DBPASSWORD in .env}
+      DEFAULT_LECTURER_USERNAME: ${DEFAULT_LECTURER_USERNAME:?Set DEFAULT_LECTURER_USERNAME in .env}
+      DEFAULT_LECTURER_PASSWORD: ${DEFAULT_LECTURER_PASSWORD:?Set DEFAULT_LECTURER_PASSWORD in .env}
+      UPLOADS_DIR: /app/uploads
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: timeoutdb
+      MYSQL_USER: ${DBUSERNAME:?Set DBUSERNAME in .env}
+      MYSQL_PASSWORD: ${DBPASSWORD:?Set DBPASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 180s
+    restart: unless-stopped
+
+  caddy:
+    build: apps/caddy
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      SERVER_UPSTREAM: server:3000
+      WEB_UPSTREAM: web:3001
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - server
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  uploads:
+  caddy_data:
+  caddy_config:

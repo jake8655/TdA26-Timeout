@@ -21,9 +21,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController extends Controller {
 
-  private static final String USERNAME = "lecturer";
-  private static final String PASSWORD = "TdA26!";
-
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(
       @RequestBody Map<String, String> body, HttpServletResponse response) {

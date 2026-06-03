@@ -16,7 +16,7 @@ const fontSans = localFont({
 const siteTitle = "Think different Academy";
 const siteDescription =
 	"An educational platform that aims to show that learning doesn't have to mean endless reading of academic texts. Instead, it can be engaging, interactive, and fully online.";
-const siteUrl = "https://tda.com";
+const siteUrl = "https://tda.dominiktoth.com";
 
 export const metadata: Metadata = {
 	metadataBase: new URL(siteUrl),

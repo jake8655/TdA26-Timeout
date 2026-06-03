@@ -10,24 +10,28 @@ services:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: timeoutdb
-      MYSQL_ROOT_PASSWORD: TGCQeIKeCYpAeyiPTG37gpzy
+      MYSQL_USER: ${DBUSERNAME:-timeoutuser}
+      MYSQL_PASSWORD: ${DBPASSWORD:-timeout-dev-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-timeout-dev-root-password}
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysql", "-u", "root", "-pTGCQeIKeCYpAeyiPTG37gpzy", "-e", "SELECT 1"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s
+      start_period: 180s
   server:
     build: apps/server
     ports:
       - "3000:3000"
     environment:
       DBURL: "jdbc:mysql://mysql:3306/timeoutdb"
+      DBUSERNAME: ${DBUSERNAME:-timeoutuser}
+      DBPASSWORD: ${DBPASSWORD:-timeout-dev-password}
+      DEFAULT_LECTURER_USERNAME: ${DEFAULT_LECTURER_USERNAME:-lecturer}
+      DEFAULT_LECTURER_PASSWORD: ${DEFAULT_LECTURER_PASSWORD:-timeout-dev-lecturer-password}
       UPLOADS_DIR: /app/uploads
-    env_file:
-      - apps/server/.env
     volumes:
       - uploads:/app/uploads
     depends_on:

@@ -28,6 +28,10 @@ docker compose down -v             # Stop and delete DB data
 
 Open [http://localhost](http://localhost).
 
+### Lecturer credentials
+Username: lecturer
+Password: TdA26!
+
 ## Individual Services
 
 See `apps/server/README.md` and `apps/web/README.md` for running services independently.

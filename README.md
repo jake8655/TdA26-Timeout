@@ -29,8 +29,9 @@ docker compose down -v             # Stop and delete DB data
 Open [http://localhost](http://localhost).
 
 ### Lecturer credentials
-Username: lecturer
-Password: TdA26!
+| Username | Password |
+|----------|----------|
+| lecturer | TdA26!   |
 
 ## Individual Services
 

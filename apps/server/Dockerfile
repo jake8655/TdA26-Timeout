@@ -1,21 +1,14 @@
-FROM eclipse-temurin:17-alpine AS base
-
-RUN apk update
-RUN apk add --no-cache libc6-compat
-
-WORKDIR /app
-
-FROM base AS builder
+FROM eclipse-temurin:17-jdk-jammy AS builder
 WORKDIR /app
 COPY . .
 RUN chmod +x ./gradlew
 RUN ./gradlew build
 
-FROM base AS runner
+FROM eclipse-temurin:17-jre-jammy AS runner
 WORKDIR /app
 
 RUN addgroup --system --gid 1001 java && \
-    adduser --system --uid 1001 spring
+    adduser --system --uid 1001 --ingroup java spring
 
 COPY --from=builder --chown=spring:java /app/build/libs/*.jar ./app.jar
 

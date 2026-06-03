@@ -10,6 +10,7 @@ import eu.hypnomacka.timeout.server.core.UrlAttachment;
 import eu.hypnomacka.timeout.server.core.query.QLecturer;
 import eu.hypnomacka.timeout.server.utils.HashUtil;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -17,10 +18,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class DatabaseSeeder {
 
+  private final String defaultLecturerUsername;
+  private final String defaultLecturerPassword;
+
+  public DatabaseSeeder(
+      @Value("${DEFAULT_LECTURER_USERNAME:}") String defaultLecturerUsername,
+      @Value("${DEFAULT_LECTURER_PASSWORD:}") String defaultLecturerPassword) {
+    this.defaultLecturerUsername = defaultLecturerUsername;
+    this.defaultLecturerPassword = defaultLecturerPassword;
+  }
+
   @EventListener(ApplicationReadyEvent.class)
   public void seed() {
     if (shouldSkipSeeding()) {
       return;
+    }
+
+    if (defaultLecturerUsername.isBlank() || defaultLecturerPassword.isBlank()) {
+      throw new IllegalStateException(
+          "DEFAULT_LECTURER_USERNAME and DEFAULT_LECTURER_PASSWORD must be set before seeding");
     }
 
     Lecturer lecturer = createLecturer();
@@ -30,11 +46,12 @@ public class DatabaseSeeder {
   }
 
   private boolean shouldSkipSeeding() {
-    return new QLecturer().username.eq("lecturer").exists();
+    return new QLecturer().exists();
   }
 
   private Lecturer createLecturer() {
-    Lecturer lecturer = new Lecturer("lecturer", HashUtil.hashPassword("TdA26!"));
+    Lecturer lecturer =
+        new Lecturer(defaultLecturerUsername, HashUtil.hashPassword(defaultLecturerPassword));
     lecturer.save();
     return lecturer;
   }

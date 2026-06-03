@@ -30,4 +30,5 @@ Open [http://localhost:3000](http://localhost:3000).
 [IntelliJ IDEA](https://www.jetbrains.com/idea/download/)
 
 ## Deployment
-Deployed via Docker to [TdA Cloud](https://tourde.cloud). Pushes to `main` trigger deployments.
+~Deployed via Docker to [TdA Cloud](https://tourde.cloud). Pushes to `main` trigger deployments.~
+Now deployed to a VM.

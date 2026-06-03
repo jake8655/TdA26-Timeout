@@ -29,7 +29,7 @@ Make sure format on save is enabled in your editor settings to automatically for
 
 ## Deployment
 
-The application is deployed using [Docker](https://docker.com) to [TdA Cloud](https://tourde.cloud). Pushes to the `main` branch trigger (semi-)automatic deployments.
+The application is deployed using [Docker](https://docker.com) to ~~[TdA Cloud](https://tourde.cloud)~~ a VM. ~Pushes to the `main` branch trigger (semi-)automatic deployments.~
 Make sure biome and typescript checks pass before opening a PR.
 You can check them with:
 

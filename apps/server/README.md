@@ -31,4 +31,4 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Deployment
 ~Deployed via Docker to [TdA Cloud](https://tourde.cloud). Pushes to `main` trigger deployments.~
-Now deployed to a VM.
+Now deployed to a VPS.

@@ -41,7 +41,7 @@ See `apps/server/README.md` and `apps/web/README.md` for running services indepe
 - Frontend: Next.js, TypeScript, React, Tailwind CSS, Tanstack
 - Backend: Java, Spring Boot, eBean ORM
 - Database: MySQL 8.0
-- Infra: Docker, ~TdA Cloud~, VM
+- Infra: Docker, ~TdA Cloud~ VPS
 - Deploy time: 3mins
 
 ## Screenshots
